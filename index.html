@@ -342,11 +342,6 @@ function isPast(timeStr) {
   return nowH > h || (nowH === h && nowM >= m + 20);
 }
 
-// ── 예약 버튼 클릭 ──
-function bookSlot(date, time) {
-  saveLastSelection(date, time);
-  window.open(makeFormUrl(date, time), '_blank');
-}
 
 // ── 현황 렌더링 ──
 function renderStatus(slots) {
@@ -408,8 +403,6 @@ function renderStatus(slots) {
       remainClass = 'ok';
     }
 
-      ? `<button class="slot-book-btn" onclick="bookSlot('${activeDate}','${s.time}')">예약하기</button>`
-      : `<span class="slot-book-btn disabled">${past ? '종료' : '마감'}</span>`;
 
     html += `
       <div class="slot-row ${past ? 'past' : ''}">

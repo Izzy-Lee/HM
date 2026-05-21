@@ -98,6 +98,33 @@
   .status-loading { text-align: center; padding: 2rem; color: var(--ink-soft); font-size: 0.85rem; }
   .status-updated { font-size: 0.7rem; color: rgba(90,78,66,0.4); text-align: right; margin-top: 0.3rem; }
   .footer { margin-top: 2rem; font-size: 0.7rem; color: rgba(90,78,66,0.45); letter-spacing: 0.04em; text-align: center; }
+
+  /* ── 헬로미추 소개 패널 ── */
+  .about-panel { text-align: left; }
+  .about-section { margin-bottom: 1.6rem; }
+  .about-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; color: var(--brush-teal); }
+  .about-title { font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-top: 0.3rem; line-height: 1.3; }
+  .about-line { width: 24px; height: 2px; background: var(--brush-teal); margin: 0.5rem 0 0.8rem; border-radius: 1px; }
+  .about-body { font-size: 0.83rem; color: var(--ink-soft); line-height: 1.75; }
+  .about-body strong { color: var(--ink); font-weight: 600; }
+
+  .sheet-cards { display: flex; flex-direction: column; gap: 0.6rem; }
+  .sheet-card { display: flex; gap: 0.8rem; align-items: flex-start; background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 10px; padding: 0.8rem 1rem; }
+  .sheet-num-badge { min-width: 28px; height: 28px; background: var(--brush-teal); color: white; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .sheet-card-title { font-size: 0.88rem; font-weight: 600; color: var(--ink); margin-bottom: 0.2rem; }
+  .sheet-card-desc { font-size: 0.76rem; color: var(--ink-soft); line-height: 1.5; margin-bottom: 0.3rem; }
+  .sheet-card-tags { font-size: 0.68rem; color: var(--brush-teal); }
+
+  .exp-item { display: flex; gap: 0.8rem; align-items: flex-start; margin-bottom: 0.9rem; }
+  .exp-icon-wrap { font-size: 1.4rem; min-width: 32px; text-align: center; }
+  .exp-item-title { font-size: 0.88rem; font-weight: 600; color: var(--ink); margin-bottom: 0.2rem; }
+  .exp-item-desc { font-size: 0.76rem; color: var(--ink-soft); line-height: 1.5; }
+
+  .about-contact { background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 10px; padding: 0.9rem 1rem; }
+  .contact-row { display: flex; gap: 0.8rem; font-size: 0.78rem; color: var(--ink-soft); margin-bottom: 0.4rem; }
+  .contact-row:last-child { margin-bottom: 0; }
+  .contact-key { min-width: 52px; font-weight: 500; color: var(--brush-teal); }
+
 </style>
 </head>
 <body>
@@ -112,6 +139,7 @@
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('reserve')">예약 · 설문</button>
     <button class="tab-btn" onclick="switchTab('status')">예약 현황</button>
+    <button class="tab-btn" onclick="switchTab('about')">헬로미추</button>
   </div>
 
   <!-- 예약/설문 패널 -->
@@ -150,11 +178,92 @@
   <div class="tab-panel" id="panel-status">
     <div class="status-panel">
       <div id="statusContent">
-        <div class="status-loading">잔여 현황을 불러오는 중...</div>
+        <div class="status-loading">잔여 현황을 불러오는 중...<br><span style="font-size:0.75rem;opacity:0.6;">잠시 기다려주세요</span></div>
       </div>
       <p class="status-updated" id="updatedAt"></p>
     </div>
   </div>
+
+  <!-- 헬로미추 소개 패널 -->
+  <div class="tab-panel" id="panel-about">
+    <div class="about-panel">
+
+      <div class="about-section">
+        <span class="about-label">ABOUT</span>
+        <h2 class="about-title">헬로미추란?</h2>
+        <div class="about-line"></div>
+        <p class="about-body">
+          <strong>헬로미추(Hello Michu)</strong>는 인천 미추홀구를 기반으로 한 관광두레 주민사업체입니다.<br><br>
+          미추홀구의 역사와 자연 — 소서노 이야기, 문학산, 갯벌, 골목 풍경 — 을 수채화 컬러링으로 담아냅니다.<br><br>
+          느리게 색을 입히는 시간 속에서 이 도시의 결을 새롭게 발견하는 경험을 제안합니다.
+        </p>
+      </div>
+
+      <div class="about-section">
+        <span class="about-label">COLORING KIT</span>
+        <h2 class="about-title">수채화 컬러링 키트</h2>
+        <div class="about-line"></div>
+        <p class="about-body" style="margin-bottom:0.8rem;">
+          미추홀의 세 장면을 담은 도안과 아트에이블 수채물감으로 구성된 체험 키트입니다.
+        </p>
+        <div class="sheet-cards">
+          <div class="sheet-card">
+            <div class="sheet-num-badge">01</div>
+            <div class="sheet-card-info">
+              <div class="sheet-card-title">소서노의 정원</div>
+              <div class="sheet-card-desc">미추홀을 세운 소서노 설화를 담은 봄 정원 풍경</div>
+              <div class="sheet-card-tags"># 소서노 # 역사 # 봄</div>
+            </div>
+          </div>
+          <div class="sheet-card">
+            <div class="sheet-num-badge">02</div>
+            <div class="sheet-card-info">
+              <div class="sheet-card-title">문학산의 봄</div>
+              <div class="sheet-card-desc">진달래와 벚꽃, 기와지붕과 갯벌이 이어지는 산 아래 풍경</div>
+              <div class="sheet-card-tags"># 문학산 # 사계 # 일상</div>
+            </div>
+          </div>
+          <div class="sheet-card">
+            <div class="sheet-num-badge">03</div>
+            <div class="sheet-card-info">
+              <div class="sheet-card-title">갯벌의 작은 우주</div>
+              <div class="sheet-card-desc">농게와 조개, 아이의 시선으로 본 갯벌 생태 풍경</div>
+              <div class="sheet-card-tags"># 갯벌 # 생태 # 체험</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <span class="about-label">EXPERIENCE</span>
+        <h2 class="about-title">두레미마켓 체험</h2>
+        <div class="about-line"></div>
+        <div class="exp-item">
+          <div class="exp-icon-wrap">🎨</div>
+          <div>
+            <div class="exp-item-title">현장 컬러링 체험</div>
+            <div class="exp-item-desc">수채화 도구와 도안 제공 · 세 장 중 한 장 선택<br><span style="color:var(--brush-teal);font-weight:500;">소요시간 약 20분 · 무료</span></div>
+          </div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-icon-wrap">🛍️</div>
+          <div>
+            <div class="exp-item-title">컬러링 키트 판매</div>
+            <div class="exp-item-desc">도안 세트 + 아트에이블 수채물감 세트<br><span style="color:var(--ink-soft);">부스 가격표 참조</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-contact">
+        <div class="contact-row"><span class="contact-key">Instagram</span><span>@hellomichu</span></div>
+        <div class="contact-row"><span class="contact-key">Blog</span><span>blog.naver.com/hellomichu</span></div>
+        <div class="contact-row"><span class="contact-key">문의</span><span>hello@michu.kr</span></div>
+        <div class="contact-row" style="margin-top:0.3rem;"><span class="contact-key">주최</span><span>미추홀구 관광두레 주민사업체</span></div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
 <p class="footer">주식회사 헬로미추 · Hello Michu 2026</p>
@@ -167,26 +276,14 @@ const ENTRY_DATE = 'entry.1189251627';
 const ENTRY_TIME = 'entry.520138299';
 const FORM_BASE  = 'https://docs.google.com/forms/d/e/1FAIpQLScvLvrppxjadzctUW2HHTvMI789QlbTPXDV4CxZ7gB2tiAKZw/viewform';
 
-// 날짜 변환 (표시용 → Form 옵션값)
-function toFormDate(date) {
-  return date.replace(' (토)', ' 토').replace(' (일)', ' 일');
-}
-
-// 시간 변환 (HH:MM → HH:MM ~ HH:MM)
-function toFormTime(time) {
-  const [h, m] = time.split(':').map(Number);
-  const endMin = m + 20 >= 60 ? m + 20 - 60 : m + 20;
-  const endHour = m + 20 >= 60 ? h + 1 : h;
-  const end = `${String(endHour).padStart(2,'0')}:${String(endMin).padStart(2,'0')}`;
-  return `${time} ~ ${end}`;
-}
-
-// Form URL 생성
+// ── Form URL 생성 (날짜+시간 파라미터 포함) ──
 function makeFormUrl(date, time) {
   const params = new URLSearchParams();
-  params.set(ENTRY_DATE, toFormDate(date));
-  params.set(ENTRY_TIME, toFormTime(time));
-  return FORM_BASE + '?' + params.toString();
+  params.set(ENTRY_DATE, date);
+  params.set(ENTRY_TIME, time);
+  const url = FORM_BASE + '?' + params.toString();
+  console.log('Form URL:', url); // 디버그용
+  return url;
 }
 
 // ── 이탈 복원: 마지막 선택 저장/불러오기 ──
@@ -212,10 +309,15 @@ function getLastSelection() {
 // ── 탭 전환 ──
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', (i === 0) === (tab === 'reserve'));
+    b.classList.toggle('active',
+      (i === 0 && tab === 'reserve') ||
+      (i === 1 && tab === 'status') ||
+      (i === 2 && tab === 'about')
+    );
   });
   document.getElementById('panel-reserve').classList.toggle('active', tab === 'reserve');
   document.getElementById('panel-status').classList.toggle('active', tab === 'status');
+  document.getElementById('panel-about').classList.toggle('active', tab === 'about');
   if (tab === 'status') loadStatus();
 }
 
@@ -306,8 +408,6 @@ function renderStatus(slots) {
       remainClass = 'ok';
     }
 
-    const canBook = !past && !isFull;
-    const btnHtml = canBook
       ? `<button class="slot-book-btn" onclick="bookSlot('${activeDate}','${s.time}')">예약하기</button>`
       : `<span class="slot-book-btn disabled">${past ? '종료' : '마감'}</span>`;
 
@@ -318,7 +418,6 @@ function renderStatus(slots) {
           <div class="slot-bar ${(isFull || past) ? 'full' : ''}" style="width:${past ? 100 : pct}%"></div>
         </div>
         <span class="slot-remain ${remainClass}">${remainLabel}</span>
-        ${btnHtml}
       </div>`;
   });
 
@@ -348,7 +447,7 @@ window.addEventListener('load', () => {
   const last = getLastSelection();
   if (last) {
     // 현황 탭에 뱃지 표시
-    document.querySelector('.tab-btn:last-child').textContent = '예약 현황';
+    document.querySelector('.tab-btn:last-child').textContent = '예약 현황 •';
   }
 });
 </script>

@@ -109,7 +109,12 @@
   .about-body strong { color: var(--ink); font-weight: 600; }
 
   .sheet-cards { display: flex; flex-direction: column; gap: 0.6rem; }
-  .sheet-card { display: flex; gap: 0.8rem; align-items: flex-start; background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 10px; padding: 0.8rem 1rem; }
+  .sheet-card { display: flex; flex-direction: column; gap: 0; background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 10px; overflow: hidden; }
+  .sheet-thumb-img { width: 100%; height: 120px; background-size: cover; background-position: center; background-color: rgba(74,156,140,0.08); }
+  .sheet-card .sheet-card-info { padding: 0.7rem 0.9rem 0.8rem; display: flex; flex-direction: column; gap: 0.2rem; }
+  .sheet-card .sheet-num-badge { align-self: flex-start; margin-bottom: 0.2rem; }
+  .sheet-card:not(:has(.sheet-thumb-img)) { flex-direction: row; align-items: flex-start; padding: 0.8rem 1rem; }
+  .sheet-card:not(:has(.sheet-thumb-img)) .sheet-card-info { padding: 0; }
   .sheet-num-badge { min-width: 28px; height: 28px; background: var(--brush-teal); color: white; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
   .sheet-card-title { font-size: 0.88rem; font-weight: 600; color: var(--ink); margin-bottom: 0.2rem; }
   .sheet-card-desc { font-size: 0.76rem; color: var(--ink-soft); line-height: 1.5; margin-bottom: 0.3rem; }
@@ -208,24 +213,54 @@
         </p>
         <div class="sheet-cards">
           <div class="sheet-card">
-            <div class="sheet-num-badge">01</div>
+            <div class="sheet-thumb-img" style="background-image:url('img/sheet_suinline.jpg')"></div>
             <div class="sheet-card-info">
+              <div class="sheet-num-badge">01</div>
+              <div class="sheet-card-title">수인선의 추억</div>
+              <div class="sheet-card-desc">인하대역과 숭의역을 잇던 수인선 열차 내부. 파란 좌석과 나무 천장이 담긴 따뜻한 풍경</div>
+              <div class="sheet-card-tags"># 수인선 # 인하대역 # 숭의역 # 추억</div>
+            </div>
+          </div>
+          <div class="sheet-card">
+            <div class="sheet-thumb-img" style="background-image:url('img/sheet_subong.jpg')"></div>
+            <div class="sheet-card-info">
+              <div class="sheet-num-badge">02</div>
+              <div class="sheet-card-title">수봉산</div>
+              <div class="sheet-card-desc">태극기와 기념탑이 서 있는 수봉공원. 짙은 녹음 사이로 펼쳐지는 여름날의 산책길</div>
+              <div class="sheet-card-tags"># 수봉산 # 수봉공원 # 기념탑</div>
+            </div>
+          </div>
+          <div class="sheet-card">
+            <div class="sheet-thumb-img" style="background-image:url('img/sheet_subong_fall.jpg')"></div>
+            <div class="sheet-card-info">
+              <div class="sheet-num-badge">03</div>
+              <div class="sheet-card-title">수봉산 폭포</div>
+              <div class="sheet-card-desc">암벽 사이로 쏟아지는 폭포와 둥근 연못. 나무 계단과 울창한 숲이 어우러진 여름 풍경</div>
+              <div class="sheet-card-tags"># 수봉산 # 폭포 # 자연</div>
+            </div>
+          </div>
+          <div class="sheet-card">
+            <div class="sheet-thumb-img" style="background-image:url('img/sheet_sosuno.jpg')"></div>
+            <div class="sheet-card-info">
+              <div class="sheet-num-badge">04</div>
               <div class="sheet-card-title">소서노의 정원</div>
               <div class="sheet-card-desc">미추홀을 세운 소서노 설화를 담은 봄 정원 풍경</div>
               <div class="sheet-card-tags"># 소서노 # 역사 # 봄</div>
             </div>
           </div>
           <div class="sheet-card">
-            <div class="sheet-num-badge">02</div>
+            <div class="sheet-thumb-img" style="background-image:url('img/sheet_munhak.jpg')"></div>
             <div class="sheet-card-info">
+              <div class="sheet-num-badge">05</div>
               <div class="sheet-card-title">문학산의 봄</div>
               <div class="sheet-card-desc">진달래와 벚꽃, 기와지붕과 갯벌이 이어지는 산 아래 풍경</div>
               <div class="sheet-card-tags"># 문학산 # 사계 # 일상</div>
             </div>
           </div>
           <div class="sheet-card">
-            <div class="sheet-num-badge">03</div>
+            <div class="sheet-thumb-img" style="background-image:url('img/sheet_tidal.jpg')"></div>
             <div class="sheet-card-info">
+              <div class="sheet-num-badge">06</div>
               <div class="sheet-card-title">갯벌의 작은 우주</div>
               <div class="sheet-card-desc">농게와 조개, 아이의 시선으로 본 갯벌 생태 풍경</div>
               <div class="sheet-card-tags"># 갯벌 # 생태 # 체험</div>

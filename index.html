@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>헬로미추 수채화 컬러링 체험</title>
+<meta name="description" content="헬로미추 수채화 컬러링키트 체험 신청 - 2026 두레미마켓">
+
+<!-- 리다이렉트: FORM_URL 자리에 실제 Google Form URL을 넣으세요 -->
+<script>
+  const FORM_URL = "GOOGLE_FORM_URL_HERE";
+  // Google Form URL이 설정되면 아래 주석을 제거하세요:
+  // window.location.replace(FORM_URL);
+</script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #2a2118;
+    --ink-soft: #5a4e42;
+    --paper: #faf7f2;
+    --brush-teal: #4a9c8c;
+    --brush-amber: #d4843a;
+    --brush-blue: #5a7eb8;
+    --brush-pink: #c87878;
+    --wash: rgba(74, 156, 140, 0.08);
+  }
+
+  html, body {
+    min-height: 100%;
+    background: var(--paper);
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--ink);
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100svh;
+    padding: 2rem 1.5rem;
+    overflow-x: hidden;
+  }
+
+  /* 수채화 배경 번짐 효과 */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 15% 20%, rgba(74,156,140,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 85% 80%, rgba(90,126,184,0.10) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 50% at 70% 15%, rgba(212,132,58,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 수채화 번짐 SVG 배경 */
+  .splash {
+    width: 220px;
+    height: 220px;
+    margin: 0 auto 0.5rem;
+    animation: floatUp 3s ease-in-out infinite;
+  }
+
+  @keyframes floatUp {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-6px); }
+  }
+
+  .brand {
+    font-family: 'Nanum Myeongjo', serif;
+    font-weight: 800;
+    font-size: 2.2rem;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    line-height: 1.1;
+    margin-bottom: 0.3rem;
+  }
+
+  .brand span {
+    color: var(--brush-teal);
+  }
+
+  .tagline {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    margin-bottom: 2rem;
+  }
+
+  .event-info {
+    background: white;
+    border: 1px solid rgba(74,156,140,0.2);
+    border-radius: 16px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1.8rem;
+    text-align: left;
+  }
+
+  .event-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .event-row:last-child { margin-bottom: 0; }
+
+  .event-label {
+    font-size: 0.72rem;
+    color: var(--brush-teal);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    min-width: 40px;
+  }
+
+  .event-value {
+    font-size: 0.9rem;
+    color: var(--ink);
+    font-weight: 400;
+  }
+
+  .cta-btn {
+    display: block;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: var(--brush-teal);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.15s ease, background 0.15s ease;
+    margin-bottom: 0.8rem;
+  }
+
+  .cta-btn:hover {
+    background: #3d8a7a;
+    transform: translateY(-1px);
+  }
+
+  .cta-btn:active { transform: translateY(0); }
+
+  .note {
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+
+  .note strong { color: var(--brush-amber); font-weight: 500; }
+
+  .footer {
+    margin-top: 2.5rem;
+    font-size: 0.7rem;
+    color: rgba(90,78,66,0.45);
+    letter-spacing: 0.04em;
+  }
+
+  /* 준비 중 배지 (Form URL 미설정 시) */
+  .dev-badge {
+    display: inline-block;
+    margin-bottom: 1rem;
+    padding: 0.3rem 0.8rem;
+    background: rgba(212,132,58,0.12);
+    border: 1px solid rgba(212,132,58,0.3);
+    border-radius: 20px;
+    font-size: 0.72rem;
+    color: var(--brush-amber);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- 수채화 번짐 일러스트 -->
+  <svg class="splash" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- 배경 번짐 -->
+    <ellipse cx="110" cy="115" rx="88" ry="78" fill="rgba(74,156,140,0.10)"/>
+    <ellipse cx="118" cy="108" rx="65" ry="58" fill="rgba(74,156,140,0.08)"/>
+    <!-- 팔레트 원형 -->
+    <circle cx="110" cy="110" r="64" fill="white" stroke="rgba(74,156,140,0.2)" stroke-width="1"/>
+    <!-- 물감 동그라미들 -->
+    <circle cx="84"  cy="84"  r="14" fill="rgba(200,120,120,0.55)"/>
+    <circle cx="136" cy="84"  r="14" fill="rgba(90,126,184,0.55)"/>
+    <circle cx="110" cy="72"  r="11" fill="rgba(212,132,58,0.55)"/>
+    <circle cx="84"  cy="136" r="14" fill="rgba(74,156,140,0.55)"/>
+    <circle cx="136" cy="136" r="14" fill="rgba(140,100,180,0.50)"/>
+    <circle cx="110" cy="148" r="11" fill="rgba(90,180,120,0.50)"/>
+    <!-- 중앙 붓 구멍 -->
+    <circle cx="110" cy="110" r="18" fill="rgba(250,247,242,0.95)" stroke="rgba(74,156,140,0.15)" stroke-width="1"/>
+    <!-- 붓 -->
+    <rect x="107" y="76" width="6" height="52" rx="3" fill="rgba(90,78,66,0.6)"/>
+    <ellipse cx="110" cy="128" rx="5" ry="8" fill="rgba(74,156,140,0.8)"/>
+    <!-- 수채화 번짐 점들 -->
+    <circle cx="58"  cy="88"  r="3.5" fill="rgba(74,156,140,0.25)"/>
+    <circle cx="162" cy="92"  r="2.5" fill="rgba(90,126,184,0.25)"/>
+    <circle cx="68"  cy="148" r="3"   fill="rgba(212,132,58,0.2)"/>
+    <circle cx="155" cy="150" r="4"   fill="rgba(200,120,120,0.2)"/>
+    <circle cx="110" cy="52"  r="2.5" fill="rgba(74,156,140,0.2)"/>
+  </svg>
+
+  <h1 class="brand">헬로<span>미추</span></h1>
+  <p class="tagline">수채화 컬러링키트 체험 · 2026 두레미마켓</p>
+
+  <div class="dev-badge" id="devBadge">예약 신청 바로가기</div>
+
+  <div class="event-info">
+    <div class="event-row">
+      <span class="event-label">일시</span>
+      <span class="event-value">2026. 5. 30(토) — 31(일)</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">장소</span>
+      <span class="event-value">안녕인사동 1층 잔디광장</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">운영</span>
+      <span class="event-value">11:00 — 19:40 · 20분 단위 예약</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">참가</span>
+      <span class="event-value">무료 체험 · 선착순 예약</span>
+    </div>
+  </div>
+
+  <a class="cta-btn" id="ctaBtn" href="GOOGLE_FORM_URL_HERE">
+    체험 예약하기
+  </a>
+
+  <p class="note">
+    예약 후 <strong>SMS로 확인 메시지</strong>가 발송됩니다.<br>
+    체험 후 설문 참여 시 <strong>뽑기 이벤트</strong> 참여 가능해요.
+  </p>
+
+</div>
+
+<p class="footer">주식회사 헬로미추 · Hello Michu 2026</p>
+
+<script>
+  // FORM_URL 설정 확인 및 자동 리다이렉트
+  const REDIRECT_TO = "GOOGLE_FORM_URL_HERE";
+
+  if (REDIRECT_TO && REDIRECT_TO !== "GOOGLE_FORM_URL_HERE") {
+    document.getElementById('devBadge').style.display = 'none';
+    document.getElementById('ctaBtn').href = REDIRECT_TO;
+    // 자동 리다이렉트 원하면 아래 줄 주석 해제:
+    // setTimeout(() => window.location.replace(REDIRECT_TO), 800);
+  }
+</script>
+
+</body>
+</html>

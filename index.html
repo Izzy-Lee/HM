@@ -167,14 +167,26 @@ const ENTRY_DATE = 'entry.1189251627';
 const ENTRY_TIME = 'entry.520138299';
 const FORM_BASE  = 'https://docs.google.com/forms/d/e/1FAIpQLScvLvrppxjadzctUW2HHTvMI789QlbTPXDV4CxZ7gB2tiAKZw/viewform';
 
-// ── Form URL 생성 (날짜+시간 파라미터 포함) ──
+// 날짜 변환 (표시용 → Form 옵션값)
+function toFormDate(date) {
+  return date.replace(' (토)', ' 토').replace(' (일)', ' 일');
+}
+
+// 시간 변환 (HH:MM → HH:MM ~ HH:MM)
+function toFormTime(time) {
+  const [h, m] = time.split(':').map(Number);
+  const endMin = m + 20 >= 60 ? m + 20 - 60 : m + 20;
+  const endHour = m + 20 >= 60 ? h + 1 : h;
+  const end = `${String(endHour).padStart(2,'0')}:${String(endMin).padStart(2,'0')}`;
+  return `${time} ~ ${end}`;
+}
+
+// Form URL 생성
 function makeFormUrl(date, time) {
   const params = new URLSearchParams();
-  params.set(ENTRY_DATE, date);
-  params.set(ENTRY_TIME, time);
-  const url = FORM_BASE + '?' + params.toString();
-  console.log('Form URL:', url); // 디버그용
-  return url;
+  params.set(ENTRY_DATE, toFormDate(date));
+  params.set(ENTRY_TIME, toFormTime(time));
+  return FORM_BASE + '?' + params.toString();
 }
 
 // ── 이탈 복원: 마지막 선택 저장/불러오기 ──

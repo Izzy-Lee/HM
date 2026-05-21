@@ -169,9 +169,12 @@ const FORM_BASE  = 'https://docs.google.com/forms/d/e/1FAIpQLScvLvrppxjadzctUW2H
 
 // ── Form URL 생성 (날짜+시간 파라미터 포함) ──
 function makeFormUrl(date, time) {
-  const d = encodeURIComponent(date);
-  const t = encodeURIComponent(time);
-  return `${FORM_BASE}?usp=pp_url&${ENTRY_DATE}=${d}&${ENTRY_TIME}=${t}`;
+  const params = new URLSearchParams();
+  params.set(ENTRY_DATE, date);
+  params.set(ENTRY_TIME, time);
+  const url = FORM_BASE + '?' + params.toString();
+  console.log('Form URL:', url); // 디버그용
+  return url;
 }
 
 // ── 이탈 복원: 마지막 선택 저장/불러오기 ──
@@ -317,6 +320,8 @@ function renderStatus(slots) {
 
 // ── API 호출 ──
 function loadStatus() {
+  document.getElementById('statusContent').innerHTML =
+    '<div class="status-loading">잔여 현황을 불러오는 중...<br><span style="font-size:0.75rem;opacity:0.6;">잠시 기다려주세요</span></div>';
   fetch(API_URL)
     .then(r => r.json())
     .then(data => renderStatus(data.slots))

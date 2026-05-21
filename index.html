@@ -8,327 +8,107 @@
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap');
-
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --ink: #2a2118;
-    --ink-soft: #5a4e42;
-    --paper: #faf7f2;
-    --brush-teal: #4a9c8c;
-    --brush-amber: #d4843a;
-    --brush-blue: #5a7eb8;
-    --brush-pink: #c87878;
+    --ink: #2a2118; --ink-soft: #5a4e42; --paper: #faf7f2;
+    --brush-teal: #4a9c8c; --brush-amber: #d4843a;
+    --brush-blue: #5a7eb8; --brush-pink: #c87878;
   }
-
-  html, body {
-    min-height: 100%;
-    background: var(--paper);
-    font-family: 'Noto Sans KR', sans-serif;
-    color: var(--ink);
-  }
-
-  body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100svh;
-    padding: 2rem 1.5rem 3rem;
-    overflow-x: hidden;
-  }
-
+  html, body { min-height: 100%; background: var(--paper); font-family: 'Noto Sans KR', sans-serif; color: var(--ink); }
+  body { display: flex; flex-direction: column; align-items: center; min-height: 100svh; padding: 2rem 1.5rem 3rem; overflow-x: hidden; }
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
+    content: ''; position: fixed; inset: 0;
     background:
       radial-gradient(ellipse 60% 40% at 15% 20%, rgba(74,156,140,0.12) 0%, transparent 70%),
       radial-gradient(ellipse 50% 60% at 85% 80%, rgba(90,126,184,0.10) 0%, transparent 70%),
       radial-gradient(ellipse 40% 50% at 70% 15%, rgba(212,132,58,0.08) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
+    pointer-events: none; z-index: 0;
   }
-
-  .card {
-    position: relative;
-    z-index: 1;
-    max-width: 400px;
-    width: 100%;
-    text-align: center;
-    animation: fadeUp 0.8s ease both;
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .splash {
-    display: block;
-    width: 110px;
-    height: 110px;
-    margin: 0 auto 0.5rem;
-    object-fit: contain;
-    animation: floatUp 3s ease-in-out infinite;
-  }
-
-  @keyframes floatUp {
-    0%, 100% { transform: translateY(0px); }
-    50%       { transform: translateY(-6px); }
-  }
-
+  .card { position: relative; z-index: 1; max-width: 400px; width: 100%; text-align: center; animation: fadeUp 0.8s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .splash { display: block; width: 110px; height: 110px; margin: 0 auto 0.5rem; object-fit: contain; animation: floatUp 3s ease-in-out infinite; }
+  @keyframes floatUp { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
   .brand-wrap { margin-bottom: 0.3rem; }
+  .brand { display: block; width: auto; max-width: 560px; height: 4.8rem; margin: 0 auto; object-fit: contain; }
+  .tagline { font-size: 0.85rem; color: var(--ink-soft); font-weight: 300; letter-spacing: 0.08em; margin-bottom: 1.6rem; }
 
-  .brand {
-    display: block;
-    width: auto;
-    max-width: 560px;
-    height: 4.8rem;
-    margin: 0 auto;
-    object-fit: contain;
-  }
-
-  .tagline {
-    font-size: 0.85rem;
-    color: var(--ink-soft);
-    font-weight: 300;
-    letter-spacing: 0.08em;
-    margin-bottom: 1.6rem;
-  }
-
-  /* ── 탭 ── */
-  .tabs {
-    display: flex;
-    gap: 0.4rem;
-    margin-bottom: 1.4rem;
-    background: white;
-    border: 1px solid rgba(74,156,140,0.2);
-    border-radius: 12px;
-    padding: 0.3rem;
-  }
-
-  .tab-btn {
-    flex: 1;
-    padding: 0.55rem 0;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    background: transparent;
-    color: var(--ink-soft);
-    transition: all 0.2s ease;
-  }
-
-  .tab-btn.active {
-    background: var(--brush-teal);
-    color: white;
-  }
-
+  /* 탭 */
+  .tabs { display: flex; gap: 0.4rem; margin-bottom: 1.4rem; background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 12px; padding: 0.3rem; }
+  .tab-btn { flex: 1; padding: 0.55rem 0; border: none; border-radius: 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; background: transparent; color: var(--ink-soft); transition: all 0.2s ease; }
+  .tab-btn.active { background: var(--brush-teal); color: white; }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
-  /* ── 예약/설문 패널 ── */
-  .event-info {
-    background: white;
-    border: 1px solid rgba(74,156,140,0.2);
-    border-radius: 16px;
-    padding: 1.4rem 1.6rem;
-    margin-bottom: 1.4rem;
-    text-align: left;
-  }
-
-  .event-row {
-    display: flex;
-    align-items: baseline;
-    gap: 0.6rem;
-    margin-bottom: 0.55rem;
-  }
-
+  /* 예약 패널 */
+  .event-info { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 16px; padding: 1.4rem 1.6rem; margin-bottom: 1.4rem; text-align: left; }
+  .event-row { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.55rem; }
   .event-row:last-child { margin-bottom: 0; }
-
-  .event-label {
-    font-size: 0.72rem;
-    color: var(--brush-teal);
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    min-width: 40px;
-  }
-
-  .event-value {
-    font-size: 0.9rem;
-    color: var(--ink);
-    font-weight: 400;
-  }
-
-  .cta-btn {
-    display: block;
-    width: 100%;
-    padding: 1rem 1.5rem;
-    border: none;
-    border-radius: 12px;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 1rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    cursor: pointer;
-    text-decoration: none;
-    transition: transform 0.15s ease, background 0.15s ease;
-    margin-bottom: 0.8rem;
-  }
-
+  .event-label { font-size: 0.72rem; color: var(--brush-teal); font-weight: 500; letter-spacing: 0.06em; min-width: 40px; }
+  .event-value { font-size: 0.9rem; color: var(--ink); font-weight: 400; }
+  .cta-btn { display: block; width: 100%; padding: 1rem 1.5rem; border: none; border-radius: 12px; font-family: 'Noto Sans KR', sans-serif; font-size: 1rem; font-weight: 500; letter-spacing: 0.02em; cursor: pointer; text-decoration: none; transition: transform 0.15s ease, background 0.15s ease; margin-bottom: 0.8rem; }
   .cta-btn:hover { transform: translateY(-1px); }
   .cta-btn:active { transform: translateY(0); }
-
   .cta-btn--reserve { background: #3d8a7a; color: white; }
   .cta-btn--reserve:hover { background: #347a6c; }
   .cta-btn--survey { background: #f5aebc; color: var(--ink); }
   .cta-btn--survey:hover { background: #eca0b0; }
-
-  .note {
-    font-size: 0.75rem;
-    color: var(--ink-soft);
-    line-height: 1.6;
-  }
-
+  .note { font-size: 0.75rem; color: var(--ink-soft); line-height: 1.6; }
   .note strong { color: var(--brush-amber); font-weight: 500; }
 
-  /* ── 현황 패널 ── */
-  .status-panel {
-    text-align: left;
-  }
-
-  .status-date-label {
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: var(--brush-teal);
-    letter-spacing: 0.06em;
-    margin-bottom: 0.6rem;
-    padding-left: 0.2rem;
-  }
-
-  .status-summary {
-    background: white;
-    border: 1px solid rgba(74,156,140,0.2);
-    border-radius: 12px;
-    padding: 0.9rem 1.2rem;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .summary-text {
-    font-size: 0.82rem;
-    color: var(--ink-soft);
-  }
-
-  .summary-num {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--brush-teal);
-  }
-
-  .summary-num span {
-    font-size: 0.8rem;
-    font-weight: 400;
-    color: var(--ink-soft);
-  }
-
-  .slot-list {
-    background: white;
-    border: 1px solid rgba(74,156,140,0.2);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 1.2rem;
-  }
-
-  .slot-row {
-    display: flex;
-    align-items: center;
-    padding: 0.7rem 1.2rem;
-    border-bottom: 1px solid rgba(74,156,140,0.08);
-    transition: background 0.1s;
-  }
-
+  /* 현황 패널 */
+  .status-panel { text-align: left; }
+  .status-date-label { font-size: 0.78rem; font-weight: 500; color: var(--brush-teal); letter-spacing: 0.06em; margin-bottom: 0.6rem; padding-left: 0.2rem; }
+  .status-summary { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 12px; padding: 0.9rem 1.2rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; }
+  .summary-text { font-size: 0.82rem; color: var(--ink-soft); }
+  .summary-num { font-size: 1.3rem; font-weight: 700; color: var(--brush-teal); }
+  .summary-num span { font-size: 0.8rem; font-weight: 400; color: var(--ink-soft); }
+  .slot-list { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 12px; overflow: hidden; margin-bottom: 1.2rem; }
+  .slot-row { display: flex; align-items: center; padding: 0.65rem 1rem; border-bottom: 1px solid rgba(74,156,140,0.08); gap: 0.6rem; }
   .slot-row:last-child { border-bottom: none; }
-
-  .slot-row.past {
-    opacity: 0.35;
-  }
-
-  .slot-time {
-    font-size: 0.92rem;
-    font-weight: 500;
-    color: var(--ink);
-    min-width: 52px;
-  }
-
-  .slot-bar-wrap {
-    flex: 1;
-    height: 6px;
-    background: rgba(74,156,140,0.1);
-    border-radius: 3px;
-    margin: 0 0.8rem;
-    overflow: hidden;
-  }
-
-  .slot-bar {
-    height: 100%;
-    border-radius: 3px;
-    background: var(--brush-teal);
-    transition: width 0.4s ease;
-  }
-
+  .slot-row.past { opacity: 0.35; }
+  .slot-time { font-size: 0.88rem; font-weight: 500; color: var(--ink); min-width: 46px; }
+  .slot-bar-wrap { flex: 1; height: 6px; background: rgba(74,156,140,0.1); border-radius: 3px; overflow: hidden; }
+  .slot-bar { height: 100%; border-radius: 3px; background: var(--brush-teal); transition: width 0.4s ease; }
   .slot-bar.full { background: var(--brush-pink); }
-
-  .slot-remain {
-    font-size: 0.82rem;
-    font-weight: 500;
-    min-width: 48px;
-    text-align: right;
-  }
-
+  .slot-remain { font-size: 0.78rem; font-weight: 500; min-width: 52px; text-align: right; }
   .slot-remain.ok { color: var(--brush-teal); }
   .slot-remain.low { color: var(--brush-amber); }
   .slot-remain.full { color: var(--brush-pink); }
 
-  .status-loading {
-    text-align: center;
-    padding: 2rem;
-    color: var(--ink-soft);
-    font-size: 0.85rem;
+  /* 슬롯 예약 버튼 */
+  .slot-book-btn {
+    padding: 0.28rem 0.65rem;
+    background: var(--brush-teal);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, transform 0.1s;
+    text-decoration: none;
+    display: inline-block;
   }
+  .slot-book-btn:hover { background: #347a6c; transform: translateY(-1px); }
+  .slot-book-btn:active { transform: translateY(0); }
+  .slot-book-btn.disabled { background: rgba(74,156,140,0.2); color: var(--ink-soft); pointer-events: none; }
 
-  .status-updated {
-    font-size: 0.7rem;
-    color: rgba(90,78,66,0.4);
-    text-align: right;
-    margin-top: 0.3rem;
-  }
-
-  .footer {
-    margin-top: 2rem;
-    font-size: 0.7rem;
-    color: rgba(90,78,66,0.45);
-    letter-spacing: 0.04em;
-    text-align: center;
-  }
+  .status-loading { text-align: center; padding: 2rem; color: var(--ink-soft); font-size: 0.85rem; }
+  .status-updated { font-size: 0.7rem; color: rgba(90,78,66,0.4); text-align: right; margin-top: 0.3rem; }
+  .footer { margin-top: 2rem; font-size: 0.7rem; color: rgba(90,78,66,0.45); letter-spacing: 0.04em; text-align: center; }
 </style>
 </head>
 <body>
 
 <div class="card">
-
   <img src="img/logo1.png" class="splash" alt="헬로미추 일러스트">
-
   <h1 class="brand-wrap">
     <img src="img/logo2.png" class="brand" alt="헬로미추">
   </h1>
   <p class="tagline">2026 두레미마켓 수채화 컬러링키트 체험</p>
 
-  <!-- 탭 -->
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('reserve')">예약 · 설문</button>
     <button class="tab-btn" onclick="switchTab('status')">예약 현황</button>
@@ -354,14 +134,12 @@
         <span class="event-value">무료 체험 · 선착순 예약</span>
       </div>
     </div>
-
-    <a class="cta-btn cta-btn--reserve" href="https://forms.gle/m1RxTFzPX1DFLZa99">
+    <a class="cta-btn cta-btn--reserve" href="https://forms.gle/m1RxTFzPX1DFLZa99" target="_blank">
       체험 예약하기
     </a>
-    <a class="cta-btn cta-btn--survey" href="https://forms.gle/6zvFrtLxtGFNfUJ88">
+    <a class="cta-btn cta-btn--survey" href="https://forms.gle/6zvFrtLxtGFNfUJ88" target="_blank">
       설문 참가하기
     </a>
-
     <p class="note">
       예약 후 <strong>SMS로 확인 메시지</strong>가 발송됩니다.<br>
       체험 후 설문 참여 시 <strong>뽑기 이벤트</strong> 참여 가능해요.
@@ -372,18 +150,49 @@
   <div class="tab-panel" id="panel-status">
     <div class="status-panel">
       <div id="statusContent">
-        <div class="status-loading">잔여 현황을 불러오는 중... 잠시만 기다려주세요.</div>
+        <div class="status-loading">잔여 현황을 불러오는 중...</div>
       </div>
       <p class="status-updated" id="updatedAt"></p>
     </div>
   </div>
-
 </div>
 
 <p class="footer">주식회사 헬로미추 · Hello Michu 2026</p>
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
+
+// Form entry ID
+const ENTRY_DATE = 'entry.1189251627';
+const ENTRY_TIME = 'entry.520138299';
+const FORM_BASE  = 'https://docs.google.com/forms/d/e/1FAIpQLScvLvrppxjadzctUW2HHTvMI789QlbTPXDV4CxZ7gB2tiAKZw/viewform';
+
+// ── Form URL 생성 (날짜+시간 파라미터 포함) ──
+function makeFormUrl(date, time) {
+  const d = encodeURIComponent(date);
+  const t = encodeURIComponent(time);
+  return `${FORM_BASE}?usp=pp_url&${ENTRY_DATE}=${d}&${ENTRY_TIME}=${t}`;
+}
+
+// ── 이탈 복원: 마지막 선택 저장/불러오기 ──
+function saveLastSelection(date, time) {
+  try {
+    localStorage.setItem('hm_last_date', date);
+    localStorage.setItem('hm_last_time', time);
+    localStorage.setItem('hm_last_ts', Date.now());
+  } catch(e) {}
+}
+
+function getLastSelection() {
+  try {
+    const ts = parseInt(localStorage.getItem('hm_last_ts') || '0');
+    if (Date.now() - ts > 30 * 60 * 1000) return null; // 30분 지나면 무효
+    const date = localStorage.getItem('hm_last_date');
+    const time = localStorage.getItem('hm_last_time');
+    if (date && time) return { date, time };
+  } catch(e) {}
+  return null;
+}
 
 // ── 탭 전환 ──
 function switchTab(tab) {
@@ -396,99 +205,109 @@ function switchTab(tab) {
 }
 
 // ── 현재 날짜 판단 ──
-function getTodayDateStr() {
+function getActiveDate() {
   const now = new Date();
-  const m = now.getMonth() + 1;
-  const d = now.getDate();
-  const day = now.getDay();
-  const days = ['일','월','화','수','목','금','토'];
-  return `${m}월 ${d}일 (${days[day]})`;
+  const kst = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  const m = kst.getUTCMonth() + 1;
+  const d = kst.getUTCDate();
+  if (m === 5 && d === 30) return '5월 30일 (토)';
+  if (m === 5 && d === 31) return '5월 31일 (일)';
+  if (m < 5 || (m === 5 && d < 30)) return '5월 30일 (토)';
+  return '5월 31일 (일)';
 }
 
-// ── 시간 지났는지 판단 ──
+// ── 시간 지났는지 ──
 function isPast(timeStr) {
   const now = new Date();
   const [h, m] = timeStr.split(':').map(Number);
-  return now.getHours() > h || (now.getHours() === h && now.getMinutes() > m + 20);
+  const nowH = now.getHours();
+  const nowM = now.getMinutes();
+  return nowH > h || (nowH === h && nowM >= m + 20);
+}
+
+// ── 예약 버튼 클릭 ──
+function bookSlot(date, time) {
+  saveLastSelection(date, time);
+  window.open(makeFormUrl(date, time), '_blank');
 }
 
 // ── 현황 렌더링 ──
 function renderStatus(slots) {
-  const today = getTodayDateStr();
+  const activeDate = getActiveDate();
   const eventDates = ['5월 30일 (토)', '5월 31일 (일)'];
 
-  // 행사 기간 이전이면 첫째날, 이후면 마지막날 고정
-  let activeDate = eventDates[0];
-  if (today === eventDates[1]) activeDate = eventDates[1];
-  else if (today !== eventDates[0]) {
-    const now = new Date();
-    const event2 = new Date('2026-05-31');
-    activeDate = now > event2 ? eventDates[1] : eventDates[0];
-  }
-
-  // 날짜별로 분리
   const byDate = {};
   eventDates.forEach(d => { byDate[d] = []; });
-  slots.forEach(s => {
-    if (byDate[s.date]) byDate[s.date].push(s);
-  });
+  slots.forEach(s => { if (byDate[s.date]) byDate[s.date].push(s); });
 
-  let html = '';
-  eventDates.forEach(date => {
-    const isActive = date === activeDate;
-    if (!isActive) return; // 오늘 날짜만 표시
+  // 이탈 복원 배너
+  const last = getLastSelection();
+  let resumeHtml = '';
+  if (last) {
+    resumeHtml = `
+      <div style="background:rgba(74,156,140,0.08);border:1px solid rgba(74,156,140,0.25);border-radius:10px;padding:0.7rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+        <span style="font-size:0.78rem;color:var(--ink-soft);line-height:1.4;">이전에 <strong style="color:var(--brush-teal);">${last.date.replace(' (토)','').replace(' (일)','')} ${last.time}</strong> 선택하셨어요</span>
+        <a href="${makeFormUrl(last.date, last.time)}" target="_blank"
+           onclick="saveLastSelection('${last.date}','${last.time}')"
+           style="padding:0.3rem 0.7rem;background:var(--brush-teal);color:white;border-radius:6px;font-size:0.72rem;font-weight:500;text-decoration:none;white-space:nowrap;">
+          이어서 예약
+        </a>
+      </div>`;
+  }
 
-    const dateSlots = byDate[date] || [];
-    // 지나간 슬롯 제외
-    const futureSlots = dateSlots.filter(s => !isPast(s.time));
-    const totalRemain = futureSlots.reduce((a, s) => a + Math.max(0, s.remain), 0);
+  let html = resumeHtml;
 
-    html += `<p class="status-date-label">${date}</p>`;
+  const dateSlots = byDate[activeDate] || [];
+  const futureSlots = dateSlots.filter(s => !isPast(s.time));
+  const totalRemain = futureSlots.reduce((a, s) => a + Math.max(0, s.remain), 0);
+
+  html += `<p class="status-date-label">${activeDate}</p>`;
+  html += `
+    <div class="status-summary">
+      <span class="summary-text">현재 예약 가능</span>
+      <span class="summary-num">${totalRemain}<span>석 남음</span></span>
+    </div>
+  `;
+  html += `<div class="slot-list">`;
+
+  dateSlots.forEach(s => {
+    const past = isPast(s.time);
+    const remain = Math.max(0, s.remain);
+    const pct = Math.round((3 - remain) / 3 * 100);
+    const isFull = remain === 0 && !past;
+
+    let remainLabel, remainClass;
+    if (past) {
+      remainLabel = '종료 · 0석';
+      remainClass = 'full';
+    } else if (isFull) {
+      remainLabel = '마감';
+      remainClass = 'full';
+    } else if (remain === 1) {
+      remainLabel = '1석 남음';
+      remainClass = 'low';
+    } else {
+      remainLabel = `${remain}석 남음`;
+      remainClass = 'ok';
+    }
+
+    const canBook = !past && !isFull;
+    const btnHtml = canBook
+      ? `<button class="slot-book-btn" onclick="bookSlot('${activeDate}','${s.time}')">예약하기</button>`
+      : `<span class="slot-book-btn disabled">${past ? '종료' : '마감'}</span>`;
+
     html += `
-      <div class="status-summary">
-        <span class="summary-text">현재 예약 가능</span>
-        <span class="summary-num">${totalRemain}<span>석 남음</span></span>
-      </div>
-    `;
-    html += `<div class="slot-list">`;
-
-    dateSlots.forEach(s => {
-      const past = isPast(s.time);
-      const remain = Math.max(0, s.remain);
-      const pct = Math.round((3 - remain) / 3 * 100);
-      const isFull = remain === 0;
-      const isLow = remain === 1;
-
-      let remainLabel = '';
-      let remainClass = '';
-      if (past) {
-        remainLabel = '종료';
-        remainClass = '';
-      } else if (isFull) {
-        remainLabel = '종료 · 0석';
-        remainClass = 'full';
-      } else if (isLow) {
-        remainLabel = '1석 남음';
-        remainClass = 'low';
-      } else {
-        remainLabel = `${remain}석 남음`;
-        remainClass = 'ok';
-      }
-
-      html += `
-        <div class="slot-row ${past ? 'past' : ''}">
-          <span class="slot-time">${s.time}</span>
-          <div class="slot-bar-wrap">
-            <div class="slot-bar ${(isFull || past) ? 'full' : ''}" style="width:${past ? 100 : pct}%"></div>
-          </div>
-          <span class="slot-remain ${remainClass}">${remainLabel}</span>
+      <div class="slot-row ${past ? 'past' : ''}">
+        <span class="slot-time">${s.time}</span>
+        <div class="slot-bar-wrap">
+          <div class="slot-bar ${(isFull || past) ? 'full' : ''}" style="width:${past ? 100 : pct}%"></div>
         </div>
-      `;
-    });
-
-    html += `</div>`;
+        <span class="slot-remain ${remainClass}">${remainLabel}</span>
+        ${btnHtml}
+      </div>`;
   });
 
+  html += `</div>`;
   document.getElementById('statusContent').innerHTML = html;
 
   const now = new Date();
@@ -506,6 +325,15 @@ function loadStatus() {
         '<div class="status-loading">현황을 불러오지 못했어요.<br>잠시 후 다시 시도해주세요.</div>';
     });
 }
+
+// ── 페이지 로드 시 이탈 복원 확인 ──
+window.addEventListener('load', () => {
+  const last = getLastSelection();
+  if (last) {
+    // 현황 탭에 뱃지 표시
+    document.querySelector('.tab-btn:last-child').textContent = '예약 현황 •';
+  }
+});
 </script>
 
 </body>

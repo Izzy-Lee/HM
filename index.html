@@ -6,13 +6,6 @@
 <title>헬로미추 수채화 컬러링 체험</title>
 <meta name="description" content="헬로미추 수채화 컬러링키트 체험 신청 - 2026 두레미마켓">
 
-<!-- 리다이렉트: FORM_URL 자리에 실제 Google Form URL을 넣으세요 -->
-<script>
-  const FORM_URL = "https://forms.gle/m1RxTFzPX1DFLZa99";
-  // Google Form URL이 설정되면 아래 주석을 제거하세요:
-  // window.location.replace(FORM_URL);
-</script>
-
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap');
 
@@ -26,7 +19,6 @@
     --brush-amber: #d4843a;
     --brush-blue: #5a7eb8;
     --brush-pink: #c87878;
-    --wash: rgba(74, 156, 140, 0.08);
   }
 
   html, body {
@@ -40,13 +32,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     min-height: 100svh;
-    padding: 2rem 1.5rem;
+    padding: 2rem 1.5rem 3rem;
     overflow-x: hidden;
   }
 
-  /* 수채화 배경 번짐 효과 */
   body::before {
     content: '';
     position: fixed;
@@ -73,11 +63,12 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* 수채화 번짐 SVG 배경 */
   .splash {
-    width: 220px;
-    height: 220px;
+    display: block;
+    width: 110px;
+    height: 110px;
     margin: 0 auto 0.5rem;
+    object-fit: contain;
     animation: floatUp 3s ease-in-out infinite;
   }
 
@@ -86,18 +77,15 @@
     50%       { transform: translateY(-6px); }
   }
 
-  .brand {
-    font-family: 'Nanum Myeongjo', serif;
-    font-weight: 800;
-    font-size: 2.2rem;
-    letter-spacing: -0.02em;
-    color: var(--ink);
-    line-height: 1.1;
-    margin-bottom: 0.3rem;
-  }
+  .brand-wrap { margin-bottom: 0.3rem; }
 
-  .brand span {
-    color: var(--brush-teal);
+  .brand {
+    display: block;
+    width: auto;
+    max-width: 560px;
+    height: 4.8rem;
+    margin: 0 auto;
+    object-fit: contain;
   }
 
   .tagline {
@@ -105,15 +93,49 @@
     color: var(--ink-soft);
     font-weight: 300;
     letter-spacing: 0.08em;
-    margin-bottom: 2rem;
+    margin-bottom: 1.6rem;
   }
 
+  /* ── 탭 ── */
+  .tabs {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.4rem;
+    background: white;
+    border: 1px solid rgba(74,156,140,0.2);
+    border-radius: 12px;
+    padding: 0.3rem;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 0.55rem 0;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    color: var(--ink-soft);
+    transition: all 0.2s ease;
+  }
+
+  .tab-btn.active {
+    background: var(--brush-teal);
+    color: white;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── 예약/설문 패널 ── */
   .event-info {
     background: white;
     border: 1px solid rgba(74,156,140,0.2);
     border-radius: 16px;
     padding: 1.4rem 1.6rem;
-    margin-bottom: 1.8rem;
+    margin-bottom: 1.4rem;
     text-align: left;
   }
 
@@ -144,8 +166,6 @@
     display: block;
     width: 100%;
     padding: 1rem 1.5rem;
-    background: var(--brush-teal);
-    color: white;
     border: none;
     border-radius: 12px;
     font-family: 'Noto Sans KR', sans-serif;
@@ -158,12 +178,13 @@
     margin-bottom: 0.8rem;
   }
 
-  .cta-btn:hover {
-    background: #3d8a7a;
-    transform: translateY(-1px);
-  }
-
+  .cta-btn:hover { transform: translateY(-1px); }
   .cta-btn:active { transform: translateY(0); }
+
+  .cta-btn--reserve { background: #3d8a7a; color: white; }
+  .cta-btn--reserve:hover { background: #347a6c; }
+  .cta-btn--survey { background: #f5aebc; color: var(--ink); }
+  .cta-btn--survey:hover { background: #eca0b0; }
 
   .note {
     font-size: 0.75rem;
@@ -173,24 +194,126 @@
 
   .note strong { color: var(--brush-amber); font-weight: 500; }
 
+  /* ── 현황 패널 ── */
+  .status-panel {
+    text-align: left;
+  }
+
+  .status-date-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--brush-teal);
+    letter-spacing: 0.06em;
+    margin-bottom: 0.6rem;
+    padding-left: 0.2rem;
+  }
+
+  .status-summary {
+    background: white;
+    border: 1px solid rgba(74,156,140,0.2);
+    border-radius: 12px;
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .summary-text {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+
+  .summary-num {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--brush-teal);
+  }
+
+  .summary-num span {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--ink-soft);
+  }
+
+  .slot-list {
+    background: white;
+    border: 1px solid rgba(74,156,140,0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.2rem;
+  }
+
+  .slot-row {
+    display: flex;
+    align-items: center;
+    padding: 0.7rem 1.2rem;
+    border-bottom: 1px solid rgba(74,156,140,0.08);
+    transition: background 0.1s;
+  }
+
+  .slot-row:last-child { border-bottom: none; }
+
+  .slot-row.past {
+    opacity: 0.35;
+  }
+
+  .slot-time {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--ink);
+    min-width: 52px;
+  }
+
+  .slot-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: rgba(74,156,140,0.1);
+    border-radius: 3px;
+    margin: 0 0.8rem;
+    overflow: hidden;
+  }
+
+  .slot-bar {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--brush-teal);
+    transition: width 0.4s ease;
+  }
+
+  .slot-bar.full { background: var(--brush-pink); }
+
+  .slot-remain {
+    font-size: 0.82rem;
+    font-weight: 500;
+    min-width: 48px;
+    text-align: right;
+  }
+
+  .slot-remain.ok { color: var(--brush-teal); }
+  .slot-remain.low { color: var(--brush-amber); }
+  .slot-remain.full { color: var(--brush-pink); }
+
+  .status-loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+  }
+
+  .status-updated {
+    font-size: 0.7rem;
+    color: rgba(90,78,66,0.4);
+    text-align: right;
+    margin-top: 0.3rem;
+  }
+
   .footer {
-    margin-top: 2.5rem;
+    margin-top: 2rem;
     font-size: 0.7rem;
     color: rgba(90,78,66,0.45);
     letter-spacing: 0.04em;
-  }
-
-  /* 준비 중 배지 (Form URL 미설정 시) */
-  .dev-badge {
-    display: inline-block;
-    margin-bottom: 1rem;
-    padding: 0.3rem 0.8rem;
-    background: rgba(212,132,58,0.12);
-    border: 1px solid rgba(212,132,58,0.3);
-    border-radius: 20px;
-    font-size: 0.72rem;
-    color: var(--brush-amber);
-    letter-spacing: 0.04em;
+    text-align: center;
   }
 </style>
 </head>
@@ -198,80 +321,191 @@
 
 <div class="card">
 
-  <!-- 수채화 번짐 일러스트 -->
-  <svg class="splash" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <!-- 배경 번짐 -->
-    <ellipse cx="110" cy="115" rx="88" ry="78" fill="rgba(74,156,140,0.10)"/>
-    <ellipse cx="118" cy="108" rx="65" ry="58" fill="rgba(74,156,140,0.08)"/>
-    <!-- 팔레트 원형 -->
-    <circle cx="110" cy="110" r="64" fill="white" stroke="rgba(74,156,140,0.2)" stroke-width="1"/>
-    <!-- 물감 동그라미들 -->
-    <circle cx="84"  cy="84"  r="14" fill="rgba(200,120,120,0.55)"/>
-    <circle cx="136" cy="84"  r="14" fill="rgba(90,126,184,0.55)"/>
-    <circle cx="110" cy="72"  r="11" fill="rgba(212,132,58,0.55)"/>
-    <circle cx="84"  cy="136" r="14" fill="rgba(74,156,140,0.55)"/>
-    <circle cx="136" cy="136" r="14" fill="rgba(140,100,180,0.50)"/>
-    <circle cx="110" cy="148" r="11" fill="rgba(90,180,120,0.50)"/>
-    <!-- 중앙 붓 구멍 -->
-    <circle cx="110" cy="110" r="18" fill="rgba(250,247,242,0.95)" stroke="rgba(74,156,140,0.15)" stroke-width="1"/>
-    <!-- 붓 -->
-    <rect x="107" y="76" width="6" height="52" rx="3" fill="rgba(90,78,66,0.6)"/>
-    <ellipse cx="110" cy="128" rx="5" ry="8" fill="rgba(74,156,140,0.8)"/>
-    <!-- 수채화 번짐 점들 -->
-    <circle cx="58"  cy="88"  r="3.5" fill="rgba(74,156,140,0.25)"/>
-    <circle cx="162" cy="92"  r="2.5" fill="rgba(90,126,184,0.25)"/>
-    <circle cx="68"  cy="148" r="3"   fill="rgba(212,132,58,0.2)"/>
-    <circle cx="155" cy="150" r="4"   fill="rgba(200,120,120,0.2)"/>
-    <circle cx="110" cy="52"  r="2.5" fill="rgba(74,156,140,0.2)"/>
-  </svg>
+  <img src="img/logo1.png" class="splash" alt="헬로미추 일러스트">
 
-  <h1 class="brand">헬로<span>미추</span></h1>
-  <p class="tagline">수채화 컬러링키트 체험 · 2026 두레미마켓</p>
+  <h1 class="brand-wrap">
+    <img src="img/logo2.png" class="brand" alt="헬로미추">
+  </h1>
+  <p class="tagline">2026 두레미마켓 수채화 컬러링키트 체험</p>
 
-  <div class="dev-badge" id="devBadge">예약 신청 바로가기</div>
-
-  <div class="event-info">
-    <div class="event-row">
-      <span class="event-label">일시</span>
-      <span class="event-value">2026. 5. 30(토) — 31(일)</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">장소</span>
-      <span class="event-value">안녕인사동 1층 잔디광장</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">운영</span>
-      <span class="event-value">11:00 — 19:40 · 20분 단위 예약</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">참가</span>
-      <span class="event-value">무료 체험 · 선착순 예약</span>
-    </div>
+  <!-- 탭 -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('reserve')">예약 · 설문</button>
+    <button class="tab-btn" onclick="switchTab('status')">예약 현황</button>
   </div>
 
-  <a class="cta-btn" id="ctaBtn" href="https://forms.gle/m1RxTFzPX1DFLZa99">
-    체험 예약하기
-  </a>
+  <!-- 예약/설문 패널 -->
+  <div class="tab-panel active" id="panel-reserve">
+    <div class="event-info">
+      <div class="event-row">
+        <span class="event-label">일시</span>
+        <span class="event-value">2026. 5. 30(토) — 31(일)</span>
+      </div>
+      <div class="event-row">
+        <span class="event-label">장소</span>
+        <span class="event-value">안녕인사동 1층 잔디광장</span>
+      </div>
+      <div class="event-row">
+        <span class="event-label">운영</span>
+        <span class="event-value">11:00 — 19:40 · 20분 단위 예약</span>
+      </div>
+      <div class="event-row">
+        <span class="event-label">참가</span>
+        <span class="event-value">무료 체험 · 선착순 예약</span>
+      </div>
+    </div>
 
-  <p class="note">
-    예약 후 <strong>SMS로 확인 메시지</strong>가 발송됩니다.<br>
-    체험 후 설문 참여 시 <strong>뽑기 이벤트</strong> 참여 가능해요.
-  </p>
+    <a class="cta-btn cta-btn--reserve" href="https://forms.gle/m1RxTFzPX1DFLZa99">
+      체험 예약하기
+    </a>
+    <a class="cta-btn cta-btn--survey" href="https://forms.gle/6zvFrtLxtGFNfUJ88">
+      설문 참가하기
+    </a>
+
+    <p class="note">
+      예약 후 <strong>SMS로 확인 메시지</strong>가 발송됩니다.<br>
+      체험 후 설문 참여 시 <strong>뽑기 이벤트</strong> 참여 가능해요.
+    </p>
+  </div>
+
+  <!-- 현황 패널 -->
+  <div class="tab-panel" id="panel-status">
+    <div class="status-panel">
+      <div id="statusContent">
+        <div class="status-loading">잔여 현황을 불러오는 중...</div>
+      </div>
+      <p class="status-updated" id="updatedAt"></p>
+    </div>
+  </div>
 
 </div>
 
 <p class="footer">주식회사 헬로미추 · Hello Michu 2026</p>
 
 <script>
-  // FORM_URL 설정 확인 및 자동 리다이렉트
-  const REDIRECT_TO = "https://forms.gle/m1RxTFzPX1DFLZa99";
+const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
 
-  if (REDIRECT_TO && REDIRECT_TO !== "https://forms.gle/m1RxTFzPX1DFLZa99") {
-    document.getElementById('devBadge').style.display = 'none';
-    document.getElementById('ctaBtn').href = REDIRECT_TO;
-    // 자동 리다이렉트 원하면 아래 줄 주석 해제:
-    // setTimeout(() => window.location.replace(REDIRECT_TO), 800);
+// ── 탭 전환 ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0) === (tab === 'reserve'));
+  });
+  document.getElementById('panel-reserve').classList.toggle('active', tab === 'reserve');
+  document.getElementById('panel-status').classList.toggle('active', tab === 'status');
+  if (tab === 'status') loadStatus();
+}
+
+// ── 현재 날짜 판단 ──
+function getTodayDateStr() {
+  const now = new Date();
+  const m = now.getMonth() + 1;
+  const d = now.getDate();
+  const day = now.getDay();
+  const days = ['일','월','화','수','목','금','토'];
+  return `${m}월 ${d}일 (${days[day]})`;
+}
+
+// ── 시간 지났는지 판단 ──
+function isPast(timeStr) {
+  const now = new Date();
+  const [h, m] = timeStr.split(':').map(Number);
+  return now.getHours() > h || (now.getHours() === h && now.getMinutes() > m + 20);
+}
+
+// ── 현황 렌더링 ──
+function renderStatus(slots) {
+  const today = getTodayDateStr();
+  const eventDates = ['5월 30일 (토)', '5월 31일 (일)'];
+
+  // 행사 기간 이전이면 첫째날, 이후면 마지막날 고정
+  let activeDate = eventDates[0];
+  if (today === eventDates[1]) activeDate = eventDates[1];
+  else if (today !== eventDates[0]) {
+    const now = new Date();
+    const event2 = new Date('2026-05-31');
+    activeDate = now > event2 ? eventDates[1] : eventDates[0];
   }
+
+  // 날짜별로 분리
+  const byDate = {};
+  eventDates.forEach(d => { byDate[d] = []; });
+  slots.forEach(s => {
+    if (byDate[s.date]) byDate[s.date].push(s);
+  });
+
+  let html = '';
+  eventDates.forEach(date => {
+    const isActive = date === activeDate;
+    if (!isActive) return; // 오늘 날짜만 표시
+
+    const dateSlots = byDate[date] || [];
+    // 지나간 슬롯 제외
+    const futureSlots = dateSlots.filter(s => !isPast(s.time));
+    const totalRemain = futureSlots.reduce((a, s) => a + Math.max(0, s.remain), 0);
+
+    html += `<p class="status-date-label">${date}</p>`;
+    html += `
+      <div class="status-summary">
+        <span class="summary-text">현재 예약 가능</span>
+        <span class="summary-num">${totalRemain}<span>석 남음</span></span>
+      </div>
+    `;
+    html += `<div class="slot-list">`;
+
+    dateSlots.forEach(s => {
+      const past = isPast(s.time);
+      const remain = Math.max(0, s.remain);
+      const pct = Math.round((3 - remain) / 3 * 100);
+      const isFull = remain === 0;
+      const isLow = remain === 1;
+
+      let remainLabel = '';
+      let remainClass = '';
+      if (past) {
+        remainLabel = '종료';
+        remainClass = '';
+      } else if (isFull) {
+        remainLabel = '마감';
+        remainClass = 'full';
+      } else if (isLow) {
+        remainLabel = '1석 남음';
+        remainClass = 'low';
+      } else {
+        remainLabel = `${remain}석 남음`;
+        remainClass = 'ok';
+      }
+
+      html += `
+        <div class="slot-row ${past ? 'past' : ''}">
+          <span class="slot-time">${s.time}</span>
+          <div class="slot-bar-wrap">
+            <div class="slot-bar ${isFull ? 'full' : ''}" style="width:${past ? 100 : pct}%"></div>
+          </div>
+          <span class="slot-remain ${remainClass}">${remainLabel}</span>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+  });
+
+  document.getElementById('statusContent').innerHTML = html;
+
+  const now = new Date();
+  document.getElementById('updatedAt').textContent =
+    `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')} 기준`;
+}
+
+// ── API 호출 ──
+function loadStatus() {
+  fetch(API_URL)
+    .then(r => r.json())
+    .then(data => renderStatus(data.slots))
+    .catch(() => {
+      document.getElementById('statusContent').innerHTML =
+        '<div class="status-loading">현황을 불러오지 못했어요.<br>잠시 후 다시 시도해주세요.</div>';
+    });
+}
 </script>
 
 </body>

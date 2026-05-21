@@ -465,7 +465,7 @@ function renderStatus(slots) {
         remainLabel = '종료';
         remainClass = '';
       } else if (isFull) {
-        remainLabel = '마감';
+        remainLabel = '종료 · 0석';
         remainClass = 'full';
       } else if (isLow) {
         remainLabel = '1석 남음';
@@ -479,7 +479,7 @@ function renderStatus(slots) {
         <div class="slot-row ${past ? 'past' : ''}">
           <span class="slot-time">${s.time}</span>
           <div class="slot-bar-wrap">
-            <div class="slot-bar ${isFull ? 'full' : ''}" style="width:${past ? 100 : pct}%"></div>
+            <div class="slot-bar ${(isFull || past) ? 'full' : ''}" style="width:${past ? 100 : pct}%"></div>
           </div>
           <span class="slot-remain ${remainClass}">${remainLabel}</span>
         </div>

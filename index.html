@@ -110,7 +110,7 @@
 
   .sheet-cards { display: flex; flex-direction: column; gap: 0.6rem; }
   .sheet-card { display: flex; flex-direction: column; gap: 0; background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 10px; overflow: hidden; }
-  .sheet-thumb-img { width: 100%; height: 240px; background-size: cover; background-position: center; background-color: rgba(74,156,140,0.08); }
+  .sheet-thumb-img { width: 100%; height: 120px; background-size: cover; background-position: center; background-color: rgba(74,156,140,0.08); }
   .sheet-card .sheet-card-info { padding: 0.7rem 0.9rem 0.8rem; display: flex; flex-direction: column; gap: 0.2rem; }
   .sheet-card .sheet-num-badge { align-self: flex-start; margin-bottom: 0.2rem; }
   .sheet-card:not(:has(.sheet-thumb-img)) { flex-direction: row; align-items: flex-start; padding: 0.8rem 1rem; }
@@ -198,8 +198,8 @@
         <h2 class="about-title">헬로미추란?</h2>
         <div class="about-line"></div>
         <p class="about-body">
-          <strong>헬로미추(Hello Michu)</strong>는 인천 미추홀구를 기반으로 한 관광두레 주민사업체입니다.<br>
-          미추홀구의 역사와 자연을 수채화 컬러링으로 담아냅니다.<br>
+          <strong>헬로미추(Hello Michu)</strong>는 인천 미추홀구를 기반으로 한 관광두레 주민사업체입니다.<br><br>
+          미추홀구의 역사와 자연 — 소서노 이야기, 문학산, 갯벌, 골목 풍경 — 을 수채화 컬러링으로 담아냅니다.<br><br>
           느리게 색을 입히는 시간 속에서 이 도시의 결을 새롭게 발견하는 경험을 제안합니다.
         </p>
       </div>
@@ -209,15 +209,15 @@
         <h2 class="about-title">수채화 컬러링 키트</h2>
         <div class="about-line"></div>
         <p class="about-body" style="margin-bottom:0.8rem;">
-          미추홀을 담은 도안과 수채화다이어리로 구성된 체험 키트입니다.
+          미추홀의 세 장면을 담은 도안과 아트에이블 수채물감으로 구성된 체험 키트입니다.
         </p>
         <div class="sheet-cards">
           <div class="sheet-card">
             <div class="sheet-thumb-img" style="background-image:url('img/sheet_suinline.jpg')"></div>
             <div class="sheet-card-info">
               <div class="sheet-num-badge">01</div>
-              <div class="sheet-card-title">철도의 추억</div>
-              <div class="sheet-card-desc">인하대역과 숭의역을 잇던 수인선 열차 내부. 지금은 주인공원이 된 철도의 파란 좌석과 나무 천장이 담긴 따뜻한 풍경</div>
+              <div class="sheet-card-title">수인선의 추억</div>
+              <div class="sheet-card-desc">인하대역과 숭의역을 잇던 수인선 열차 내부. 파란 좌석과 나무 천장이 담긴 따뜻한 풍경</div>
               <div class="sheet-card-tags"># 수인선 # 인하대역 # 숭의역 # 추억</div>
             </div>
           </div>
@@ -226,7 +226,7 @@
             <div class="sheet-card-info">
               <div class="sheet-num-badge">02</div>
               <div class="sheet-card-title">수봉산</div>
-              <div class="sheet-card-desc">짙은 녹음 사이로 펼쳐지는 여름날의 수봉공원 산책길</div>
+              <div class="sheet-card-desc">태극기와 기념탑이 서 있는 수봉공원. 짙은 녹음 사이로 펼쳐지는 여름날의 산책길</div>
               <div class="sheet-card-tags"># 수봉산 # 수봉공원 # 기념탑</div>
             </div>
           </div>
@@ -235,7 +235,7 @@
             <div class="sheet-card-info">
               <div class="sheet-num-badge">03</div>
               <div class="sheet-card-title">수봉산 폭포</div>
-              <div class="sheet-card-desc">인공 암벽 사이로 쏟아지는 폭포와 둥근 연못. 나무 계단과 울창한 숲이 어우러진 여름 풍경</div>
+              <div class="sheet-card-desc">암벽 사이로 쏟아지는 폭포와 둥근 연못. 나무 계단과 울창한 숲이 어우러진 여름 풍경</div>
               <div class="sheet-card-tags"># 수봉산 # 폭포 # 자연</div>
             </div>
           </div>
@@ -253,7 +253,7 @@
             <div class="sheet-card-info">
               <div class="sheet-num-badge">05</div>
               <div class="sheet-card-title">문학산의 봄</div>
-              <div class="sheet-card-desc">진달래와 벚꽃, 마을과 갯벌이 이어지는 산 아래 풍경</div>
+              <div class="sheet-card-desc">진달래와 벚꽃, 기와지붕과 갯벌이 이어지는 산 아래 풍경</div>
               <div class="sheet-card-tags"># 문학산 # 사계 # 일상</div>
             </div>
           </div>
@@ -262,7 +262,7 @@
             <div class="sheet-card-info">
               <div class="sheet-num-badge">06</div>
               <div class="sheet-card-title">갯벌의 작은 우주</div>
-              <div class="sheet-card-desc">농게와 조개, 지금은 사라진 아이의 시선으로 본 미추홀의 갯벌 생태 풍경</div>
+              <div class="sheet-card-desc">농게와 조개, 아이의 시선으로 본 갯벌 생태 풍경</div>
               <div class="sheet-card-tags"># 갯벌 # 생태 # 체험</div>
             </div>
           </div>
@@ -277,22 +277,23 @@
           <div class="exp-icon-wrap">🎨</div>
           <div>
             <div class="exp-item-title">현장 컬러링 체험</div>
-            <div class="exp-item-desc">수채화 도구와 도안 제공 중 한 장 선택<br><span style="color:var(--brush-teal);font-weight:500;">소요시간 약 20분 · 무료</span></div>
+            <div class="exp-item-desc">수채화 도구와 도안 제공 · 세 장 중 한 장 선택<br><span style="color:var(--brush-teal);font-weight:500;">소요시간 약 20분 · 무료</span></div>
           </div>
         </div>
         <div class="exp-item">
           <div class="exp-icon-wrap">🛍️</div>
           <div>
-            <div class="exp-item-title">컬러링 키트 주문 판매</div>
-            <div class="exp-item-desc">도안 세트 + 아트에이블 수채화다이어리 세트<br><span style="color:var(--ink-soft);">부스에 문의하세요.</span></div>
+            <div class="exp-item-title">컬러링 키트 판매</div>
+            <div class="exp-item-desc">도안 세트 + 아트에이블 수채물감 세트<br><span style="color:var(--ink-soft);">부스 가격표 참조</span></div>
           </div>
         </div>
       </div>
 
       <div class="about-contact">
-        <div class="contact-row"><span class="contact-key">Instagram</span><span>@arternallyy</span></div>
-        <!--<div class="contact-row"><span class="contact-key">Blog</span><span>blog.naver.com/hellomichu</span></div>-->
-        <div class="contact-row"><span class="contact-key">문의</span><span>nswer@naver.com</span></div>
+        <div class="contact-row"><span class="contact-key">Instagram</span><span>@hellomichu</span></div>
+        <div class="contact-row"><span class="contact-key">Blog</span><span>blog.naver.com/hellomichu</span></div>
+        <div class="contact-row"><span class="contact-key">문의</span><span>hello@michu.kr</span></div>
+        <div class="contact-row" style="margin-top:0.3rem;"><span class="contact-key">주최</span><span>미추홀구 관광두레 주민사업체</span></div>
       </div>
 
     </div>
@@ -355,25 +356,48 @@ function switchTab(tab) {
   if (tab === 'status') loadStatus();
 }
 
-// ── 현재 날짜 판단 ──
+// ── KST 현재 시각 (한국 서버 기준) ──
+let _kstNow = null;
+async function fetchKST() {
+  try {
+    const r = await fetch('https://worldtimeapi.org/api/timezone/Asia/Seoul');
+    const d = await r.json();
+    _kstNow = new Date(d.datetime);
+  } catch(e) {
+    // API 실패 시 브라우저 시간 + UTC 오프셋으로 폴백
+    const now = new Date();
+    _kstNow = new Date(now.getTime() + (9 * 60 * 60 * 1000 - now.getTimezoneOffset() * 60 * 1000));
+  }
+}
+
+function getKST() {
+  if (!_kstNow) {
+    const now = new Date();
+    return new Date(now.getTime() + (9 * 60 * 60 * 1000 - now.getTimezoneOffset() * 60 * 1000));
+  }
+  // 캐시된 시각 + 경과 시간 보정
+  return _kstNow;
+}
+
+// ── 현재 날짜 판단 (KST 기준) ──
 function getActiveDate() {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 * 60 * 1000));
-  const m = kst.getUTCMonth() + 1;
-  const d = kst.getUTCDate();
+  const kst = getKST();
+  const m = kst.getMonth() + 1;
+  const d = kst.getDate();
   if (m === 5 && d === 30) return '5월 30일 (토)';
   if (m === 5 && d === 31) return '5월 31일 (일)';
   if (m < 5 || (m === 5 && d < 30)) return '5월 30일 (토)';
   return '5월 31일 (일)';
 }
 
-// ── 시간 지났는지 ──
+// ── 시간 지났는지 (슬롯 시작 시각이 되면 즉시 종료) ──
 function isPast(timeStr) {
-  const now = new Date();
+  const kst = getKST();
   const [h, m] = timeStr.split(':').map(Number);
-  const nowH = now.getHours();
-  const nowM = now.getMinutes();
-  return nowH > h || (nowH === h && nowM >= m + 20);
+  const nowH = kst.getHours();
+  const nowM = kst.getMinutes();
+  // 슬롯 시작 시각이 되는 순간부터 종료
+  return nowH > h || (nowH === h && nowM >= m);
 }
 
 
@@ -460,9 +484,12 @@ function renderStatus(slots) {
 function loadStatus() {
   document.getElementById('statusContent').innerHTML =
     '<div class="status-loading">잔여 현황을 불러오는 중...<br><span style="font-size:0.75rem;opacity:0.6;">잠시 기다려주세요</span></div>';
-  fetch(API_URL)
-    .then(r => r.json())
-    .then(data => renderStatus(data.slots))
+  // KST 시간 + 슬롯 데이터 동시 fetch
+  Promise.all([
+    fetchKST(),
+    fetch(API_URL).then(r => r.json())
+  ])
+    .then(([_, data]) => renderStatus(data.slots))
     .catch(() => {
       document.getElementById('statusContent').innerHTML =
         '<div class="status-loading">현황을 불러오지 못했어요.<br>잠시 후 다시 시도해주세요.</div>';

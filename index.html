@@ -198,8 +198,8 @@
         <h2 class="about-title">헬로미추란?</h2>
         <div class="about-line"></div>
         <p class="about-body">
-          <strong>헬로미추(Hello Michu)</strong>는 인천 미추홀구를 기반으로 한 관광두레 주민사업체입니다.<br>
-          미추홀구의 역사와 자연 — 소서노 이야기, 문학산, 갯벌, 골목 풍경 — 을 수채화 컬러링으로 담아냅니다.<br>
+          <strong>헬로미추(Hello Michu)</strong>는 인천 미추홀구를 기반으로 한 관광두레 주민사업체입니다.<br><br>
+          미추홀구의 역사와 자연 — 소서노 이야기, 문학산, 갯벌, 골목 풍경 — 을 수채화 컬러링으로 담아냅니다.<br><br>
           느리게 색을 입히는 시간 속에서 이 도시의 결을 새롭게 발견하는 경험을 제안합니다.
         </p>
       </div>
@@ -356,27 +356,15 @@ function switchTab(tab) {
   if (tab === 'status') loadStatus();
 }
 
-// ── KST 현재 시각 (한국 서버 기준) ──
-let _kstNow = null;
-async function fetchKST() {
-  try {
-    const r = await fetch('https://worldtimeapi.org/api/timezone/Asia/Seoul');
-    const d = await r.json();
-    _kstNow = new Date(d.datetime);
-  } catch(e) {
-    // API 실패 시 브라우저 시간 + UTC 오프셋으로 폴백
-    const now = new Date();
-    _kstNow = new Date(now.getTime() + (9 * 60 * 60 * 1000 - now.getTimezoneOffset() * 60 * 1000));
-  }
-}
+// ── KST 현재 시각 ──
+// 브라우저 UTC 시간 + 9시간 = KST (항상 정확)
+function fetchKST() { return Promise.resolve(); }
 
 function getKST() {
-  if (!_kstNow) {
-    const now = new Date();
-    return new Date(now.getTime() + (9 * 60 * 60 * 1000 - now.getTimezoneOffset() * 60 * 1000));
-  }
-  // 캐시된 시각 + 경과 시간 보정
-  return _kstNow;
+  const now = new Date();
+  // UTC 기준으로 KST(+9) 계산
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
+  return new Date(utc + (9 * 60 * 60 * 1000));
 }
 
 // ── 현재 날짜 판단 (KST 기준) ──
@@ -475,9 +463,9 @@ function renderStatus(slots) {
   html += `</div>`;
   document.getElementById('statusContent').innerHTML = html;
 
-  const now = new Date();
+  const kst = getKST();
   document.getElementById('updatedAt').textContent =
-    `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')} 기준`;
+    `${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} 기준 (KST)`;
 }
 
 // ── API 호출 ──

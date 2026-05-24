@@ -232,13 +232,9 @@
   <!-- 현황 패널 -->
   <div class="tab-panel" id="panel-status">
     <div class="status-panel">
-      <div id="statusContent">
-        <div class="status-loading">잔여 현황을 불러오는 중...<br><span style="font-size:0.75rem;opacity:0.6;">잠시 기다려주세요</span></div>
-      </div>
-      <p class="status-updated" id="updatedAt"></p>
 
-      <!-- 도안 재고 현황 -->
-      <div class="stock-section" style="margin-top:1.2rem;">
+      <!-- 도안 재고 현황 — 상단 배치 -->
+      <div class="stock-section" style="margin-bottom:1.2rem;">
         <div class="stock-section-title">📋 도안별 신청 가능 현황</div>
         <div id="stockList">
           <div class="status-loading" style="padding:1rem;">불러오는 중...</div>
@@ -248,6 +244,12 @@
           * 예약 후 원하는 도안을 선택하시거나, 현장에서 잔여 수량 중 선택 가능합니다.
         </p>
       </div>
+
+      <!-- 슬롯 현황 — 하단 배치 -->
+      <div id="statusContent">
+        <div class="status-loading">잔여 현황을 불러오는 중...<br><span style="font-size:0.75rem;opacity:0.6;">잠시 기다려주세요</span></div>
+      </div>
+      <p class="status-updated" id="updatedAt"></p>
     </div>
   </div>
 

@@ -309,6 +309,7 @@
 
 </div>
 
+<p class="status-updated" id="globalUpdatedAt" style="text-align:center;margin-top:1.2rem;"></p>
 <p class="footer">주식회사 헬로미추 · Hello Michu 2026</p>
 
 <script>
@@ -517,8 +518,10 @@ function renderStatus(slots) {
   document.getElementById('statusContent').innerHTML = html;
 
   const kst = getKST();
-  document.getElementById('updatedAt').textContent =
-    `${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} 기준 (KST)`;
+  const timeStr = `${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} 기준 (KST)`;
+  document.getElementById('updatedAt').textContent = timeStr;
+  const g = document.getElementById('globalUpdatedAt');
+  if (g) g.textContent = timeStr;
 }
 
 // ── API에서 도안 재고 맵 생성 ──
@@ -570,6 +573,10 @@ function loadStatus() {
 
 window.addEventListener('load', () => {
   loadAllData();
+  // 페이지 로드 시 하단 시각 표시
+  const kst = getKST();
+  const g = document.getElementById('globalUpdatedAt');
+  if (g) g.textContent = `${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} 기준 (KST)`;
   const last = getLastSelection();
   if (last) {
     document.querySelector('.tab-btn:nth-child(2)').textContent = '예약 현황 •';

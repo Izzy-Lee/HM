@@ -266,6 +266,7 @@
 
 </div>
 
+<p class="status-updated" id="globalUpdatedAt" style="text-align:center;margin-top:1.2rem;"></p>
 <p class="footer">Hello Michu Co., Ltd. · 헬로미추 2026</p>
 
 <script>
@@ -435,8 +436,10 @@ function renderStatus(slots) {
   document.getElementById('statusContent').innerHTML = html;
 
   const kst = getKST();
-  document.getElementById('updatedAt').textContent =
-    `Updated at ${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} KST`;
+  const timeStr = `Updated at ${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} KST`;
+  document.getElementById('updatedAt').textContent = timeStr;
+  const g = document.getElementById('globalUpdatedAt');
+  if (g) g.textContent = timeStr;
 }
 
 function buildStockMap(sheetStockArr) {
@@ -483,6 +486,9 @@ function loadStatus() {
 
 window.addEventListener('load', () => {
   loadAllData();
+  const kst = getKST();
+  const g = document.getElementById('globalUpdatedAt');
+  if (g) g.textContent = `Updated at ${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} KST`;
 });
 </script>
 

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hello Michu – Watercolor Coloring Experience</title>
+<meta name="description" content="Hello Michu watercolor coloring kit experience – 2026 Dure Mi Market">
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #2a2118; --ink-soft: #5a4e42; --paper: #faf7f2;
+    --brush-teal: #4a9c8c; --brush-amber: #d4843a;
+    --brush-blue: #5a7eb8; --brush-pink: #c87878;
+  }
+  html, body { min-height: 100%; background: var(--paper); font-family: 'Noto Sans KR', sans-serif; color: var(--ink); }
+  body { display: flex; flex-direction: column; align-items: center; min-height: 100svh; padding: 2rem 1.5rem 3rem; overflow-x: hidden; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 15% 20%, rgba(74,156,140,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 85% 80%, rgba(90,126,184,0.10) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 50% at 70% 15%, rgba(212,132,58,0.08) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  .card { position: relative; z-index: 1; max-width: 400px; width: 100%; text-align: center; animation: fadeUp 0.8s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .splash { display: block; width: 110px; height: 110px; margin: 0 auto 0.5rem; object-fit: contain; animation: floatUp 3s ease-in-out infinite; }
+  @keyframes floatUp { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
+  .brand-wrap { margin-bottom: 0.3rem; }
+  .brand { display: block; width: auto; max-width: 560px; height: 4.8rem; margin: 0 auto; object-fit: contain; }
+  .tagline { font-size: 0.85rem; color: var(--ink-soft); font-weight: 300; letter-spacing: 0.04em; margin-bottom: 0.8rem; }
+
+  /* 언어 전환 */
+  .lang-switch-wrap { margin-bottom: 1.4rem; display: flex; justify-content: center; }
+  .lang-switch-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.42rem 1.1rem;
+    border: 1.5px solid var(--brush-teal);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--brush-teal);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+  .lang-switch-btn:hover { background: var(--brush-teal); color: white; }
+
+  /* 탭 */
+  .tabs { display: flex; gap: 0.4rem; margin-bottom: 1.4rem; background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 12px; padding: 0.3rem; }
+  .tab-btn { flex: 1; padding: 0.55rem 0; border: none; border-radius: 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; font-weight: 500; cursor: pointer; background: transparent; color: var(--ink-soft); transition: all 0.2s ease; }
+  .tab-btn.active { background: var(--brush-teal); color: white; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* 이벤트 정보 */
+  .event-info { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 16px; padding: 1.4rem 1.6rem; margin-bottom: 1.4rem; text-align: left; }
+  .event-row { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.55rem; }
+  .event-row:last-child { margin-bottom: 0; }
+  .event-label { font-size: 0.72rem; color: var(--brush-teal); font-weight: 500; letter-spacing: 0.06em; min-width: 52px; }
+  .event-value { font-size: 0.87rem; color: var(--ink); font-weight: 400; line-height: 1.4; }
+  .cta-btn { display: block; width: 100%; padding: 1rem 1.5rem; border: none; border-radius: 12px; font-family: 'Noto Sans KR', sans-serif; font-size: 1rem; font-weight: 500; letter-spacing: 0.02em; cursor: pointer; text-decoration: none; transition: transform 0.15s ease, background 0.15s ease; margin-bottom: 0.8rem; }
+  .cta-btn:hover { transform: translateY(-1px); }
+  .cta-btn--reserve { background: #3d8a7a; color: white; }
+  .cta-btn--reserve:hover { background: #347a6c; }
+  .cta-btn--survey { background: #f5aebc; color: var(--ink); }
+  .cta-btn--survey:hover { background: #eca0b0; }
+  .note { font-size: 0.75rem; color: var(--ink-soft); line-height: 1.7; }
+  .note strong { color: var(--brush-amber); font-weight: 500; }
+
+  /* 도안 재고 섹션 */
+  .stock-section { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 16px; padding: 1.2rem 1.4rem; margin-bottom: 1.2rem; text-align: left; }
+  .stock-section-title { font-size: 0.72rem; color: var(--brush-teal); font-weight: 600; letter-spacing: 0.08em; margin-bottom: 0.9rem; }
+  .stock-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(74,156,140,0.07); }
+  .stock-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .stock-num { min-width: 22px; height: 22px; background: var(--brush-teal); color: white; border-radius: 4px; font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .stock-num.out { background: rgba(74,156,140,0.2); color: var(--ink-soft); }
+  .stock-name { font-size: 0.82rem; color: var(--ink); font-weight: 500; flex: 1; }
+  .stock-badge { font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+  .stock-badge.available { background: rgba(74,156,140,0.12); color: var(--brush-teal); }
+  .stock-badge.low { background: rgba(212,132,58,0.12); color: var(--brush-amber); }
+  .stock-badge.soldout { background: rgba(200,120,120,0.12); color: var(--brush-pink); }
+  .stock-count { font-size: 0.7rem; color: var(--ink-soft); min-width: 28px; text-align: right; }
+
+  /* 폼 가이드 섹션 */
+  .form-guide { background: rgba(74,156,140,0.05); border: 1px solid rgba(74,156,140,0.2); border-radius: 14px; padding: 1.2rem 1.4rem; margin-bottom: 1.2rem; text-align: left; }
+  .form-guide-title { font-size: 0.72rem; color: var(--brush-teal); font-weight: 700; letter-spacing: 0.08em; margin-bottom: 1rem; }
+  .form-field { margin-bottom: 0.9rem; padding-bottom: 0.9rem; border-bottom: 1px solid rgba(74,156,140,0.1); }
+  .form-field:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  .form-field-label { font-size: 0.8rem; font-weight: 600; color: var(--ink); margin-bottom: 0.25rem; }
+  .form-field-en { font-size: 0.73rem; color: var(--brush-teal); font-weight: 500; margin-bottom: 0.3rem; }
+  .form-field-desc { font-size: 0.72rem; color: var(--ink-soft); line-height: 1.6; }
+  .form-field-example { font-size: 0.7rem; color: var(--brush-amber); margin-top: 0.2rem; }
+  .form-field-options { font-size: 0.71rem; color: var(--ink-soft); margin-top: 0.3rem; line-height: 1.7; }
+
+  /* about 패널 */
+  .about-panel { text-align: left; }
+  .about-section { margin-bottom: 1.6rem; }
+  .about-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; color: var(--brush-teal); }
+  .about-title { font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-top: 0.3rem; line-height: 1.3; }
+  .about-line { width: 24px; height: 2px; background: var(--brush-teal); margin: 0.5rem 0 0.8rem; border-radius: 1px; }
+  .about-body { font-size: 0.83rem; color: var(--ink-soft); line-height: 1.8; }
+  .about-body strong { color: var(--ink); font-weight: 600; }
+
+  .sheet-cards { display: flex; flex-direction: column; gap: 0.6rem; }
+  .sheet-card { display: flex; flex-direction: column; background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 10px; overflow: hidden; }
+  .sheet-thumb-img { width: 100%; height: 200px; background-size: cover; background-position: center; background-color: rgba(74,156,140,0.08); }
+  .sheet-card-info { padding: 0.7rem 0.9rem 0.8rem; display: flex; flex-direction: column; gap: 0.2rem; }
+  .sheet-num-badge { min-width: 28px; height: 28px; background: var(--brush-teal); color: white; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; align-self: flex-start; margin-bottom: 0.2rem; }
+  .sheet-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.2rem; }
+  .sheet-card-title { font-size: 0.88rem; font-weight: 600; color: var(--ink); }
+  .sheet-card-title-en { font-size: 0.72rem; color: var(--ink-soft); }
+  .sheet-card-desc { font-size: 0.76rem; color: var(--ink-soft); line-height: 1.5; margin-bottom: 0.3rem; }
+  .sheet-card-tags { font-size: 0.68rem; color: var(--brush-teal); }
+  .sheet-stock-badge { font-size: 0.68rem; font-weight: 600; padding: 0.18rem 0.5rem; border-radius: 8px; white-space: nowrap; flex-shrink: 0; }
+  .sheet-stock-badge.available { background: rgba(74,156,140,0.12); color: var(--brush-teal); }
+  .sheet-stock-badge.low { background: rgba(212,132,58,0.12); color: var(--brush-amber); }
+  .sheet-stock-badge.soldout { background: rgba(200,120,120,0.12); color: var(--brush-pink); }
+
+  .exp-item { display: flex; gap: 0.8rem; align-items: flex-start; margin-bottom: 0.9rem; }
+  .exp-icon-wrap { font-size: 1.4rem; min-width: 32px; text-align: center; }
+  .exp-item-title { font-size: 0.88rem; font-weight: 600; color: var(--ink); margin-bottom: 0.2rem; }
+  .exp-item-desc { font-size: 0.76rem; color: var(--ink-soft); line-height: 1.6; }
+
+  .about-contact { background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 10px; padding: 0.9rem 1rem; }
+  .contact-row { display: flex; gap: 0.8rem; font-size: 0.78rem; color: var(--ink-soft); margin-bottom: 0.4rem; }
+  .contact-row:last-child { margin-bottom: 0; }
+  .contact-key { min-width: 64px; font-weight: 500; color: var(--brush-teal); }
+  .footer { margin-top: 2rem; font-size: 0.7rem; color: rgba(90,78,66,0.45); letter-spacing: 0.04em; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <img src="img/logo1.png" class="splash" alt="Hello Michu illustration">
+  <h1 class="brand-wrap">
+    <img src="img/logo2.png" class="brand" alt="Hello Michu">
+  </h1>
+  <p class="tagline">2026 Dure Mi Market · Watercolor Coloring Kit Experience</p>
+
+  <!-- 언어 전환 -->
+  <div class="lang-switch-wrap">
+    <a href="index.html" class="lang-switch-btn">
+      <span>🌐</span>
+      한국어로 보기
+    </a>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('reserve')">Book & Survey</button>
+    <button class="tab-btn" onclick="switchTab('status')">Availability</button>
+    <button class="tab-btn" onclick="switchTab('about')">About</button>
+  </div>
+
+  <!-- Book / Survey panel -->
+  <div class="tab-panel active" id="panel-reserve">
+    <div class="event-info">
+      <div class="event-row">
+        <span class="event-label">DATE</span>
+        <span class="event-value">Sat May 30 — Sun May 31, 2026</span>
+      </div>
+      <div class="event-row">
+        <span class="event-label">VENUE</span>
+        <span class="event-value">Annyeong Insadong 1F Lawn Plaza, Seoul</span>
+      </div>
+      <div class="event-row">
+        <span class="event-label">HOURS</span>
+        <span class="event-value">11:00 – 19:40 · 20-min time slots</span>
+      </div>
+      <div class="event-row">
+        <span class="event-label">ENTRY</span>
+        <span class="event-value">Free · First-come, first-served reservation</span>
+      </div>
+    </div>
+
+    <!-- 도안 재고 현황 -->
+    <div class="stock-section">
+      <div class="stock-section-title">📋 COLORING SHEET AVAILABILITY</div>
+      <div id="stockList"></div>
+      <p style="font-size:0.68rem;color:var(--ink-soft);margin-top:0.8rem;line-height:1.6;">
+        * Stock may change depending on on-site conditions.<br>
+        * You may choose your preferred sheet when registering, or select from remaining stock on the day.
+      </p>
+    </div>
+
+    <a class="cta-btn cta-btn--reserve" href="https://forms.gle/m1RxTFzPX1DFLZa99" target="_blank">
+      Book Your Session →
+    </a>
+    <a class="cta-btn cta-btn--survey" href="https://forms.gle/6zvFrtLxtGFNfUJ88" target="_blank">
+      Take the Survey
+    </a>
+    <p class="note">
+      An <strong>SMS confirmation</strong> will be sent after booking.<br>
+      Complete the survey after your session to enter our <strong>lucky draw</strong> event!
+    </p>
+  </div>
+
+  <!-- Availability panel -->
+  <div class="tab-panel" id="panel-status">
+    <div class="status-panel" style="text-align:left;">
+      <div id="statusContent">
+        <div class="status-loading">Loading availability…<br><span style="font-size:0.75rem;opacity:0.6;">Please wait a moment</span></div>
+      </div>
+      <p class="status-updated" id="updatedAt"></p>
+    </div>
+  </div>
+
+  <!-- About panel -->
+  <div class="tab-panel" id="panel-about">
+    <div class="about-panel">
+
+      <div class="about-section">
+        <span class="about-label">ABOUT</span>
+        <h2 class="about-title">What is Hello Michu?</h2>
+        <div class="about-line"></div>
+        <p class="about-body">
+          <strong>Hello Michu (헬로미추)</strong> is a community-run tourism business based in Michuhol-gu, Incheon.<br>
+          We translate the history and nature of Michuhol — the legend of Soseono, Munhak Mountain, tidal flats, and neighborhood streetscapes — into watercolor coloring experiences.<br>
+          We invite you to slow down, pick up a brush, and rediscover this city one colour at a time.
+        </p>
+      </div>
+
+      <div class="about-section">
+        <span class="about-label">COLORING KIT</span>
+        <h2 class="about-title">Watercolor Coloring Kit</h2>
+        <div class="about-line"></div>
+        <p class="about-body" style="margin-bottom:0.8rem;">
+          Each kit includes one Michuhol-themed illustration and Artable watercolor paints.
+        </p>
+        <div class="sheet-cards" id="aboutSheetCards"></div>
+      </div>
+
+      <div class="about-section">
+        <span class="about-label">EXPERIENCE</span>
+        <h2 class="about-title">At Dure Mi Market</h2>
+        <div class="about-line"></div>
+        <div class="exp-item">
+          <div class="exp-icon-wrap">🎨</div>
+          <div>
+            <div class="exp-item-title">On-site Coloring Session</div>
+            <div class="exp-item-desc">All materials provided · Choose one of seven sheets<br><span style="color:var(--brush-teal);font-weight:500;">Approx. 20 min · Free of charge</span></div>
+          </div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-icon-wrap">🛍️</div>
+          <div>
+            <div class="exp-item-title">Coloring Kit Sales</div>
+            <div class="exp-item-desc">Illustration set + Artable watercolor paint set<br><span style="color:var(--ink-soft);">See booth price list</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-contact">
+        <div class="contact-row"><span class="contact-key">Instagram</span><span>@arternallyy</span></div>
+        <div class="contact-row"><span class="contact-key">Email</span><span>nswer@naver.com</span></div>
+        <div class="contact-row" style="margin-top:0.3rem;"><span class="contact-key">Organiser</span><span>Michuhol-gu Tourism Dure Community Business</span></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<p class="footer">Hello Michu Co., Ltd. · 헬로미추 2026</p>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
+const ENTRY_DATE = 'entry.1189251627';
+const ENTRY_TIME = 'entry.520138299';
+const FORM_BASE  = 'https://docs.google.com/forms/d/e/1FAIpQLScvLvrppxjadzctUW2HHTvMI789QlbTPXDV4CxZ7gB2tiAKZw/viewform';
+
+const SHEETS_META = [
+  { num:'01', key:'01 수봉산',     name:'Subong Mountain',  nameKo:'수봉산',     img:'img/sheet_subong.jpg',      descEn:'Subong Park with the national flag and memorial tower — a summer walk through dense greenery.',        tags:'# Subong Mountain # Park # Memorial' },
+  { num:'02', key:'02 주인공원',   name:'Juingong Park',    nameKo:'주인공원',   img:'img/sheet_suinline.jpg',    descEn:'Interior of the old Suin Line train connecting Inha University and Sungui stations — blue seats and warm wooden ceilings.', tags:'# Suin Line # Retro # Train' },
+  { num:'03', key:'03 소서노',     name:'Soseono',          nameKo:'소서노',     img:'img/sheet_sosuno.jpg',      descEn:'A spring garden scene inspired by the legend of Soseono, founder of Michuhol.',                       tags:'# Soseono # History # Spring' },
+  { num:'04', key:'04 문학산',     name:'Munhak Mountain',  nameKo:'문학산',     img:'img/sheet_munhak.jpg',      descEn:'Azaleas, cherry blossoms, tiled roofs and tidal flats stretching below the mountain.',               tags:'# Munhak # Seasons # Everyday' },
+  { num:'05', key:'05 수봉폭포',   name:'Subong Waterfall', nameKo:'수봉폭포',   img:'img/sheet_subong_fall.jpg', descEn:'A summer waterfall tumbling between rocks into a round pond, framed by wooden steps and lush forest.', tags:'# Waterfall # Nature # Summer' },
+  { num:'06', key:'06 갯벌',       name:'Tidal Flat',       nameKo:'갯벌',       img:'img/sheet_tidal.jpg',       descEn:'The tiny universe of the mudflat — crabs, clams, and the wide-eyed wonder of a child.',              tags:'# Tidal Flat # Ecology # Kids' },
+  { num:'07', key:'07 수봉도서관', name:'Subong Library',   nameKo:'수봉도서관', img:'img/sheet_tidal2.jpg',      descEn:"A quiet library nestled in Subong Mountain — Michuhol-gu's beloved reading retreat.",               tags:'# Library # Michuhol # Family' },
+];
+
+const STOCK_FALLBACK = {
+  '01 수봉산':10, '02 주인공원':8, '03 소서노':40,
+  '04 문학산':40, '05 수봉폭포':13, '06 갯벌':40, '07 수봉도서관':7
+};
+
+function getStockInfo(remain) {
+  if (remain === 0)  return { cls:'soldout',   label:'Sold Out',  countLabel:'0' };
+  if (remain <= 10)  return { cls:'low',       label:'Low Stock', countLabel:`${remain} left` };
+  return               { cls:'available', label:'Available',  countLabel:`${remain} left` };
+}
+
+function renderStockList(stockMap) {
+  const el = document.getElementById('stockList');
+  if (!el) return;
+  let html = '';
+  SHEETS_META.forEach(s => {
+    const remain = (stockMap && stockMap[s.key] !== undefined) ? stockMap[s.key] : STOCK_FALLBACK[s.key];
+    const info = getStockInfo(remain);
+    html += `
+      <div class="stock-item">
+        <div class="stock-num ${remain === 0 ? 'out' : ''}">${s.num}</div>
+        <div class="stock-name">${s.name}</div>
+        <span class="stock-badge ${info.cls}">${info.label}</span>
+        <span class="stock-count">${info.countLabel}</span>
+      </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function renderAboutSheets(stockMap) {
+  const el = document.getElementById('aboutSheetCards');
+  if (!el) return;
+  let html = '';
+  SHEETS_META.forEach(s => {
+    const remain = (stockMap && stockMap[s.key] !== undefined) ? stockMap[s.key] : STOCK_FALLBACK[s.key];
+    const info = getStockInfo(remain);
+    html += `
+      <div class="sheet-card">
+        <div class="sheet-thumb-img" style="background-image:url('${s.img}')"></div>
+        <div class="sheet-card-info">
+          <div class="sheet-num-badge">${s.num}</div>
+          <div class="sheet-title-row">
+            <div>
+              <div class="sheet-card-title">${s.name}</div>
+              <div class="sheet-card-title-en">${s.nameKo}</div>
+            </div>
+            <span class="sheet-stock-badge ${info.cls}">${info.label} · ${info.countLabel}</span>
+          </div>
+          <div class="sheet-card-desc">${s.descEn}</div>
+          <div class="sheet-card-tags">${s.tags}</div>
+        </div>
+      </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function makeFormUrl(date, time) {
+  const params = new URLSearchParams();
+  params.set(ENTRY_DATE, date);
+  params.set(ENTRY_TIME, time);
+  return FORM_BASE + '?' + params.toString();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active',
+      (i === 0 && tab === 'reserve') ||
+      (i === 1 && tab === 'status') ||
+      (i === 2 && tab === 'about')
+    );
+  });
+  document.getElementById('panel-reserve').classList.toggle('active', tab === 'reserve');
+  document.getElementById('panel-status').classList.toggle('active', tab === 'status');
+  document.getElementById('panel-about').classList.toggle('active', tab === 'about');
+  if (tab === 'status') loadStatus();
+}
+
+function getKST() {
+  const now = new Date();
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
+  return new Date(utc + (9 * 60 * 60 * 1000));
+}
+
+function getActiveDate() {
+  const kst = getKST();
+  const m = kst.getMonth() + 1;
+  const d = kst.getDate();
+  if (m === 5 && d === 30) return '5월 30일 (토)';
+  if (m === 5 && d === 31) return '5월 31일 (일)';
+  if (m < 5 || (m === 5 && d < 30)) return '5월 30일 (토)';
+  return '5월 31일 (일)';
+}
+
+function getActiveDateLabel() {
+  const d = getActiveDate();
+  return d === '5월 30일 (토)' ? 'Saturday, May 30' : 'Sunday, May 31';
+}
+
+function isPast(timeStr) {
+  const kst = getKST();
+  const [h, m] = timeStr.split(':').map(Number);
+  const nowH = kst.getHours();
+  const nowM = kst.getMinutes();
+  return nowH > h || (nowH === h && nowM >= m);
+}
+
+function renderStatus(slots) {
+  const activeDate = getActiveDate();
+  const eventDates = ['5월 30일 (토)', '5월 31일 (일)'];
+  const byDate = {};
+  eventDates.forEach(d => { byDate[d] = []; });
+  slots.forEach(s => { if (byDate[s.date]) byDate[s.date].push(s); });
+
+  const dateSlots = byDate[activeDate] || [];
+  const futureSlots = dateSlots.filter(s => !isPast(s.time));
+  const totalRemain = futureSlots.reduce((a, s) => a + Math.max(0, s.remain), 0);
+
+  let html = `<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">${getActiveDateLabel()}</p>`;
+  html += `
+    <div style="background:white;border:1px solid rgba(74,156,140,0.2);border-radius:12px;padding:0.9rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:0.82rem;color:var(--ink-soft);">Slots available now</span>
+      <span style="font-size:1.3rem;font-weight:700;color:var(--brush-teal);">${totalRemain}<span style="font-size:0.8rem;font-weight:400;color:var(--ink-soft);"> remaining</span></span>
+    </div>
+  `;
+  html += `<div style="background:white;border:1px solid rgba(74,156,140,0.2);border-radius:12px;overflow:hidden;margin-bottom:1.2rem;">`;
+
+  dateSlots.forEach(s => {
+    const past = isPast(s.time);
+    const remain = Math.max(0, s.remain);
+    const pct = Math.round((3 - remain) / 3 * 100);
+    const isFull = remain === 0 && !past;
+    let label, cls;
+    if (past)         { label = 'Ended'; cls = 'full'; }
+    else if (isFull)  { label = 'Full'; cls = 'full'; }
+    else if (remain === 1) { label = '1 left'; cls = 'low'; }
+    else              { label = `${remain} left`; cls = 'ok'; }
+
+    html += `
+      <div style="display:flex;align-items:center;padding:0.65rem 1rem;border-bottom:1px solid rgba(74,156,140,0.08);gap:0.6rem;${past?'opacity:0.35;':''}">
+        <span style="font-size:0.88rem;font-weight:500;color:var(--ink);min-width:46px;">${s.time}</span>
+        <div style="flex:1;height:6px;background:rgba(74,156,140,0.1);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;border-radius:3px;background:${(isFull||past)?'var(--brush-pink)':'var(--brush-teal)'};width:${past?100:pct}%;transition:width 0.4s ease;"></div>
+        </div>
+        <span style="font-size:0.78rem;font-weight:500;min-width:52px;text-align:right;color:${cls==='ok'?'var(--brush-teal)':cls==='low'?'var(--brush-amber)':'var(--brush-pink)'};">${label}</span>
+      </div>`;
+  });
+
+  html += `</div>`;
+  document.getElementById('statusContent').innerHTML = html;
+
+  const kst = getKST();
+  document.getElementById('updatedAt').textContent =
+    `Updated at ${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} KST`;
+}
+
+function buildStockMap(sheetStockArr) {
+  if (!Array.isArray(sheetStockArr)) return null;
+  const map = {};
+  sheetStockArr.forEach(item => { map[item.key] = item.remain; });
+  return map;
+}
+
+function loadAllData() {
+  renderStockList(null);
+  renderAboutSheets(null);
+  fetch(API_URL)
+    .then(r => r.json())
+    .then(data => {
+      const stockMap = buildStockMap(data.sheetStock);
+      renderStockList(stockMap);
+      renderAboutSheets(stockMap);
+      window._cachedSlots = data.slots;
+    })
+    .catch(() => {});
+}
+
+function loadStatus() {
+  document.getElementById('statusContent').innerHTML =
+    '<div style="text-align:center;padding:2rem;color:var(--ink-soft);font-size:0.85rem;">Loading availability…<br><span style="font-size:0.75rem;opacity:0.6;">Please wait</span></div>';
+  if (window._cachedSlots) {
+    renderStatus(window._cachedSlots);
+    return;
+  }
+  fetch(API_URL).then(r => r.json())
+    .then(data => {
+      window._cachedSlots = data.slots;
+      const stockMap = buildStockMap(data.sheetStock);
+      renderStockList(stockMap);
+      renderAboutSheets(stockMap);
+      renderStatus(data.slots);
+    })
+    .catch(() => {
+      document.getElementById('statusContent').innerHTML =
+        '<div style="text-align:center;padding:2rem;color:var(--ink-soft);font-size:0.85rem;">Could not load availability.<br>Please try again shortly.</div>';
+    });
+}
+
+window.addEventListener('load', () => {
+  loadAllData();
+});
+</script>
+
+</body>
+</html>

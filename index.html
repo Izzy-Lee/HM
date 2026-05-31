@@ -209,7 +209,7 @@
       </div>
       <div class="event-row">
         <span class="event-label">운영</span>
-        <span class="event-value">11:00 — 19:20 · 20분 단위 예약</span>
+        <span class="event-value">11:00 — 19:40 · 20분 단위 예약</span>
       </div>
       <div class="event-row">
         <span class="event-label">참가</span>
@@ -217,11 +217,30 @@
       </div>
     </div>
 
+    <!-- 도안 재고 현황 -->
+    <div class="stock-section">
+      <div class="stock-section-title">📋 도안별 신청 가능 현황</div>
+      <div id="stockList">
+        <!-- JS로 렌더링 -->
+      </div>
+      <p style="font-size:0.68rem;color:var(--ink-soft);margin-top:0.8rem;line-height:1.5;">
+        * 재고는 현장 상황에 따라 변동될 수 있습니다.<br>
+        * 예약 후 원하는 도안을 선택하시거나, 현장에서 잔여 수량 중 선택 가능합니다.
+      </p>
+    </div>
+
     <a class="cta-btn cta-btn--reserve" href="https://forms.gle/m1RxTFzPX1DFLZa99" target="_blank">
       체험 예약하기
     </a>
+    <div style="background:#fff3e0;border:1.5px solid #d4843a;border-radius:10px;padding:0.7rem 1rem;margin-bottom:0.7rem;display:flex;align-items:flex-start;gap:0.5rem;">
+      <span style="font-size:1.1rem;flex-shrink:0;">⚠️</span>
+      <div>
+        <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.82rem;font-weight:700;color:#b85c00;margin-bottom:0.2rem;">예약 후 체험하신 분만 설문 참여해주세요</div>
+        <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.72rem;color:#7a5000;line-height:1.5;">체험 없이 설문만 참여하면 뽑기 혜택을 받으실 수 없어요.<br>반드시 <strong>예약 → 체험 → 설문</strong> 순서로 진행해 주세요.</div>
+      </div>
+    </div>
     <a class="cta-btn cta-btn--survey" href="https://forms.gle/6zvFrtLxtGFNfUJ88" target="_blank">
-      설문 참가하기
+      체험 후 설문 참가하기 🎁
     </a>
     <p class="note">
       예약 후 <strong>SMS로 확인 메시지</strong>가 발송됩니다.<br>
@@ -232,20 +251,6 @@
   <!-- 현황 패널 -->
   <div class="tab-panel" id="panel-status">
     <div class="status-panel">
-
-      <!-- 도안 재고 현황 — 상단 배치 -->
-      <div class="stock-section" style="margin-bottom:1.2rem;">
-        <div class="stock-section-title">📋 도안별 신청 가능 현황</div>
-        <div id="stockList">
-          <div class="status-loading" style="padding:1rem;">불러오는 중...</div>
-        </div>
-        <p style="font-size:0.68rem;color:var(--ink-soft);margin-top:0.8rem;line-height:1.5;">
-          * 재고는 현장 상황에 따라 변동될 수 있습니다.<br>
-          * 예약 후 원하는 도안을 선택하시거나, 현장에서 잔여 수량 중 선택 가능합니다.
-        </p>
-      </div>
-
-      <!-- 슬롯 현황 — 하단 배치 -->
       <div id="statusContent">
         <div class="status-loading">잔여 현황을 불러오는 중...<br><span style="font-size:0.75rem;opacity:0.6;">잠시 기다려주세요</span></div>
       </div>
@@ -311,7 +316,6 @@
 
 </div>
 
-<p class="status-updated" id="globalUpdatedAt" style="text-align:center;margin-top:1.2rem;"></p>
 <p class="footer">주식회사 헬로미추 · Hello Michu 2026</p>
 
 <script>
@@ -321,40 +325,33 @@ const ENTRY_DATE = 'entry.1189251627';
 const ENTRY_TIME = 'entry.520138299';
 const FORM_BASE  = 'https://docs.google.com/forms/d/e/1FAIpQLScvLvrppxjadzctUW2HHTvMI789QlbTPXDV4CxZ7gB2tiAKZw/viewform';
 
-// ── 도안 메타데이터 (이미지/설명) ──
-const SHEETS_META = [
-  { num:'01', key:'01 수봉산',     name:'수봉산',    img:'img/sheet_subong.jpg',      desc:'태극기와 기념탑이 서 있는 수봉공원. 짙은 녹음 사이로 펼쳐지는 여름날의 산책길',        tags:'# 수봉산 # 수봉공원 # 기념탑' },
-  { num:'02', key:'02 주인공원',   name:'주인공원',  img:'img/sheet_suinline.jpg',    desc:'인하대역과 숭의역을 잇던 수인선 열차 내부. 파란 좌석과 나무 천장이 담긴 따뜻한 풍경',  tags:'# 수인선 # 인하대역 # 숭의역 # 추억' },
-  { num:'03', key:'03 소서노',     name:'소서노',    img:'img/sheet_sosuno.jpg',      desc:'미추홀을 세운 소서노 설화를 담은 봄 정원 풍경',                                   tags:'# 소서노 # 역사 # 봄' },
-  { num:'04', key:'04 문학산',     name:'문학산',    img:'img/sheet_munhak.jpg',      desc:'진달래와 벚꽃, 기와지붕과 갯벌이 이어지는 산 아래 풍경',                           tags:'# 문학산 # 사계 # 일상' },
-  { num:'05', key:'05 수봉폭포',   name:'수봉폭포',  img:'img/sheet_subong_fall.jpg', desc:'암벽 사이로 쏟아지는 폭포와 둥근 연못. 나무 계단과 울창한 숲이 어우러진 여름 풍경',    tags:'# 수봉산 # 폭포 # 자연' },
-  { num:'06', key:'06 갯벌',       name:'갯벌',      img:'img/sheet_tidal.jpg',       desc:'농게와 조개, 아이의 시선으로 본 갯벌 생태 풍경',                                   tags:'# 갯벌 # 생태 # 체험' },
-  { num:'07', key:'07 수봉도서관', name:'수봉도서관', img:'img/sheet_tidal2.jpg',     desc:'수봉산 속 도서관, 미추홀구의 책 쉼터',                                            tags:'# 수봉도서관 # 미추홀구 # 가족나들이' },
+// ── 도안 재고 데이터 ──
+const SHEETS = [
+  { num:'01', key:'subong',   name:'수봉산',        stock:5, img:'img/sheet_subong.jpg',      desc:'태극기와 기념탑이 서 있는 수봉공원. 짙은 녹음 사이로 펼쳐지는 여름날의 산책길',        tags:'# 수봉산 # 수봉공원 # 기념탑' },
+  { num:'02', key:'juingong', name:'주인공원',       stock:2,  img:'img/sheet_suinline.jpg',    desc:'인하대역과 숭의역을 잇던 수인선 열차 내부. 파란 좌석과 나무 천장이 담긴 따뜻한 풍경',  tags:'# 수인선 # 인하대역 # 숭의역 # 추억' },
+  { num:'03', key:'sosuno',   name:'소서노',         stock:28, img:'img/sheet_sosuno.jpg',      desc:'미추홀을 세운 소서노 설화를 담은 봄 정원 풍경',                                   tags:'# 소서노 # 역사 # 봄' },
+  { num:'04', key:'munhak',   name:'문학산',         stock:33, img:'img/sheet_munhak.jpg',      desc:'진달래와 벚꽃, 기와지붕과 갯벌이 이어지는 산 아래 풍경',                           tags:'# 문학산 # 사계 # 일상' },
+  { num:'05', key:'waterfall',name:'수봉폭포',       stock:11, img:'img/sheet_subong_fall.jpg', desc:'암벽 사이로 쏟아지는 폭포와 둥근 연못. 나무 계단과 울창한 숲이 어우러진 여름 풍경',    tags:'# 수봉산 # 폭포 # 자연' },
+  { num:'06', key:'tidal',    name:'갯벌',           stock:36, img:'img/sheet_tidal.jpg',       desc:'농게와 조개, 아이의 시선으로 본 갯벌 생태 풍경',                                   tags:'# 갯벌 # 생태 # 체험' },
+  { num:'07', key:'library',  name:'수봉도서관',     stock:7,  img:'img/sheet_tidal2.jpg',      desc:'수봉산 속 도서관, 미추홀구의 책 쉼터',                                            tags:'# 수봉도서관 # 미추홀구 # 가족나들이' },
 ];
 
-// 초기 재고 (API 연결 전 폴백용)
-const STOCK_FALLBACK = {
-  '01 수봉산':10, '02 주인공원':8, '03 소서노':40,
-  '04 문학산':40, '05 수봉폭포':13, '06 갯벌':40, '07 수봉도서관':7
-};
-
-function getStockInfo(remain) {
-  if (remain === 0)  return { cls:'soldout',   label:'품절',     countLabel:'0장' };
-  if (remain <= 10)  return { cls:'low',       label:'잔여 적음', countLabel:`${remain}장` };
-  return               { cls:'available', label:'신청 가능', countLabel:`${remain}장` };
+function getStockInfo(stock) {
+  if (stock === 0)   return { cls:'soldout',   label:'품절', countLabel:'0장' };
+  if (stock <= 10)   return { cls:'low',       label:'잔여 적음', countLabel:`${stock}장` };
+  return               { cls:'available', label:'신청 가능', countLabel:`${stock}장` };
 }
 
 // ── 예약 탭: 재고 리스트 렌더링 ──
-function renderStockList(stockMap) {
+function renderStockList() {
   const el = document.getElementById('stockList');
   if (!el) return;
   let html = '';
-  SHEETS_META.forEach(s => {
-    const remain = (stockMap && stockMap[s.key] !== undefined) ? stockMap[s.key] : STOCK_FALLBACK[s.key];
-    const info = getStockInfo(remain);
+  SHEETS.forEach(s => {
+    const info = getStockInfo(s.stock);
     html += `
       <div class="stock-item">
-        <div class="stock-num ${remain === 0 ? 'out' : ''}">${s.num}</div>
+        <div class="stock-num ${s.stock === 0 ? 'out' : ''}">${s.num}</div>
         <div class="stock-name">${s.name}</div>
         <span class="stock-badge ${info.cls}">${info.label}</span>
         <span class="stock-count">${info.countLabel}</span>
@@ -364,13 +361,12 @@ function renderStockList(stockMap) {
 }
 
 // ── about 탭: 카드에 재고 배지 포함 렌더링 ──
-function renderAboutSheets(stockMap) {
+function renderAboutSheets() {
   const el = document.getElementById('aboutSheetCards');
   if (!el) return;
   let html = '';
-  SHEETS_META.forEach(s => {
-    const remain = (stockMap && stockMap[s.key] !== undefined) ? stockMap[s.key] : STOCK_FALLBACK[s.key];
-    const info = getStockInfo(remain);
+  SHEETS.forEach(s => {
+    const info = getStockInfo(s.stock);
     html += `
       <div class="sheet-card">
         <div class="sheet-thumb-img" style="background-image:url('${s.img}')"></div>
@@ -452,10 +448,7 @@ function isPast(timeStr) {
   const [h, m] = timeStr.split(':').map(Number);
   const nowH = kst.getHours();
   const nowM = kst.getMinutes();
-  // 슬롯 종료 시각(시작+20분) 기준으로 종료 판단
-  const endTotal = h * 60 + m + 20;
-  const nowTotal = nowH * 60 + nowM;
-  return nowTotal >= endTotal;
+  return nowH > h || (nowH === h && nowM >= m);
 }
 
 function renderStatus(slots) {
@@ -520,53 +513,15 @@ function renderStatus(slots) {
   document.getElementById('statusContent').innerHTML = html;
 
   const kst = getKST();
-  const timeStr = `${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} 기준 (KST)`;
-  document.getElementById('updatedAt').textContent = timeStr;
-  const g = document.getElementById('globalUpdatedAt');
-  if (g) g.textContent = timeStr;
-}
-
-// ── API에서 도안 재고 맵 생성 ──
-function buildStockMap(sheetStockArr) {
-  if (!Array.isArray(sheetStockArr)) return null;
-  const map = {};
-  sheetStockArr.forEach(item => { map[item.key] = item.remain; });
-  return map;
-}
-
-// ── 페이지 로드 시 API 호출 → 재고 + 슬롯 동시 로드 ──
-function loadAllData() {
-  // 페이지 로드 시 API 호출 — 결과는 캐시만, 렌더는 탭 클릭 시
-  fetch(API_URL)
-    .then(r => r.json())
-    .then(data => {
-      window._cachedSlots = data.slots;
-      window._cachedStock = buildStockMap(data.sheetStock);
-      // about 탭 카드 재고는 바로 업데이트
-      renderAboutSheets(window._cachedStock);
-    })
-    .catch(() => {});
+  document.getElementById('updatedAt').textContent =
+    `${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} 기준 (KST)`;
 }
 
 function loadStatus() {
   document.getElementById('statusContent').innerHTML =
     '<div class="status-loading">잔여 현황을 불러오는 중...<br><span style="font-size:0.75rem;opacity:0.6;">잠시 기다려주세요</span></div>';
-
-  // 캐시된 데이터 있으면 즉시 표시
-  if (window._cachedSlots) {
-    renderStatus(window._cachedSlots);
-    renderStockList(window._cachedStock || null);
-    return;
-  }
-
   Promise.all([fetchKST(), fetch(API_URL).then(r => r.json())])
-    .then(([_, data]) => {
-      window._cachedSlots = data.slots;
-      window._cachedStock = buildStockMap(data.sheetStock);
-      renderStatus(data.slots);
-      renderStockList(window._cachedStock);
-      renderAboutSheets(window._cachedStock);
-    })
+    .then(([_, data]) => renderStatus(data.slots))
     .catch(() => {
       document.getElementById('statusContent').innerHTML =
         '<div class="status-loading">현황을 불러오지 못했어요.<br>잠시 후 다시 시도해주세요.</div>';
@@ -574,11 +529,8 @@ function loadStatus() {
 }
 
 window.addEventListener('load', () => {
-  loadAllData();
-  // 페이지 로드 시 하단 시각 표시
-  const kst = getKST();
-  const g = document.getElementById('globalUpdatedAt');
-  if (g) g.textContent = `${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} 기준 (KST)`;
+  renderStockList();
+  renderAboutSheets();
   const last = getLastSelection();
   if (last) {
     document.querySelector('.tab-btn:nth-child(2)').textContent = '예약 현황 •';

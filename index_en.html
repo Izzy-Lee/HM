@@ -178,31 +178,52 @@
       </div>
     </div>
 
-    <!-- 도안 재고 현황 -->
-    <div class="stock-section">
-      <div class="stock-section-title">📋 COLORING SHEET AVAILABILITY</div>
-      <div id="stockList"></div>
-      <p style="font-size:0.68rem;color:var(--ink-soft);margin-top:0.8rem;line-height:1.6;">
-        * Stock may change depending on on-site conditions.<br>
-        * You may choose your preferred sheet when registering, or select from remaining stock on the day.
-      </p>
-    </div>
-
     <a class="cta-btn cta-btn--reserve" href="https://forms.gle/m1RxTFzPX1DFLZa99" target="_blank">
       Book Your Session →
     </a>
+    <div style="background:#fff3e0;border:1.5px solid #d4843a;border-radius:10px;padding:0.7rem 1rem;margin-bottom:0.7rem;display:flex;align-items:flex-start;gap:0.5rem;">
+      <span style="font-size:1.1rem;flex-shrink:0;">⚠️</span>
+      <div>
+        <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.82rem;font-weight:700;color:#b85c00;margin-bottom:0.2rem;">Survey is for participants only</div>
+        <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.72rem;color:#7a5000;line-height:1.5;">Please complete the survey <strong>after your coloring session</strong>.<br>Lucky draw entry is only valid with a completed experience.<br><strong>Book → Experience → Survey</strong> in that order!</div>
+      </div>
+    </div>
     <a class="cta-btn cta-btn--survey" href="https://forms.gle/6zvFrtLxtGFNfUJ88" target="_blank">
-      Take the Survey
+      Take the Survey After Your Session 🎁
     </a>
     <p class="note">
       An <strong>SMS confirmation</strong> will be sent after booking.<br>
       Complete the survey after your session to enter our <strong>lucky draw</strong> event!
     </p>
+
+    <div style="background:#f5f3ee;border:1px solid rgba(90,78,66,0.15);border-radius:10px;padding:0.8rem 1rem;margin-top:0.4rem;">
+      <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.75rem;font-weight:700;color:var(--ink-soft);letter-spacing:0.05em;margin-bottom:0.4rem;">📌 On-site Notice</div>
+      <p style="font-family:'Noto Sans KR',sans-serif;font-size:0.72rem;color:var(--ink-soft);line-height:1.85;">
+        Session times may vary depending on on-site conditions.<br>
+        Seating order is assigned based on <strong style="color:var(--ink);">Google Form submission time</strong> within your chosen slot —
+        please select your preferred time carefully when booking.<br><br>
+        Our team attends to many visitors each day and cannot track individual inquiries.
+        <strong style="color:var(--ink);">Bookings are managed by the system only</strong> — please register in advance rather than asking on-site.<br><br>
+        <strong style="color:#c0392b;">No-shows forfeit their reserved slot.</strong> Unattended slots will be reassigned to walk-in visitors.
+      </p>
+    </div>
   </div>
 
   <!-- Availability panel -->
   <div class="tab-panel" id="panel-status">
     <div class="status-panel" style="text-align:left;">
+      <!-- Coloring sheet stock — top -->
+      <div class="stock-section" style="margin-bottom:1.2rem;">
+        <div class="stock-section-title">📋 COLORING SHEET AVAILABILITY</div>
+        <div id="stockList">
+          <div class="status-loading" style="padding:1rem 0;">Loading…</div>
+        </div>
+        <p style="font-size:0.68rem;color:var(--ink-soft);margin-top:0.8rem;line-height:1.6;">
+          * Stock may change depending on on-site conditions.<br>
+          * You may choose your preferred sheet when registering, or select from remaining stock on the day.
+        </p>
+      </div>
+      <!-- Slot availability -->
       <div id="statusContent">
         <div class="status-loading">Loading availability…<br><span style="font-size:0.75rem;opacity:0.6;">Please wait a moment</span></div>
       </div>
@@ -264,9 +285,18 @@
     </div>
   </div>
 
-</div>
+</div></br></br>
 
 <p class="status-updated" id="globalUpdatedAt" style="text-align:center;margin-top:1.2rem;"></p>
+<a href="https://smartstore.naver.com/funnyshow/category/96fc3451b09743599b090450ae605b83?cp=1"
+   target="_blank"
+   style="display:flex;align-items:center;justify-content:center;gap:0.5rem;margin:0.6rem auto 0.6rem;max-width:400px;width:100%;padding:0.75rem 1rem;background:white;border:1.5px solid rgba(74,156,140,0.3);border-radius:12px;text-decoration:none;color:var(--ink);">
+  <span style="font-size:1rem;">🛍️</span>
+  <div style="text-align:left;">
+    <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.82rem;font-weight:600;color:var(--ink);">Artable Watercolor Diary — Buy Online</div>
+    <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.7rem;color:var(--brush-teal);">Naver Smartstore →</div>
+  </div>
+</a>
 <p class="footer">Hello Michu Co., Ltd. · 헬로미추 2026</p>
 
 <script>
@@ -286,8 +316,8 @@ const SHEETS_META = [
 ];
 
 const STOCK_FALLBACK = {
-  '01 수봉산':10, '02 주인공원':8, '03 소서노':40,
-  '04 문학산':40, '05 수봉폭포':13, '06 갯벌':40, '07 수봉도서관':7
+  '01 수봉산':5, '02 주인공원':2, '03 소서노':28,
+  '04 문학산':33, '05 수봉폭포':11, '06 갯벌':36, '07 수봉도서관':7
 };
 
 function getStockInfo(remain) {
@@ -388,7 +418,9 @@ function isPast(timeStr) {
   const [h, m] = timeStr.split(':').map(Number);
   const nowH = kst.getHours();
   const nowM = kst.getMinutes();
-  return nowH > h || (nowH === h && nowM >= m);
+  const endTotal = h * 60 + m + 20;
+  const nowTotal = nowH * 60 + nowM;
+  return nowTotal >= endTotal;
 }
 
 function renderStatus(slots) {
@@ -414,7 +446,8 @@ function renderStatus(slots) {
   dateSlots.forEach(s => {
     const past = isPast(s.time);
     const remain = Math.max(0, s.remain);
-    const pct = Math.round((3 - remain) / 3 * 100);
+    const capacity = s.capacity || s.total || 3;
+    const pct = capacity > 0 ? Math.round((capacity - remain) / capacity * 100) : 0;
     const isFull = remain === 0 && !past;
     let label, cls;
     if (past)         { label = 'Ended'; cls = 'full'; }

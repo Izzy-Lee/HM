@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hello Michu – Watercolor Coloring Experience</title>
-<meta name="description" content="Hello Michu watercolor coloring kit experience – 2026 Dure Mi Market">
+<meta name="description" content="Hello Michu watercolor coloring experience – Haksan Madanggeuk Nolrae 2026">
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap');
@@ -92,6 +92,46 @@
   .reserve-slot-list { border: 1px solid rgba(74,156,140,0.15); border-radius: 10px; max-height: 300px; overflow-y: auto; }
   .reserve-slot-note { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; color: var(--ink-soft); line-height: 1.6; margin-top: 0.55rem; }
   .slot-empty { text-align: center; padding: 1.4rem 1rem; font-size: 0.8rem; color: var(--brush-pink); font-weight: 500; line-height: 1.6; }
+  .prog-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.7rem; }
+  .prog-tab {
+    flex: 1; padding: 0.55rem 0.5rem; border-radius: 9px; cursor: pointer;
+    background: var(--paper); border: 1.5px solid rgba(90,78,66,0.14);
+    font-family: 'Noto Sans KR', sans-serif; text-align: center; line-height: 1.35;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .prog-tab .pn { display: block; font-size: 0.79rem; font-weight: 700; color: var(--ink); }
+  .prog-tab .pm { display: block; font-size: 0.64rem; color: var(--ink-soft); margin-top: 0.1rem; }
+  .prog-tab.active { border-color: var(--brush-teal); background: rgba(74,156,140,0.08); }
+  .prog-tab.active .pn { color: var(--brush-teal); }
+  .prog-tab.paid.active { border-color: var(--brush-blue); background: rgba(90,126,184,0.08); }
+  .prog-tab.paid.active .pn { color: var(--brush-blue); }
+  .prog-tab.soldout { opacity: 0.5; }
+
+  .goods-name { flex: 1; font-size: 0.82rem; color: var(--ink); font-weight: 500; line-height: 1.35; }
+  .goods-price { display: block; font-size: 0.68rem; color: var(--ink-soft); font-weight: 400; }
+
+  .journey { background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 0.7rem; text-align: left; }
+  .journey-title { font-family: 'Noto Sans KR', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; color: var(--ink-soft); margin-bottom: 0.6rem; }
+  .journey-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.42rem; }
+  .journey-steps li { display: flex; align-items: center; gap: 0.55rem; }
+  .jn { flex-shrink: 0; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: rgba(90,78,66,0.1); color: var(--ink-soft); font-size: 0.66rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .jn.cur { background: var(--brush-amber); color: white; }
+  .jt { font-family: 'Noto Sans KR', sans-serif; font-size: 0.76rem; color: var(--ink-soft); }
+  .jt b { color: var(--brush-amber); font-weight: 700; }
+  .jt .opt { font-size: 0.66rem; opacity: 0.7; }
+
+  .cta-btn--sns { background: var(--brush-blue); color: white; }
+  .cta-btn--sns:hover { background: #4d6ea3; }
+  .sns-box { background: white; border: 1px solid rgba(90,126,184,0.28); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.7rem; text-align: left; }
+  .sns-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
+  .sns-title { font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--ink); }
+  .frame-pill { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; font-weight: 700; padding: 0.18rem 0.55rem; border-radius: 10px; background: rgba(90,126,184,0.12); color: var(--brush-blue); white-space: nowrap; }
+  .frame-pill.low { background: rgba(212,132,58,0.14); color: var(--brush-amber); }
+  .frame-pill.out { background: rgba(200,120,120,0.14); color: var(--brush-pink); }
+  .sns-steps { margin: 0 0 0.8rem; padding-left: 1.1rem; }
+  .sns-steps li { font-family: 'Noto Sans KR', sans-serif; font-size: 0.74rem; color: var(--ink-soft); line-height: 1.65; margin-bottom: 0.3rem; }
+  .sns-steps b { color: var(--ink); font-weight: 700; }
+  .sns-note { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; color: var(--ink-soft); line-height: 1.6; margin-top: 0.5rem; text-align: center; }
   #slotToast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(12px); max-width: 90%; background: #b8484f; color: #fff; font-family: 'Noto Sans KR', sans-serif; font-size: 0.8rem; line-height: 1.5; padding: 0.7rem 1rem; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.18); opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; z-index: 999; text-align: center; }
   #slotToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .cta-btn--survey { background: #f5aebc; color: var(--ink); }
@@ -167,7 +207,7 @@
   <h1 class="brand-wrap">
     <img src="img/logo2.png" class="brand" alt="Hello Michu">
   </h1>
-  <p class="tagline">2026 Dure Mi Market · Watercolor Coloring Kit Experience</p>
+  <p class="tagline">Haksan Madanggeuk Nolrae 2026 · Watercolor Coloring</p>
 
   <!-- 언어 전환 -->
   <div class="lang-switch-wrap">
@@ -188,32 +228,40 @@
     <div class="event-info">
       <div class="event-row">
         <span class="event-label">DATE</span>
-        <span class="event-value">Sat May 30 — Sun May 31, 2026</span>
+        <span class="event-value">Saturday, September 19, 2026</span>
       </div>
       <div class="event-row">
         <span class="event-label">VENUE</span>
-        <span class="event-value">Annyeong Insadong 1F Lawn Plaza, Seoul</span>
+        <span class="event-value">Subongsan Waterfall, Michuhol-gu, Incheon</span>
       </div>
       <div class="event-row">
         <span class="event-label">HOURS</span>
-        <span class="event-value">11:00 – 19:20 · 20-min time slots</span>
+        <span class="event-value">13:30 – 18:30 · ten 30-min sessions</span>
+      </div>
+      <div class="event-row">
+        <span class="event-label">EVENT</span>
+        <span class="event-value">Haksan Madanggeuk Nolrae 2026</span>
       </div>
       <div class="event-row">
         <span class="event-label">ENTRY</span>
-        <span class="event-value">Free · First-come, first-served reservation</span>
+        <span class="event-value">Coloring free · Binder ₩20,000</span>
       </div>
     </div>
 
     <div class="reserve-slot-section">
       <div class="reserve-slot-head">
-        <span class="reserve-slot-title">🕒 Choose a time slot</span>
+        <span class="reserve-slot-title">Book a session</span>
         <button class="slot-refresh-btn" type="button" onclick="refreshSlots()">Refresh</button>
       </div>
+
+      <div class="prog-tabs" id="progTabs"><!-- rendered by JS --></div>
+
       <div id="reserveSlots">
         <div style="text-align:center;padding:1.2rem 0;color:var(--ink-soft);font-size:0.85rem;">Loading available time slots…</div>
       </div>
       <p class="reserve-slot-note">
-        Each slot takes up to <strong id="slotCapacityLabel">10</strong> people. Slots marked <strong style="color:var(--brush-pink);">Full</strong> cannot be booked.<br>
+        Each session takes up to <strong id="slotCapacityLabel">6</strong> people.
+        Sessions marked <strong style="color:var(--brush-pink);">Full</strong> cannot be booked.<br>
         Availability is re-checked the moment you tap Book, before the form opens.
       </p>
     </div>
@@ -225,19 +273,56 @@
         Live availability could not be loaded. Please pick your time slot inside the form.
       </p>
     </div>
+    <div class="journey">
+      <div class="journey-title">HOW IT WORKS</div>
+      <ol class="journey-steps">
+        <li><span class="jn">1</span><span class="jt">Book a session</span></li>
+        <li><span class="jn">2</span><span class="jt">30-minute session</span></li>
+        <li><span class="jn cur">3</span><span class="jt">Survey — <b>required</b></span></li>
+        <li><span class="jn">4</span><span class="jt">Share on social <span class="opt">optional</span></span></li>
+        <li><span class="jn">5</span><span class="jt">Verify your post → framed artwork</span></li>
+      </ol>
+    </div>
+
     <div style="background:#fff3e0;border:1.5px solid #d4843a;border-radius:10px;padding:0.7rem 1rem;margin-bottom:0.7rem;display:flex;align-items:flex-start;gap:0.5rem;">
       <span style="font-size:1.1rem;flex-shrink:0;">⚠️</span>
       <div>
-        <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.82rem;font-weight:700;color:#b85c00;margin-bottom:0.2rem;">Survey is for participants only</div>
-        <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.72rem;color:#7a5000;line-height:1.5;">Please complete the survey <strong>after your coloring session</strong>.<br>Lucky draw entry is only valid with a completed experience.<br><strong>Book → Experience → Survey</strong> in that order!</div>
+        <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.82rem;font-weight:700;color:#b85c00;margin-bottom:0.2rem;">The survey is how you pay for a free session</div>
+        <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.72rem;color:#7a5000;line-height:1.5;">
+          A coloring session normally costs ₩25,000. It is free at this event in exchange for
+          <strong>your feedback afterwards</strong>.<br>
+          Show us your completed survey screen and we will pack your artwork in a postcard sleeve.
+        </div>
       </div>
     </div>
-    <a class="cta-btn cta-btn--survey" href="https://forms.gle/6zvFrtLxtGFNfUJ88" target="_blank">
-      Take the Survey After Your Session 🎁
+
+    <a class="cta-btn cta-btn--survey" id="surveyBtn" href="https://forms.gle/6zvFrtLxtGFNfUJ88" target="_blank">
+      ① Complete the session survey
     </a>
+    <p class="sns-note" id="surveyHint" style="display:none;margin:-0.35rem 0 0.7rem;"></p>
+
+    <div class="sns-box">
+      <div class="sns-head">
+        <span class="sns-title">② Verify your post &amp; get it framed</span>
+        <span class="frame-pill" id="framePill">28 frames</span>
+      </div>
+      <ol class="sns-steps">
+        <li>Post about your session on Instagram with both hashtags: <b>#헬로미추</b> <b>#수채화컬러링</b>.</li>
+        <li>Open the <b>verification form</b> below and add the post <b>link (URL)</b> and a <b>screenshot</b>.</li>
+        <li>Once our team confirms it, we frame your artwork and hand it to you on the spot.</li>
+      </ol>
+      <a class="cta-btn cta-btn--sns" id="snsBtn" href="https://forms.gle/6zvFrtLxtGFNfUJ88" target="_blank">
+        Open the verification form
+      </a>
+      <p class="sns-note">
+        First <strong>28</strong> participants only · while frames last<br>
+        Uploading a screenshot requires a Google sign-in. If that is a problem, just show us at the booth.
+      </p>
+    </div>
+
     <p class="note">
       An <strong>SMS confirmation</strong> will be sent after booking.<br>
-      Complete the survey after your session to enter our <strong>lucky draw</strong> event!
+      Complete a survey after any binder session or purchase to receive a <strong>free sticker</strong>.
     </p>
 
     <div style="background:#f5f3ee;border:1px solid rgba(90,78,66,0.15);border-radius:10px;padding:0.8rem 1rem;margin-top:0.4rem;">
@@ -248,6 +333,8 @@
         please select your preferred time carefully when booking.<br><br>
         Our team attends to many visitors each day and cannot track individual inquiries.
         <strong style="color:var(--ink);">Bookings are managed by the system only</strong> — please register in advance rather than asking on-site.<br><br>
+        Watercolor needs time to dry. While you wait for it, scan the QR code on your table and
+        fill in the survey — then you can pick up your artwork and go.<br><br>
         <strong style="color:#c0392b;">No-shows forfeit their reserved slot.</strong> Unattended slots will be reassigned to walk-in visitors.
       </p>
     </div>
@@ -258,8 +345,12 @@
     <div class="status-panel" style="text-align:left;">
       <!-- Coloring sheet stock — top -->
       <div class="stock-section" style="margin-bottom:1.2rem;">
-        <div class="stock-section-title">📋 COLORING SHEET AVAILABILITY</div>
+        <div class="stock-section-title">COLORING SHEET AVAILABILITY</div>
         <div id="stockList">
+          <div class="status-loading" style="padding:1rem 0;">Loading…</div>
+        </div>
+        <div class="stock-section-title" style="margin-top:1.3rem;">GOODS &amp; FRAMES</div>
+        <div id="goodsList">
           <div class="status-loading" style="padding:1rem 0;">Loading…</div>
         </div>
         <p style="font-size:0.68rem;color:var(--ink-soft);margin-top:0.8rem;line-height:1.6;">
@@ -295,27 +386,35 @@
         <h2 class="about-title">Watercolor Coloring Kit</h2>
         <div class="about-line"></div>
         <p class="about-body" style="margin-bottom:0.8rem;">
-          Each kit includes one Michuhol-themed illustration and Artable watercolor paints.
+          Five scenes from Michuhol, printed with Artable watercolor paints.
+          The front is yours to paint; the back is a postcard carrying the story behind the scene.
         </p>
         <div class="sheet-cards" id="aboutSheetCards"></div>
       </div>
 
       <div class="about-section">
         <span class="about-label">EXPERIENCE</span>
-        <h2 class="about-title">At Dure Mi Market</h2>
+        <h2 class="about-title">At Haksan Madanggeuk Nolrae</h2>
         <div class="about-line"></div>
         <div class="exp-item">
           <div class="exp-icon-wrap">🎨</div>
           <div>
             <div class="exp-item-title">On-site Coloring Session</div>
-            <div class="exp-item-desc">All materials provided · Choose one of seven sheets<br><span style="color:var(--brush-teal);font-weight:500;">Approx. 20 min · Free of charge</span></div>
+            <div class="exp-item-desc">44 watercolor paints, brushes, all materials provided · Choose one of five sheets<br><span style="color:var(--brush-teal);font-weight:500;">30 min · Free (normally ₩25,000)</span></div>
           </div>
         </div>
         <div class="exp-item">
           <div class="exp-icon-wrap">🛍️</div>
           <div>
-            <div class="exp-item-title">Coloring Kit Sales</div>
-            <div class="exp-item-desc">Illustration set + Artable watercolor paint set<br><span style="color:var(--ink-soft);">See booth price list</span></div>
+            <div class="exp-item-title">Traditional Binder Workshop</div>
+            <div class="exp-item-desc">Decorate a black binder with mother-of-pearl and resin<br><span style="color:var(--brush-blue);font-weight:500;">30 min · ₩20,000 (paid on site)</span></div>
+          </div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-icon-wrap">🛍️</div>
+          <div>
+            <div class="exp-item-title">On-site Shop</div>
+            <div class="exp-item-desc">Finished traditional binder ₩30,000 · Deco stickers ₩2,000<br><span style="color:var(--ink-soft);">Free sticker when you complete a survey after purchase</span></div>
           </div>
         </div>
       </div>
@@ -345,24 +444,54 @@
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
-const ENTRY_DATE = 'entry.1189251627';
-const ENTRY_TIME = 'entry.520138299';
+const ENTRY_PROGRAM = 'entry.1189251627';   // booking form: "program" question
+const ENTRY_TIME    = 'entry.520138299';   // booking form: "time" question
+
+// Survey forms — prefilling the session lets the booth track who has answered.
+const SURVEY_BASE = 'https://forms.gle/6zvFrtLxtGFNfUJ88';
+const SNS_BASE    = 'https://forms.gle/6zvFrtLxtGFNfUJ88';
+const SURVEY_ENTRY_PROGRAM = '';   // e.g. 'entry.111111' — leave blank to open the form as-is
+const SURVEY_ENTRY_TIME    = '';
+const SNS_ENTRY_PROGRAM    = '';
+const SNS_ENTRY_TIME       = '';
 const FORM_BASE  = 'https://docs.google.com/forms/d/e/1FAIpQLScvLvrppxjadzctUW2HHTvMI789QlbTPXDV4CxZ7gB2tiAKZw/viewform';
 
+// ── Event constants ──
+const EVENT_DATE  = '9월 19일 (토)';           // key used by the API
+const EVENT_LABEL = 'Saturday, September 19';
+
+// ── Bookable programs (same ten sessions, separate capacity) ──
+const PROGRAMS = [
+  { key: '컬러링', name: 'Coloring',       meta: 'Free · 30 min · 6 seats',     capacity: 6, paid: false },
+  { key: '바인더', name: 'Binder',         meta: '\u20A920,000 · 30 min · 4 seats', capacity: 4, paid: true  },
+];
+let activeProgram = PROGRAMS[0].key;
+
+function programOf(key) {
+  return PROGRAMS.find(p => p.key === key) || PROGRAMS[0];
+}
+
 const SHEETS_META = [
-  { num:'01', key:'01 수봉산',     name:'Subong Mountain',  nameKo:'수봉산',     img:'img/sheet_subong.jpg',      descEn:'Subong Park with the national flag and memorial tower — a summer walk through dense greenery.',        tags:'# Subong Mountain # Park # Memorial' },
-  { num:'02', key:'02 주인공원',   name:'Juingong Park',    nameKo:'주인공원',   img:'img/sheet_suinline.jpg',    descEn:'Interior of the old Suin Line train connecting Inha University and Sungui stations — blue seats and warm wooden ceilings.', tags:'# Suin Line # Retro # Train' },
-  { num:'03', key:'03 소서노',     name:'Soseono',          nameKo:'소서노',     img:'img/sheet_sosuno.jpg',      descEn:'A spring garden scene inspired by the legend of Soseono, founder of Michuhol.',                       tags:'# Soseono # History # Spring' },
-  { num:'04', key:'04 문학산',     name:'Munhak Mountain',  nameKo:'문학산',     img:'img/sheet_munhak.jpg',      descEn:'Azaleas, cherry blossoms, tiled roofs and tidal flats stretching below the mountain.',               tags:'# Munhak # Seasons # Everyday' },
-  { num:'05', key:'05 수봉폭포',   name:'Subong Waterfall', nameKo:'수봉폭포',   img:'img/sheet_subong_fall.jpg', descEn:'A summer waterfall tumbling between rocks into a round pond, framed by wooden steps and lush forest.', tags:'# Waterfall # Nature # Summer' },
-  { num:'06', key:'06 갯벌',       name:'Tidal Flat',       nameKo:'갯벌',       img:'img/sheet_tidal.jpg',       descEn:'The tiny universe of the mudflat — crabs, clams, and the wide-eyed wonder of a child.',              tags:'# Tidal Flat # Ecology # Kids' },
-  { num:'07', key:'07 수봉도서관', name:'Subong Library',   nameKo:'수봉도서관', img:'img/sheet_tidal2.jpg',      descEn:"A quiet library nestled in Subong Mountain — Michuhol-gu's beloved reading retreat.",               tags:'# Library # Michuhol # Family' },
+  { num:'01', key:'01 소서노',     name:'Soseono Arrives',   img:'img/sheet_sosuno.jpg',      desc:'Soseono pointing out to sea beside a moored sailboat, with the Munhaksan ridge behind — the moment the journey south ends', tags:'# Soseono # Legend # Founding' },
+  { num:'02', key:'02 문학산성',   name:'Munhak Fortress',   img:'img/sheet_munhak.jpg',      desc:'The stone ring fortress crowning the summit, azalea slopes below, and the tidal flats as they looked before reclamation',  tags:'# Fortress # History # Azalea' },
+  { num:'03', key:'03 갯벌',       name:'Michuhol Tidal Flat', img:'img/sheet_tidal.jpg',     desc:'Ripple marks, crab burrows and tidal channels, with ghost crabs, mudskippers and shell beds of the West Sea',            tags:'# TidalFlat # Ecology # WestSea' },
+  { num:'04', key:'04 수봉폭포',   name:'Subong Waterfall',  img:'img/sheet_subong_fall.jpg', desc:'Water falling between rock faces into a round pond, framed by wooden steps and dense summer woods',                    tags:'# Subongsan # Waterfall # Nature' },
+  { num:'05', key:'05 수봉도서관', name:'Subong Library',    img:'img/sheet_tidal2.jpg',      desc:'The library tucked into Subong Mountain — a reading refuge in Michuhol',                                                tags:'# Library # Michuhol # Family' },
 ];
 
+// 60 sheets in total — 12 of each design
 const STOCK_FALLBACK = {
-  '01 수봉산':5, '02 주인공원':2, '03 소서노':28,
-  '04 문학산':33, '05 수봉폭포':11, '06 갯벌':36, '07 수봉도서관':7
+  '01 소서노':12, '02 문학산성':12, '03 갯벌':12, '04 수봉폭포':12, '05 수봉도서관':12
 };
+
+// ── Goods and frames (not bookable — stock display only) ──
+const GOODS_META = [
+  { key:'바인더 체험',   name:'Binder workshop',   note:'\u20A920,000' },
+  { key:'바인더 완성품', name:'Finished binder',   note:'\u20A930,000' },
+  { key:'스티커',       name:'Deco stickers',     note:'\u20A92,000' },
+  { key:'액자',         name:'Frames for posts',  note:'while they last' },
+];
+const GOODS_FALLBACK = { '바인더 체험':40, '바인더 완성품':50, '스티커':100, '액자':28 };
 
 function getStockInfo(remain) {
   if (remain === 0)  return { cls:'soldout',   label:'Sold Out',  countLabel:'0' };
@@ -415,11 +544,56 @@ function renderAboutSheets(stockMap) {
   el.innerHTML = html;
 }
 
-function makeFormUrl(date, time) {
+function makeFormUrl(program, time) {
   const params = new URLSearchParams();
-  params.set(ENTRY_DATE, date);
+  params.set(ENTRY_PROGRAM, program);
   params.set(ENTRY_TIME, time);
   return FORM_BASE + '?' + params.toString();
+}
+
+function saveLastSelection(program, time) {
+  try {
+    localStorage.setItem('hm_last_program', program);
+    localStorage.setItem('hm_last_time', time);
+    localStorage.setItem('hm_last_ts', Date.now());
+  } catch(e) {}
+}
+
+function getLastSelection() {
+  try {
+    const ts = parseInt(localStorage.getItem('hm_last_ts') || '0');
+    if (Date.now() - ts > 30 * 60 * 1000) return null;
+    const program = localStorage.getItem('hm_last_program');
+    const time    = localStorage.getItem('hm_last_time');
+    if (program && time) return { program, time };
+  } catch(e) {}
+  return null;
+}
+
+function withSlotPrefill(base, entryProgram, entryTime) {
+  const last = getLastSelection();
+  if (!last || !entryProgram || !entryTime) return base;
+  const params = new URLSearchParams();
+  params.set(entryProgram, last.program);
+  params.set(entryTime, last.time);
+  return base + (base.indexOf('?') === -1 ? '?' : '&') + params.toString();
+}
+
+function applySurveyPrefill() {
+  const last = getLastSelection();
+  const sBtn = document.getElementById('surveyBtn');
+  const nBtn = document.getElementById('snsBtn');
+  if (sBtn) sBtn.href = withSlotPrefill(SURVEY_BASE, SURVEY_ENTRY_PROGRAM, SURVEY_ENTRY_TIME);
+  if (nBtn) nBtn.href = withSlotPrefill(SNS_BASE, SNS_ENTRY_PROGRAM, SNS_ENTRY_TIME);
+
+  const hint = document.getElementById('surveyHint');
+  if (hint) {
+    hint.innerHTML = last
+      ? 'Your <strong style="color:var(--brush-teal);">' + programOf(last.program).name + ' ' + last.time +
+        '</strong> session is filled in for you.'
+      : '';
+    hint.style.display = last ? 'block' : 'none';
+  }
 }
 
 function switchTab(tab) {
@@ -443,18 +617,11 @@ function getKST() {
 }
 
 function getActiveDate() {
-  const kst = getKST();
-  const m = kst.getMonth() + 1;
-  const d = kst.getDate();
-  if (m === 5 && d === 30) return '5월 30일 (토)';
-  if (m === 5 && d === 31) return '5월 31일 (일)';
-  if (m < 5 || (m === 5 && d < 30)) return '5월 30일 (토)';
-  return '5월 31일 (일)';
+  return EVENT_DATE;   // single-day event
 }
 
 function getActiveDateLabel() {
-  const d = getActiveDate();
-  return d === '5월 30일 (토)' ? 'Saturday, May 30' : 'Sunday, May 31';
+  return EVENT_LABEL;
 }
 
 function isPast(timeStr) {
@@ -462,7 +629,7 @@ function isPast(timeStr) {
   const [h, m] = timeStr.split(':').map(Number);
   const nowH = kst.getHours();
   const nowM = kst.getMinutes();
-  const endTotal = h * 60 + m + 20;
+  const endTotal = h * 60 + m + 30;
   const nowTotal = nowH * 60 + nowM;
   return nowTotal >= endTotal;
 }
@@ -484,6 +651,7 @@ function fetchData(force) {
       window._cachedSlots    = Array.isArray(data.slots) ? data.slots : [];
       window._cachedStockArr = data.sheetStock;
       window._cachedStock    = buildStockMap(data.sheetStock);
+      window._cachedGoods    = buildGoodsMap(data.goods);
       _fetchedAt = Date.now();
       _inflight = null;
       return data;
@@ -493,7 +661,7 @@ function fetchData(force) {
 }
 
 function slotState(s) {
-  const capacity = Number(s.capacity || s.total || DEFAULT_CAPACITY);
+  const capacity = Number(s.capacity || s.total || programOf(s.program).capacity || DEFAULT_CAPACITY);
   const remain   = Math.max(0, Number(s.remain) || 0);
   const past     = isPast(s.time);
   const full     = !past && remain <= 0;
@@ -508,13 +676,21 @@ function slotState(s) {
   return { capacity, remain, past, full, pct, label, cls, bookable: !past && !full };
 }
 
-function findSlot(slots, date, time) {
-  return (slots || []).find(x => x.date === date && x.time === time) || null;
+function slotProgram(s) {
+  return s.program || PROGRAMS[0].key;   // older API payloads had no program field
 }
 
-function isSlotBookable(slots, date, time) {
-  const s = findSlot(slots, date, time);
+function findSlot(slots, program, time) {
+  return (slots || []).find(x => slotProgram(x) === program && x.time === time) || null;
+}
+
+function isSlotBookable(slots, program, time) {
+  const s = findSlot(slots, program, time);
   return s ? slotState(s).bookable : false;
+}
+
+function slotsOf(slots, program) {
+  return (slots || []).filter(s => slotProgram(s) === program);
 }
 
 function showToast(msg) {
@@ -537,7 +713,7 @@ function slotRowsHtml(slots, withBtn, hidePast) {
       if (st.past)      btn = '<span class="slot-book-btn disabled">Ended</span>';
       else if (st.full) btn = '<span class="slot-book-btn full">Full</span>';
       else              btn = '<button type="button" class="slot-book-btn" onclick="bookSlot(\'' +
-                              s.date + '\',\'' + s.time + '\')">Book</button>';
+                              slotProgram(s) + '\',\'' + s.time + '\')">Book</button>';
     }
 
     html += '<div class="slot-row ' + (st.past ? 'past' : '') + '">' +
@@ -553,6 +729,26 @@ function slotRowsHtml(slots, withBtn, hidePast) {
   return html;
 }
 
+function renderProgramTabs(slots) {
+  const el = document.getElementById('progTabs');
+  if (!el) return;
+  el.innerHTML = PROGRAMS.map(p => {
+    const list = slotsOf(slots, p.key);
+    const open = list.filter(x => slotState(x).bookable).length;
+    const cls  = ['prog-tab', p.paid ? 'paid' : '', p.key === activeProgram ? 'active' : '',
+                  (list.length && !open) ? 'soldout' : ''].filter(Boolean).join(' ');
+    return '<button type="button" class="' + cls + '" onclick="selectProgram(\'' + p.key + '\')">' +
+             '<span class="pn">' + p.name + '</span>' +
+             '<span class="pm">' + p.meta + '</span>' +
+           '</button>';
+  }).join('');
+}
+
+function selectProgram(key) {
+  activeProgram = key;
+  if (window._cachedSlots) renderReserveSlots(window._cachedSlots);
+}
+
 function renderReserveSlots(slots) {
   const el = document.getElementById('reserveSlots');
   if (!el) return;
@@ -565,31 +761,37 @@ function renderReserveSlots(slots) {
   }
   if (fb) fb.style.display = 'none';
 
-  const activeDate = getActiveDate();
-  const dateSlots  = slots.filter(s => s.date === activeDate);
-  const openSlots  = dateSlots.filter(s => slotState(s).bookable);
+  renderProgramTabs(slots);
+
+  const prog      = programOf(activeProgram);
+  const progSlots = slotsOf(slots, activeProgram);
+  const openSlots = progSlots.filter(s => slotState(s).bookable);
 
   const capLabel = document.getElementById('slotCapacityLabel');
-  if (capLabel && dateSlots.length) capLabel.textContent = slotState(dateSlots[0]).capacity;
+  if (capLabel) {
+    capLabel.textContent = progSlots.length ? slotState(progSlots[0]).capacity : prog.capacity;
+  }
 
-  if (!dateSlots.length) {
-    el.innerHTML = '<div class="slot-empty" style="color:var(--ink-soft);">No schedule available for ' + getActiveDateLabel() + '.</div>';
+  if (!progSlots.length) {
+    el.innerHTML = '<div class="slot-empty" style="color:var(--ink-soft);">No ' + prog.name + ' schedule available.</div>';
     return;
   }
   if (!openSlots.length) {
-    el.innerHTML = '<div class="slot-empty">All time slots for ' + getActiveDateLabel() + '<br>are fully booked.</div>';
+    el.innerHTML = '<div class="slot-empty">All ' + prog.name + ' sessions<br>are fully booked.</div>';
     return;
   }
 
   el.innerHTML = '<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">' +
                  getActiveDateLabel() + ' · ' + openSlots.reduce((a, s) => a + slotState(s).remain, 0) + ' seats left</p>' +
-                 '<div class="reserve-slot-list">' + slotRowsHtml(dateSlots, true, true) + '</div>';
+                 '<div class="reserve-slot-list">' + slotRowsHtml(progSlots, true, true) + '</div>';
 }
 
-function bookSlot(date, time) {
+function bookSlot(program, time) {
   const cached = window._cachedSlots;
-  if (cached && !isSlotBookable(cached, date, time)) {
-    showToast('The <strong>' + time + '</strong> slot is fully booked.<br>Please choose another time.');
+  const label  = programOf(program).name + ' ' + time;
+
+  if (cached && !isSlotBookable(cached, program, time)) {
+    showToast('The <strong>' + label + '</strong> session is fully booked.<br>Please choose another time.');
     renderAllSlotViews();
     return;
   }
@@ -600,25 +802,27 @@ function bookSlot(date, time) {
     .then(data => {
       const slots = Array.isArray(data.slots) ? data.slots : [];
       renderAllSlotViews();
-      if (!isSlotBookable(slots, date, time)) {
+      if (!isSlotBookable(slots, program, time)) {
         if (win) win.close();
-        showToast('The <strong>' + time + '</strong> slot just filled up.<br>Please choose another time.');
+        showToast('The <strong>' + label + '</strong> session just filled up.<br>Please choose another time.');
         return;
       }
-      openForm(win, date, time);
+      openForm(win, program, time);
     })
     .catch(() => {
-      if (cached && !isSlotBookable(cached, date, time)) {
+      if (cached && !isSlotBookable(cached, program, time)) {
         if (win) win.close();
-        showToast('The <strong>' + time + '</strong> slot is fully booked.');
+        showToast('The <strong>' + label + '</strong> session is fully booked.');
         return;
       }
-      openForm(win, date, time);
+      openForm(win, program, time);
     });
 }
 
-function openForm(win, date, time) {
-  const url = makeFormUrl(date, time);
+function openForm(win, program, time) {
+  saveLastSelection(program, time);
+  applySurveyPrefill();
+  const url = makeFormUrl(program, time);
   if (win) win.location.href = url;
   else window.open(url, '_blank');
 }
@@ -636,6 +840,7 @@ function refreshSlots() {
     .then(data => {
       renderReserveSlots(data.slots);
       renderStockList(window._cachedStock);
+      renderGoodsList(window._cachedGoods);
       renderAboutSheets(window._cachedStock);
       if (document.getElementById('panel-status').classList.contains('active')) {
         renderStatus(data.slots);
@@ -645,32 +850,102 @@ function refreshSlots() {
 }
 
 function renderStatus(slots) {
-  const activeDate = getActiveDate();
-  const eventDates = ['5월 30일 (토)', '5월 31일 (일)'];
-  const byDate = {};
-  eventDates.forEach(d => { byDate[d] = []; });
-  slots.forEach(s => { if (byDate[s.date]) byDate[s.date].push(s); });
+  const last = getLastSelection();
+  let html = '';
 
-  const dateSlots = byDate[activeDate] || [];
-  const openSlots = dateSlots.filter(s => slotState(s).bookable);
-  const totalRemain = openSlots.reduce((a, s) => a + slotState(s).remain, 0);
+  if (last && isSlotBookable(slots, last.program, last.time)) {
+    html += '<div style="background:rgba(74,156,140,0.08);border:1px solid rgba(74,156,140,0.25);border-radius:10px;padding:0.7rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">' +
+              '<span style="font-size:0.78rem;color:var(--ink-soft);line-height:1.4;">You were looking at <strong style="color:var(--brush-teal);">' +
+                programOf(last.program).name + ' ' + last.time + '</strong></span>' +
+              '<button type="button" onclick="bookSlot(\'' + last.program + '\',\'' + last.time + '\')" ' +
+                'style="padding:0.3rem 0.7rem;background:var(--brush-teal);color:white;border:none;border-radius:6px;font-family:\'Noto Sans KR\',sans-serif;font-size:0.72rem;font-weight:500;cursor:pointer;white-space:nowrap;">' +
+                'Resume</button>' +
+            '</div>';
+  }
 
-  let html = `<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">${getActiveDateLabel()}</p>`;
-  html += `
-    <div style="background:white;border:1px solid rgba(74,156,140,0.2);border-radius:12px;padding:0.9rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:0.82rem;color:var(--ink-soft);">Slots available now</span>
-      <span style="font-size:1.3rem;font-weight:700;color:var(--brush-teal);">${totalRemain}<span style="font-size:0.8rem;font-weight:400;color:var(--ink-soft);"> remaining</span></span>
-    </div>
-  `;
-  html += `<div style="background:white;border:1px solid rgba(74,156,140,0.2);border-radius:12px;overflow:hidden;margin-bottom:1.2rem;">` + slotRowsHtml(dateSlots, true, false) + `</div>`;
+  html += '<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">' +
+          getActiveDateLabel() + '</p>';
+
+  const totalRemain = PROGRAMS.reduce((sum, p) =>
+    sum + slotsOf(slots, p.key).filter(x => slotState(x).bookable)
+                               .reduce((a, x) => a + slotState(x).remain, 0), 0);
+
+  html += '<div style="background:white;border:1px solid rgba(74,156,140,0.2);border-radius:12px;padding:0.9rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;">' +
+            '<span style="font-size:0.82rem;color:var(--ink-soft);">Seats available now</span>' +
+            '<span style="font-size:1.3rem;font-weight:700;color:var(--brush-teal);">' + totalRemain +
+              '<span style="font-size:0.8rem;font-weight:400;color:var(--ink-soft);"> remaining</span></span>' +
+          '</div>';
+
+  PROGRAMS.forEach(p => {
+    const list = slotsOf(slots, p.key);
+    if (!list.length) return;
+    const open = list.filter(x => slotState(x).bookable)
+                     .reduce((a, x) => a + slotState(x).remain, 0);
+    html += '<p style="font-size:0.78rem;font-weight:500;letter-spacing:0.06em;margin:0.9rem 0 0.6rem;padding-left:0.2rem;color:' +
+              (p.paid ? 'var(--brush-blue)' : 'var(--brush-teal)') + ';">' +
+              p.name + ' · ' + p.meta + ' · ' + open + ' left</p>' +
+            '<div style="background:white;border:1px solid rgba(74,156,140,0.2);border-radius:12px;overflow:hidden;margin-bottom:0.4rem;">' +
+              slotRowsHtml(list, true, false) + '</div>';
+  });
 
   document.getElementById('statusContent').innerHTML = html;
 
   const kst = getKST();
-  const timeStr = `Updated at ${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} KST`;
+  const timeStr = 'Updated at ' + kst.getHours() + ':' + String(kst.getMinutes()).padStart(2,'0') + ' KST';
   document.getElementById('updatedAt').textContent = timeStr;
   const g = document.getElementById('globalUpdatedAt');
   if (g) g.textContent = timeStr;
+}
+
+// ── Goods and frames ──
+function buildGoodsMap(arr) {
+  if (!Array.isArray(arr)) return null;
+  const map = {};
+  arr.forEach(item => { map[item.key] = item.remain; });
+  return map;
+}
+
+function goodsRemain(map, key) {
+  return (map && map[key] !== undefined) ? map[key] : GOODS_FALLBACK[key];
+}
+
+function renderGoodsList(goodsMap) {
+  const el = document.getElementById('goodsList');
+  if (!el) return;
+  el.innerHTML = GOODS_META.map(g => {
+    const remain = goodsRemain(goodsMap, g.key);
+    const info   = getStockInfo(remain);
+    return '<div class="stock-item">' +
+             '<div class="goods-name">' + g.name +
+               '<span class="goods-price">' + g.note + '</span>' +
+             '</div>' +
+             '<span class="stock-badge ' + info.cls + '">' + info.label + '</span>' +
+             '<span class="stock-count">' + info.countLabel + '</span>' +
+           '</div>';
+  }).join('');
+  renderFramePill(goodsMap);
+}
+
+// Frames are a single first-come counter, not a per-session capacity
+function renderFramePill(goodsMap) {
+  const el = document.getElementById('framePill');
+  if (!el) return;
+  const remain = goodsRemain(goodsMap, '액자');
+  el.classList.remove('low', 'out');
+  if (remain === 0) {
+    el.textContent = 'Frames gone';
+    el.classList.add('out');
+  } else {
+    el.textContent = remain + ' frames left';
+    if (remain <= 5) el.classList.add('low');
+  }
+  const btn = document.getElementById('snsBtn');
+  if (btn) {
+    btn.style.opacity = remain === 0 ? '0.5' : '';
+    btn.textContent = remain === 0
+      ? 'Frames are gone — posts still welcome'
+      : 'Open the verification form';
+  }
 }
 
 function buildStockMap(sheetStockArr) {
@@ -682,10 +957,12 @@ function buildStockMap(sheetStockArr) {
 
 function loadAllData() {
   renderStockList(null);
+  renderGoodsList(null);
   renderAboutSheets(null);
   fetchData(true)
     .then(data => {
       renderStockList(window._cachedStock);
+      renderGoodsList(window._cachedGoods);
       renderAboutSheets(window._cachedStock);
       renderReserveSlots(data.slots);
     })
@@ -698,6 +975,7 @@ function loadStatus() {
   fetchData(false)
     .then(data => {
       renderStockList(window._cachedStock);
+      renderGoodsList(window._cachedGoods);
       renderAboutSheets(window._cachedStock);
       renderStatus(data.slots);
       renderReserveSlots(data.slots);
@@ -710,6 +988,7 @@ function loadStatus() {
 
 window.addEventListener('load', () => {
   loadAllData();
+  applySurveyPrefill();
   const kst = getKST();
   const g = document.getElementById('globalUpdatedAt');
   if (g) g.textContent = `Updated at ${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} KST`;
@@ -722,6 +1001,7 @@ window.addEventListener('load', () => {
         if (document.getElementById('panel-status').classList.contains('active')) {
           renderStatus(data.slots);
           renderStockList(window._cachedStock);
+          renderGoodsList(window._cachedGoods);
         }
       })
       .catch(() => {});

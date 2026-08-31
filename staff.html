@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>헬로미추 운영 현황</title>
+<meta name="robots" content="noindex">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #2a2118; --ink-soft: #5a4e42; --paper: #faf7f2; --surface: #fff;
+    --teal: #4a9c8c; --amber: #d4843a; --pink: #c87878; --blue: #5a7eb8;
+    --rule: rgba(90,78,66,0.12);
+  }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: 'Noto Sans KR', sans-serif; font-size: 14px;
+    padding: 1rem 0.9rem 3rem; max-width: 560px; margin: 0 auto;
+  }
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.9rem; }
+  h1 { font-size: 1.05rem; font-weight: 700; }
+  .sub { font-size: 0.7rem; color: var(--ink-soft); }
+  .refresh {
+    padding: 0.35rem 0.75rem; background: var(--surface);
+    border: 1px solid rgba(74,156,140,0.4); border-radius: 7px;
+    font-family: inherit; font-size: 0.72rem; color: var(--teal); cursor: pointer;
+  }
+  .totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.1rem; }
+  .tot { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 0.7rem 0.5rem; text-align: center; }
+  .tot .n { font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .tot .l { font-size: 0.66rem; color: var(--ink-soft); margin-top: 0.2rem; }
+  .tot.warn .n { color: var(--pink); }
+  .tot.goal .n { color: var(--teal); }
+
+  .bar-wrap { height: 7px; background: rgba(74,156,140,0.12); border-radius: 4px; overflow: hidden; margin-bottom: 1.2rem; }
+  .bar { height: 100%; background: var(--teal); border-radius: 4px; transition: width 0.4s ease; }
+
+  h2 { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.08em; color: var(--ink-soft); margin: 1.2rem 0 0.5rem; }
+  .rows { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  .row { display: flex; align-items: center; gap: 0.6rem; padding: 0.65rem 0.85rem; border-bottom: 1px solid rgba(90,78,66,0.06); }
+  .row:last-child { border-bottom: none; }
+  .row.past { opacity: 0.42; }
+  .row.alert { background: rgba(200,120,120,0.07); }
+  .row .t { font-size: 0.85rem; font-weight: 500; font-variant-numeric: tabular-nums; min-width: 48px; }
+  .row .mini { flex: 1; height: 6px; background: rgba(90,78,66,0.1); border-radius: 3px; overflow: hidden; }
+  .row .mini i { display: block; height: 100%; background: var(--teal); border-radius: 3px; }
+  .row .c { font-size: 0.76rem; font-variant-numeric: tabular-nums; color: var(--ink-soft); min-width: 46px; text-align: right; }
+  .row .badge { font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9px; white-space: nowrap; min-width: 58px; text-align: center; }
+  .badge.ok { background: rgba(74,156,140,0.13); color: var(--teal); }
+  .badge.miss { background: rgba(200,120,120,0.14); color: var(--pink); }
+  .badge.none { background: rgba(90,78,66,0.08); color: var(--ink-soft); }
+
+  .empty, .err { text-align: center; padding: 1.6rem 1rem; font-size: 0.82rem; color: var(--ink-soft); line-height: 1.7; }
+  .err { color: var(--pink); }
+  .tip { background: #fff3e0; border: 1px solid #e0b184; border-radius: 9px; padding: 0.7rem 0.85rem; font-size: 0.72rem; color: #7a5000; line-height: 1.65; margin-top: 1.3rem; }
+  .tip b { color: #b85c00; }
+  .stamp { font-size: 0.66rem; color: rgba(90,78,66,0.5); text-align: right; margin-top: 0.6rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>운영 현황</h1>
+    <div class="sub">9월 19일 (토) · 학산마당극 놀래</div>
+  </div>
+  <button class="refresh" type="button" onclick="load(true)">새로고침</button>
+</header>
+
+<div class="totals">
+  <div class="tot goal"><div class="n" id="tDone">–</div><div class="l">설문 완료</div></div>
+  <div class="tot warn"><div class="n" id="tMiss">–</div><div class="l">미작성</div></div>
+  <div class="tot"><div class="n" id="tFrame">–</div><div class="l">액자 잔여</div></div>
+</div>
+<div class="bar-wrap"><div class="bar" id="goalBar" style="width:0%"></div></div>
+
+<div id="content">
+  <div class="empty">불러오는 중...</div>
+</div>
+
+<div class="tip">
+  <b>설문 이탈을 막는 가장 확실한 방법</b><br>
+  작품을 바로 건네지 말고, <b>설문 완료 화면을 확인한 뒤</b> 엽서 봉투에 담아 전달하세요.
+  수채화가 마르는 5분이 설문 작성 시간입니다. 위 표에서 <b>미작성</b>이 뜬 회차는
+  아직 부스 근처에 계실 가능성이 높습니다.
+</div>
+
+<p class="stamp" id="stamp"></p>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
+const SURVEY_GOAL = 60;
+const PROGRAM_NAMES = { '컬러링': '컬러링 체험', '바인더': '바인더 체험' };
+
+function esc(v) {
+  return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function render(data) {
+  const rows  = Array.isArray(data.surveyProgress) ? data.surveyProgress : [];
+  const goods = Array.isArray(data.goods) ? data.goods : [];
+  const frame = goods.filter(g => g.key === '액자')[0];
+
+  const done = rows.reduce((a, r) => a + r.done, 0);
+  const miss = rows.reduce((a, r) => a + r.missing, 0);
+
+  document.getElementById('tDone').textContent  = done;
+  document.getElementById('tMiss').textContent  = miss;
+  document.getElementById('tFrame').textContent = frame ? frame.remain : '–';
+  document.getElementById('goalBar').style.width =
+    Math.min(100, Math.round(done / SURVEY_GOAL * 100)) + '%';
+
+  const el = document.getElementById('content');
+  if (!rows.length) {
+    el.innerHTML = '<div class="empty">아직 예약이 없습니다.<br>' +
+      '<span style="font-size:0.72rem;opacity:0.75;">설문 진행률이 안 보이면 Apps Script의 ' +
+      'SURVEY_SHEET_NAME 설정을 확인하세요.</span></div>';
+    return;
+  }
+
+  let html = '';
+  Object.keys(PROGRAM_NAMES).forEach(key => {
+    const list = rows.filter(r => r.program === key);
+    if (!list.length) return;
+    html += '<h2>' + esc(PROGRAM_NAMES[key]) + '</h2><div class="rows">';
+    list.forEach(r => {
+      const pct = r.booked > 0 ? Math.round(r.done / r.booked * 100) : 0;
+      let badge = '<span class="badge none">–</span>';
+      if (r.missing > 0)      badge = '<span class="badge miss">' + r.missing + '명 미작성</span>';
+      else if (r.booked > 0)  badge = '<span class="badge ok">완료</span>';
+      const cls = ['row', r.past ? 'past' : '', (r.missing > 0 && !r.past) ? 'alert' : ''].filter(Boolean).join(' ');
+      html += '<div class="' + cls + '">' +
+                '<span class="t">' + esc(r.time) + '</span>' +
+                '<span class="mini"><i style="width:' + pct + '%"></i></span>' +
+                '<span class="c">' + r.done + ' / ' + r.booked + '</span>' +
+                badge +
+              '</div>';
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function load(manual) {
+  if (manual) document.getElementById('content').innerHTML = '<div class="empty">불러오는 중...</div>';
+  fetch(API_URL)
+    .then(r => r.json())
+    .then(data => {
+      render(data);
+      const now = new Date();
+      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+      const kst = new Date(utc + 9 * 3600000);
+      document.getElementById('stamp').textContent =
+        kst.getHours() + ':' + String(kst.getMinutes()).padStart(2, '0') + ' 기준 (KST)';
+    })
+    .catch(() => {
+      document.getElementById('content').innerHTML =
+        '<div class="err">현황을 불러오지 못했습니다.<br>네트워크를 확인하고 새로고침해 주세요.</div>';
+    });
+}
+
+load();
+setInterval(() => { if (!document.hidden) load(false); }, 30000);
+</script>
+
+</body>
+</html>

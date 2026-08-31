@@ -213,7 +213,7 @@
         <div style="text-align:center;padding:1.2rem 0;color:var(--ink-soft);font-size:0.85rem;">Loading available time slots…</div>
       </div>
       <p class="reserve-slot-note">
-        Each slot takes up to <strong id="slotCapacityLabel">3</strong> people. Slots marked <strong style="color:var(--brush-pink);">Full</strong> cannot be booked.<br>
+        Each slot takes up to <strong id="slotCapacityLabel">10</strong> people. Slots marked <strong style="color:var(--brush-pink);">Full</strong> cannot be booked.<br>
         Availability is re-checked the moment you tap Book, before the form opens.
       </p>
     </div>
@@ -469,7 +469,7 @@ function isPast(timeStr) {
 
 // ── Slot cache (TTL) ──
 const SLOT_TTL_MS = 60 * 1000;
-const DEFAULT_CAPACITY = 3;
+const DEFAULT_CAPACITY = 10;   // API가 capacity를 안 주면 사용하는 기본 정원
 let _fetchedAt = 0;
 let _inflight = null;
 

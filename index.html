@@ -241,7 +241,7 @@
         <div class="status-loading" style="padding:1.2rem 0;">예약 가능한 시간대를 불러오는 중...</div>
       </div>
       <p class="reserve-slot-note">
-        정원(시간대별 <strong id="slotCapacityLabel">3</strong>명)이 모두 찬 시간대는 <strong style="color:var(--brush-pink);">마감</strong>으로 표시되며 신청할 수 없습니다.<br>
+        정원(시간대별 <strong id="slotCapacityLabel">10</strong>명)이 모두 찬 시간대는 <strong style="color:var(--brush-pink);">마감</strong>으로 표시되며 신청할 수 없습니다.<br>
         예약 버튼을 누르면 잔여 인원을 다시 확인한 뒤 신청 폼이 열립니다.
       </p>
     </div>
@@ -523,7 +523,7 @@ function isPast(timeStr) {
 
 // ── 슬롯 데이터 캐시 (TTL) ──
 const SLOT_TTL_MS = 60 * 1000;   // 60초 지나면 재조회
-const DEFAULT_CAPACITY = 3;
+const DEFAULT_CAPACITY = 10;   // API가 capacity를 안 주면 사용하는 기본 정원
 let _fetchedAt = 0;
 let _inflight = null;
 

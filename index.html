@@ -128,6 +128,21 @@
   .slot-book-btn:hover { background: #347a6c; transform: translateY(-1px); }
   .slot-book-btn:active { transform: translateY(0); }
   .slot-book-btn.disabled { background: rgba(74,156,140,0.2); color: var(--ink-soft); pointer-events: none; }
+  .slot-book-btn.full { background: rgba(200,120,120,0.15); color: var(--brush-pink); pointer-events: none; }
+
+  /* 시간대 선택 예약 박스 */
+  .reserve-slot-section { background: white; border: 1px solid rgba(74,156,140,0.25); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.9rem; text-align: left; }
+  .reserve-slot-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
+  .reserve-slot-title { font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--ink); }
+  .slot-refresh-btn { padding: 0.22rem 0.6rem; background: transparent; border: 1px solid rgba(74,156,140,0.35); border-radius: 6px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.7rem; color: var(--brush-teal); cursor: pointer; }
+  .slot-refresh-btn:active { background: rgba(74,156,140,0.08); }
+  .reserve-slot-list { border: 1px solid rgba(74,156,140,0.15); border-radius: 10px; max-height: 300px; overflow-y: auto; }
+  .reserve-slot-note { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; color: var(--ink-soft); line-height: 1.6; margin-top: 0.55rem; }
+  .slot-empty { text-align: center; padding: 1.4rem 1rem; font-size: 0.8rem; color: var(--brush-pink); font-weight: 500; line-height: 1.6; }
+
+  /* 마감 안내 토스트 */
+  #slotToast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(12px); max-width: 90%; background: #b8484f; color: #fff; font-family: 'Noto Sans KR', sans-serif; font-size: 0.8rem; line-height: 1.5; padding: 0.7rem 1rem; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.18); opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; z-index: 999; text-align: center; }
+  #slotToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   .status-loading { text-align: center; padding: 2rem; color: var(--ink-soft); font-size: 0.85rem; }
   .status-updated { font-size: 0.7rem; color: rgba(90,78,66,0.4); text-align: right; margin-top: 0.3rem; }
@@ -217,9 +232,27 @@
       </div>
     </div>
 
-    <a class="cta-btn cta-btn--reserve" href="https://forms.gle/m1RxTFzPX1DFLZa99" target="_blank">
-      체험 예약하기
-    </a>
+    <div class="reserve-slot-section">
+      <div class="reserve-slot-head">
+        <span class="reserve-slot-title">🕒 예약 시간대 선택</span>
+        <button class="slot-refresh-btn" type="button" onclick="refreshSlots()">새로고침</button>
+      </div>
+      <div id="reserveSlots">
+        <div class="status-loading" style="padding:1.2rem 0;">예약 가능한 시간대를 불러오는 중...</div>
+      </div>
+      <p class="reserve-slot-note">
+        정원(시간대별 <strong id="slotCapacityLabel">3</strong>명)이 모두 찬 시간대는 <strong style="color:var(--brush-pink);">마감</strong>으로 표시되며 신청할 수 없습니다.<br>
+        예약 버튼을 누르면 잔여 인원을 다시 확인한 뒤 신청 폼이 열립니다.
+      </p>
+    </div>
+    <div id="reserveFallback" style="display:none;">
+      <a class="cta-btn cta-btn--reserve" href="https://forms.gle/m1RxTFzPX1DFLZa99" target="_blank">
+        체험 예약하기
+      </a>
+      <p class="reserve-slot-note" style="text-align:center;margin-bottom:0.7rem;">
+        실시간 잔여 현황을 불러오지 못했습니다. 폼에서 시간대를 직접 선택해 주세요.
+      </p>
+    </div>
     <div style="background:#fff3e0;border:1.5px solid #d4843a;border-radius:10px;padding:0.7rem 1rem;margin-bottom:0.7rem;display:flex;align-items:flex-start;gap:0.5rem;">
       <span style="font-size:1.1rem;flex-shrink:0;">⚠️</span>
       <div>
@@ -488,6 +521,200 @@ function isPast(timeStr) {
   return nowTotal >= endTotal;
 }
 
+// ── 슬롯 데이터 캐시 (TTL) ──
+const SLOT_TTL_MS = 60 * 1000;   // 60초 지나면 재조회
+const DEFAULT_CAPACITY = 3;
+let _fetchedAt = 0;
+let _inflight = null;
+
+function fetchData(force) {
+  if (!force && window._cachedSlots && (Date.now() - _fetchedAt) < SLOT_TTL_MS) {
+    return Promise.resolve({ slots: window._cachedSlots, sheetStock: window._cachedStockArr });
+  }
+  if (_inflight) return _inflight;
+  _inflight = fetch(API_URL)
+    .then(r => r.json())
+    .then(data => {
+      window._cachedSlots    = Array.isArray(data.slots) ? data.slots : [];
+      window._cachedStockArr = data.sheetStock;
+      window._cachedStock    = buildStockMap(data.sheetStock);
+      _fetchedAt = Date.now();
+      _inflight = null;
+      return data;
+    })
+    .catch(err => { _inflight = null; throw err; });
+  return _inflight;
+}
+
+// ── 슬롯 1건의 예약 가능 여부 판정 ──
+function slotState(s) {
+  const capacity = Number(s.capacity || s.total || DEFAULT_CAPACITY);
+  const remain   = Math.max(0, Number(s.remain) || 0);
+  const past     = isPast(s.time);
+  const full     = !past && remain <= 0;
+  const pct      = capacity > 0 ? Math.min(100, Math.round((capacity - remain) / capacity * 100)) : 0;
+
+  let label, cls;
+  if (past)            { label = '종료 · 0석'; cls = 'full'; }
+  else if (full)       { label = '마감';       cls = 'full'; }
+  else if (remain === 1) { label = '1석 남음'; cls = 'low'; }
+  else                 { label = remain + '석 남음'; cls = 'ok'; }
+
+  return { capacity, remain, past, full, pct, label, cls, bookable: !past && !full };
+}
+
+function findSlot(slots, date, time) {
+  return (slots || []).find(x => x.date === date && x.time === time) || null;
+}
+
+function isSlotBookable(slots, date, time) {
+  const s = findSlot(slots, date, time);
+  if (!s) return false;
+  return slotState(s).bookable;
+}
+
+function showToast(msg) {
+  let el = document.getElementById('slotToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'slotToast';
+    document.body.appendChild(el);
+  }
+  el.innerHTML = msg;
+  el.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => el.classList.remove('show'), 3800);
+}
+
+// ── 슬롯 목록 HTML (withBtn=true면 예약 버튼 포함) ──
+function slotRowsHtml(slots, withBtn, hidePast) {
+  let html = '';
+  slots.forEach(s => {
+    const st = slotState(s);
+    if (hidePast && st.past) return;
+
+    let btn = '';
+    if (withBtn) {
+      if (st.past) {
+        btn = '<span class="slot-book-btn disabled">종료</span>';
+      } else if (st.full) {
+        btn = '<span class="slot-book-btn full">마감</span>';
+      } else {
+        btn = '<button type="button" class="slot-book-btn" onclick="bookSlot(\'' +
+              s.date + '\',\'' + s.time + '\')">예약</button>';
+      }
+    }
+
+    html += '<div class="slot-row ' + (st.past ? 'past' : '') + '">' +
+              '<span class="slot-time">' + s.time + '</span>' +
+              '<div class="slot-bar-wrap">' +
+                '<div class="slot-bar ' + ((st.full || st.past) ? 'full' : '') +
+                '" style="width:' + (st.past ? 100 : st.pct) + '%"></div>' +
+              '</div>' +
+              '<span class="slot-remain ' + st.cls + '">' + st.label + '</span>' +
+              btn +
+            '</div>';
+  });
+  return html;
+}
+
+// ── 예약 패널: 시간대 선택 목록 ──
+function renderReserveSlots(slots) {
+  const el = document.getElementById('reserveSlots');
+  if (!el) return;
+  const fb = document.getElementById('reserveFallback');
+
+  if (!Array.isArray(slots)) {
+    el.innerHTML = '<div class="status-loading" style="padding:1.2rem 0;">잔여 현황을 불러오지 못했습니다.</div>';
+    if (fb) fb.style.display = 'block';
+    return;
+  }
+  if (fb) fb.style.display = 'none';
+
+  const activeDate = getActiveDate();
+  const dateSlots  = slots.filter(s => s.date === activeDate);
+  const openSlots  = dateSlots.filter(s => slotState(s).bookable);
+
+  const capLabel = document.getElementById('slotCapacityLabel');
+  if (capLabel && dateSlots.length) capLabel.textContent = slotState(dateSlots[0]).capacity;
+
+  if (!dateSlots.length) {
+    el.innerHTML = '<div class="slot-empty" style="color:var(--ink-soft);">' + activeDate + ' 예약 정보가 없습니다.</div>';
+    return;
+  }
+  if (!openSlots.length) {
+    el.innerHTML = '<div class="slot-empty">' + activeDate + ' 예약 가능한 시간대가<br>모두 마감되었습니다.</div>';
+    return;
+  }
+
+  el.innerHTML = '<p class="status-date-label">' + activeDate + ' · 예약 가능 ' +
+                 openSlots.reduce((a, s) => a + slotState(s).remain, 0) + '석</p>' +
+                 '<div class="reserve-slot-list">' + slotRowsHtml(dateSlots, true, true) + '</div>';
+}
+
+// ── 예약 버튼: 폼 열기 직전에 잔여 인원 재확인 ──
+function bookSlot(date, time) {
+  const cached = window._cachedSlots;
+  if (cached && !isSlotBookable(cached, date, time)) {
+    showToast('<strong>' + time + '</strong> 시간대는 정원이 모두 찼습니다.<br>다른 시간대를 선택해 주세요.');
+    renderAllSlotViews();
+    return;
+  }
+
+  // 팝업 차단 회피: 클릭 시점에 창을 먼저 열고 확인 후 주소를 넣는다
+  const win = window.open('', '_blank');
+
+  fetchData(true)
+    .then(data => {
+      const slots = Array.isArray(data.slots) ? data.slots : [];
+      renderAllSlotViews();
+      if (!isSlotBookable(slots, date, time)) {
+        if (win) win.close();
+        showToast('<strong>' + time + '</strong> 시간대가 방금 마감되었습니다.<br>다른 시간대를 선택해 주세요.');
+        return;
+      }
+      openForm(win, date, time);
+    })
+    .catch(() => {
+      // 네트워크 실패 시에는 마지막으로 확인된 잔여 기준으로 진행
+      if (cached && !isSlotBookable(cached, date, time)) {
+        if (win) win.close();
+        showToast('<strong>' + time + '</strong> 시간대는 정원이 모두 찼습니다.');
+        return;
+      }
+      openForm(win, date, time);
+    });
+}
+
+function openForm(win, date, time) {
+  saveLastSelection(date, time);
+  const url = makeFormUrl(date, time);
+  if (win) win.location.href = url;
+  else window.open(url, '_blank');
+}
+
+function renderAllSlotViews() {
+  if (!window._cachedSlots) return;
+  renderReserveSlots(window._cachedSlots);
+  if (document.getElementById('panel-status').classList.contains('active')) {
+    renderStatus(window._cachedSlots);
+  }
+}
+
+function refreshSlots() {
+  fetchData(true)
+    .then(data => {
+      renderReserveSlots(data.slots);
+      window._cachedStock = buildStockMap(data.sheetStock);
+      renderStockList(window._cachedStock);
+      renderAboutSheets(window._cachedStock);
+      if (document.getElementById('panel-status').classList.contains('active')) {
+        renderStatus(data.slots);
+      }
+    })
+    .catch(() => renderReserveSlots(null));
+}
+
 function renderStatus(slots) {
   const activeDate = getActiveDate();
   const eventDates = ['5월 30일 (토)', '5월 31일 (일)'];
@@ -498,22 +725,21 @@ function renderStatus(slots) {
 
   const last = getLastSelection();
   let resumeHtml = '';
-  if (last) {
+  if (last && isSlotBookable(slots, last.date, last.time)) {
     resumeHtml = `
       <div style="background:rgba(74,156,140,0.08);border:1px solid rgba(74,156,140,0.25);border-radius:10px;padding:0.7rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
         <span style="font-size:0.78rem;color:var(--ink-soft);line-height:1.4;">이전에 <strong style="color:var(--brush-teal);">${last.date.replace(' (토)','').replace(' (일)','')} ${last.time}</strong> 선택하셨어요</span>
-        <a href="${makeFormUrl(last.date, last.time)}" target="_blank"
-           onclick="saveLastSelection('${last.date}','${last.time}')"
-           style="padding:0.3rem 0.7rem;background:var(--brush-teal);color:white;border-radius:6px;font-size:0.72rem;font-weight:500;text-decoration:none;white-space:nowrap;">
+        <button type="button" onclick="bookSlot('${last.date}','${last.time}')"
+           style="padding:0.3rem 0.7rem;background:var(--brush-teal);color:white;border:none;border-radius:6px;font-family:'Noto Sans KR',sans-serif;font-size:0.72rem;font-weight:500;cursor:pointer;white-space:nowrap;">
           이어서 예약
-        </a>
+        </button>
       </div>`;
   }
 
   let html = resumeHtml;
   const dateSlots = byDate[activeDate] || [];
-  const futureSlots = dateSlots.filter(s => !isPast(s.time));
-  const totalRemain = futureSlots.reduce((a, s) => a + Math.max(0, s.remain), 0);
+  const openSlots = dateSlots.filter(s => slotState(s).bookable);
+  const totalRemain = openSlots.reduce((a, s) => a + slotState(s).remain, 0);
 
   html += `<p class="status-date-label">${activeDate}</p>`;
   html += `
@@ -522,32 +748,7 @@ function renderStatus(slots) {
       <span class="summary-num">${totalRemain}<span>석 남음</span></span>
     </div>
   `;
-  html += `<div class="slot-list">`;
-
-  dateSlots.forEach(s => {
-    const past = isPast(s.time);
-    const remain = Math.max(0, s.remain);
-    const capacity = s.capacity || s.total || 3;
-    const pct = capacity > 0 ? Math.round((capacity - remain) / capacity * 100) : 0;
-    const isFull = remain === 0 && !past;
-
-    let remainLabel, remainClass;
-    if (past) { remainLabel = '종료 · 0석'; remainClass = 'full'; }
-    else if (isFull) { remainLabel = '마감'; remainClass = 'full'; }
-    else if (remain === 1) { remainLabel = '1석 남음'; remainClass = 'low'; }
-    else { remainLabel = `${remain}석 남음`; remainClass = 'ok'; }
-
-    html += `
-      <div class="slot-row ${past ? 'past' : ''}">
-        <span class="slot-time">${s.time}</span>
-        <div class="slot-bar-wrap">
-          <div class="slot-bar ${(isFull || past) ? 'full' : ''}" style="width:${past ? 100 : pct}%"></div>
-        </div>
-        <span class="slot-remain ${remainClass}">${remainLabel}</span>
-      </div>`;
-  });
-
-  html += `</div>`;
+  html += `<div class="slot-list">` + slotRowsHtml(dateSlots, true, false) + `</div>`;
   document.getElementById('statusContent').innerHTML = html;
 
   const kst = getKST();
@@ -556,31 +757,24 @@ function renderStatus(slots) {
 }
 
 function loadAllData() {
-  fetch(API_URL)
-    .then(r => r.json())
+  fetchData(true)
     .then(data => {
-      window._cachedSlots = data.slots;
-      window._cachedStock = buildStockMap(data.sheetStock);
       renderAboutSheets(window._cachedStock);
+      renderStockList(window._cachedStock);
+      renderReserveSlots(data.slots);
     })
-    .catch(() => {});
+    .catch(() => { renderReserveSlots(null); });
 }
 
 function loadStatus() {
   document.getElementById('statusContent').innerHTML =
     '<div class="status-loading">잔여 현황을 불러오는 중...<br><span style="font-size:0.75rem;opacity:0.6;">잠시 기다려주세요</span></div>';
-  if (window._cachedSlots) {
-    renderStatus(window._cachedSlots);
-    renderStockList(window._cachedStock || null);
-    return;
-  }
-  Promise.all([fetchKST(), fetch(API_URL).then(r => r.json())])
-    .then(([_, data]) => {
-      window._cachedSlots = data.slots;
-      window._cachedStock = buildStockMap(data.sheetStock);
+  fetchData(false)
+    .then(data => {
       renderStatus(data.slots);
       renderStockList(window._cachedStock);
       renderAboutSheets(window._cachedStock);
+      renderReserveSlots(data.slots);
     })
     .catch(() => {
       document.getElementById('statusContent').innerHTML =
@@ -599,6 +793,19 @@ window.addEventListener('load', () => {
   if (last) {
     document.querySelector('.tab-btn:nth-child(2)').textContent = '예약 현황 •';
   }
+  // 마감 상태가 실시간으로 반영되도록 주기적으로 갱신
+  setInterval(() => {
+    if (document.hidden) return;
+    fetchData(true)
+      .then(data => {
+        renderReserveSlots(data.slots);
+        if (document.getElementById('panel-status').classList.contains('active')) {
+          renderStatus(data.slots);
+          renderStockList(window._cachedStock);
+        }
+      })
+      .catch(() => {});
+  }, 60000);
 });
 </script>
 

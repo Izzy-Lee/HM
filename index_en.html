@@ -68,6 +68,32 @@
   .cta-btn:hover { transform: translateY(-1px); }
   .cta-btn--reserve { background: #3d8a7a; color: white; }
   .cta-btn--reserve:hover { background: #347a6c; }
+
+  /* Time-slot booking */
+  .slot-row { display: flex; align-items: center; padding: 0.65rem 1rem; border-bottom: 1px solid rgba(74,156,140,0.08); gap: 0.6rem; }
+  .slot-row:last-child { border-bottom: none; }
+  .slot-row.past { opacity: 0.35; }
+  .slot-time { font-size: 0.88rem; font-weight: 500; color: var(--ink); min-width: 46px; }
+  .slot-bar-wrap { flex: 1; height: 6px; background: rgba(74,156,140,0.1); border-radius: 3px; overflow: hidden; }
+  .slot-bar { height: 100%; border-radius: 3px; background: var(--brush-teal); transition: width 0.4s ease; }
+  .slot-bar.full { background: var(--brush-pink); }
+  .slot-remain { font-size: 0.78rem; font-weight: 500; min-width: 56px; text-align: right; }
+  .slot-remain.ok { color: var(--brush-teal); }
+  .slot-remain.low { color: var(--brush-amber); }
+  .slot-remain.full { color: var(--brush-pink); }
+  .slot-book-btn { padding: 0.28rem 0.65rem; background: var(--brush-teal); color: white; border: none; border-radius: 6px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.72rem; font-weight: 500; cursor: pointer; white-space: nowrap; text-decoration: none; display: inline-block; transition: background 0.15s, transform 0.1s; }
+  .slot-book-btn:hover { background: #347a6c; transform: translateY(-1px); }
+  .slot-book-btn.disabled { background: rgba(74,156,140,0.2); color: var(--ink-soft); pointer-events: none; }
+  .slot-book-btn.full { background: rgba(200,120,120,0.15); color: var(--brush-pink); pointer-events: none; }
+  .reserve-slot-section { background: white; border: 1px solid rgba(74,156,140,0.25); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.9rem; text-align: left; }
+  .reserve-slot-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
+  .reserve-slot-title { font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--ink); }
+  .slot-refresh-btn { padding: 0.22rem 0.6rem; background: transparent; border: 1px solid rgba(74,156,140,0.35); border-radius: 6px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.7rem; color: var(--brush-teal); cursor: pointer; }
+  .reserve-slot-list { border: 1px solid rgba(74,156,140,0.15); border-radius: 10px; max-height: 300px; overflow-y: auto; }
+  .reserve-slot-note { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; color: var(--ink-soft); line-height: 1.6; margin-top: 0.55rem; }
+  .slot-empty { text-align: center; padding: 1.4rem 1rem; font-size: 0.8rem; color: var(--brush-pink); font-weight: 500; line-height: 1.6; }
+  #slotToast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(12px); max-width: 90%; background: #b8484f; color: #fff; font-family: 'Noto Sans KR', sans-serif; font-size: 0.8rem; line-height: 1.5; padding: 0.7rem 1rem; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.18); opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; z-index: 999; text-align: center; }
+  #slotToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .cta-btn--survey { background: #f5aebc; color: var(--ink); }
   .cta-btn--survey:hover { background: #eca0b0; }
   .note { font-size: 0.75rem; color: var(--ink-soft); line-height: 1.7; }
@@ -178,9 +204,27 @@
       </div>
     </div>
 
-    <a class="cta-btn cta-btn--reserve" href="https://forms.gle/m1RxTFzPX1DFLZa99" target="_blank">
-      Book Your Session →
-    </a>
+    <div class="reserve-slot-section">
+      <div class="reserve-slot-head">
+        <span class="reserve-slot-title">🕒 Choose a time slot</span>
+        <button class="slot-refresh-btn" type="button" onclick="refreshSlots()">Refresh</button>
+      </div>
+      <div id="reserveSlots">
+        <div style="text-align:center;padding:1.2rem 0;color:var(--ink-soft);font-size:0.85rem;">Loading available time slots…</div>
+      </div>
+      <p class="reserve-slot-note">
+        Each slot takes up to <strong id="slotCapacityLabel">3</strong> people. Slots marked <strong style="color:var(--brush-pink);">Full</strong> cannot be booked.<br>
+        Availability is re-checked the moment you tap Book, before the form opens.
+      </p>
+    </div>
+    <div id="reserveFallback" style="display:none;">
+      <a class="cta-btn cta-btn--reserve" href="https://forms.gle/m1RxTFzPX1DFLZa99" target="_blank">
+        Book Your Session →
+      </a>
+      <p class="reserve-slot-note" style="text-align:center;margin-bottom:0.7rem;">
+        Live availability could not be loaded. Please pick your time slot inside the form.
+      </p>
+    </div>
     <div style="background:#fff3e0;border:1.5px solid #d4843a;border-radius:10px;padding:0.7rem 1rem;margin-bottom:0.7rem;display:flex;align-items:flex-start;gap:0.5rem;">
       <span style="font-size:1.1rem;flex-shrink:0;">⚠️</span>
       <div>
@@ -423,6 +467,183 @@ function isPast(timeStr) {
   return nowTotal >= endTotal;
 }
 
+// ── Slot cache (TTL) ──
+const SLOT_TTL_MS = 60 * 1000;
+const DEFAULT_CAPACITY = 3;
+let _fetchedAt = 0;
+let _inflight = null;
+
+function fetchData(force) {
+  if (!force && window._cachedSlots && (Date.now() - _fetchedAt) < SLOT_TTL_MS) {
+    return Promise.resolve({ slots: window._cachedSlots, sheetStock: window._cachedStockArr });
+  }
+  if (_inflight) return _inflight;
+  _inflight = fetch(API_URL)
+    .then(r => r.json())
+    .then(data => {
+      window._cachedSlots    = Array.isArray(data.slots) ? data.slots : [];
+      window._cachedStockArr = data.sheetStock;
+      window._cachedStock    = buildStockMap(data.sheetStock);
+      _fetchedAt = Date.now();
+      _inflight = null;
+      return data;
+    })
+    .catch(err => { _inflight = null; throw err; });
+  return _inflight;
+}
+
+function slotState(s) {
+  const capacity = Number(s.capacity || s.total || DEFAULT_CAPACITY);
+  const remain   = Math.max(0, Number(s.remain) || 0);
+  const past     = isPast(s.time);
+  const full     = !past && remain <= 0;
+  const pct      = capacity > 0 ? Math.min(100, Math.round((capacity - remain) / capacity * 100)) : 0;
+
+  let label, cls;
+  if (past)              { label = 'Ended';  cls = 'full'; }
+  else if (full)         { label = 'Full';   cls = 'full'; }
+  else if (remain === 1) { label = '1 left'; cls = 'low'; }
+  else                   { label = remain + ' left'; cls = 'ok'; }
+
+  return { capacity, remain, past, full, pct, label, cls, bookable: !past && !full };
+}
+
+function findSlot(slots, date, time) {
+  return (slots || []).find(x => x.date === date && x.time === time) || null;
+}
+
+function isSlotBookable(slots, date, time) {
+  const s = findSlot(slots, date, time);
+  return s ? slotState(s).bookable : false;
+}
+
+function showToast(msg) {
+  let el = document.getElementById('slotToast');
+  if (!el) { el = document.createElement('div'); el.id = 'slotToast'; document.body.appendChild(el); }
+  el.innerHTML = msg;
+  el.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => el.classList.remove('show'), 3800);
+}
+
+function slotRowsHtml(slots, withBtn, hidePast) {
+  let html = '';
+  slots.forEach(s => {
+    const st = slotState(s);
+    if (hidePast && st.past) return;
+
+    let btn = '';
+    if (withBtn) {
+      if (st.past)      btn = '<span class="slot-book-btn disabled">Ended</span>';
+      else if (st.full) btn = '<span class="slot-book-btn full">Full</span>';
+      else              btn = '<button type="button" class="slot-book-btn" onclick="bookSlot(\'' +
+                              s.date + '\',\'' + s.time + '\')">Book</button>';
+    }
+
+    html += '<div class="slot-row ' + (st.past ? 'past' : '') + '">' +
+              '<span class="slot-time">' + s.time + '</span>' +
+              '<div class="slot-bar-wrap">' +
+                '<div class="slot-bar ' + ((st.full || st.past) ? 'full' : '') +
+                '" style="width:' + (st.past ? 100 : st.pct) + '%"></div>' +
+              '</div>' +
+              '<span class="slot-remain ' + st.cls + '">' + st.label + '</span>' +
+              btn +
+            '</div>';
+  });
+  return html;
+}
+
+function renderReserveSlots(slots) {
+  const el = document.getElementById('reserveSlots');
+  if (!el) return;
+  const fb = document.getElementById('reserveFallback');
+
+  if (!Array.isArray(slots)) {
+    el.innerHTML = '<div style="text-align:center;padding:1.2rem 0;color:var(--ink-soft);font-size:0.85rem;">Could not load availability.</div>';
+    if (fb) fb.style.display = 'block';
+    return;
+  }
+  if (fb) fb.style.display = 'none';
+
+  const activeDate = getActiveDate();
+  const dateSlots  = slots.filter(s => s.date === activeDate);
+  const openSlots  = dateSlots.filter(s => slotState(s).bookable);
+
+  const capLabel = document.getElementById('slotCapacityLabel');
+  if (capLabel && dateSlots.length) capLabel.textContent = slotState(dateSlots[0]).capacity;
+
+  if (!dateSlots.length) {
+    el.innerHTML = '<div class="slot-empty" style="color:var(--ink-soft);">No schedule available for ' + getActiveDateLabel() + '.</div>';
+    return;
+  }
+  if (!openSlots.length) {
+    el.innerHTML = '<div class="slot-empty">All time slots for ' + getActiveDateLabel() + '<br>are fully booked.</div>';
+    return;
+  }
+
+  el.innerHTML = '<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">' +
+                 getActiveDateLabel() + ' · ' + openSlots.reduce((a, s) => a + slotState(s).remain, 0) + ' seats left</p>' +
+                 '<div class="reserve-slot-list">' + slotRowsHtml(dateSlots, true, true) + '</div>';
+}
+
+function bookSlot(date, time) {
+  const cached = window._cachedSlots;
+  if (cached && !isSlotBookable(cached, date, time)) {
+    showToast('The <strong>' + time + '</strong> slot is fully booked.<br>Please choose another time.');
+    renderAllSlotViews();
+    return;
+  }
+
+  const win = window.open('', '_blank');
+
+  fetchData(true)
+    .then(data => {
+      const slots = Array.isArray(data.slots) ? data.slots : [];
+      renderAllSlotViews();
+      if (!isSlotBookable(slots, date, time)) {
+        if (win) win.close();
+        showToast('The <strong>' + time + '</strong> slot just filled up.<br>Please choose another time.');
+        return;
+      }
+      openForm(win, date, time);
+    })
+    .catch(() => {
+      if (cached && !isSlotBookable(cached, date, time)) {
+        if (win) win.close();
+        showToast('The <strong>' + time + '</strong> slot is fully booked.');
+        return;
+      }
+      openForm(win, date, time);
+    });
+}
+
+function openForm(win, date, time) {
+  const url = makeFormUrl(date, time);
+  if (win) win.location.href = url;
+  else window.open(url, '_blank');
+}
+
+function renderAllSlotViews() {
+  if (!window._cachedSlots) return;
+  renderReserveSlots(window._cachedSlots);
+  if (document.getElementById('panel-status').classList.contains('active')) {
+    renderStatus(window._cachedSlots);
+  }
+}
+
+function refreshSlots() {
+  fetchData(true)
+    .then(data => {
+      renderReserveSlots(data.slots);
+      renderStockList(window._cachedStock);
+      renderAboutSheets(window._cachedStock);
+      if (document.getElementById('panel-status').classList.contains('active')) {
+        renderStatus(data.slots);
+      }
+    })
+    .catch(() => renderReserveSlots(null));
+}
+
 function renderStatus(slots) {
   const activeDate = getActiveDate();
   const eventDates = ['5월 30일 (토)', '5월 31일 (일)'];
@@ -431,8 +652,8 @@ function renderStatus(slots) {
   slots.forEach(s => { if (byDate[s.date]) byDate[s.date].push(s); });
 
   const dateSlots = byDate[activeDate] || [];
-  const futureSlots = dateSlots.filter(s => !isPast(s.time));
-  const totalRemain = futureSlots.reduce((a, s) => a + Math.max(0, s.remain), 0);
+  const openSlots = dateSlots.filter(s => slotState(s).bookable);
+  const totalRemain = openSlots.reduce((a, s) => a + slotState(s).remain, 0);
 
   let html = `<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">${getActiveDateLabel()}</p>`;
   html += `
@@ -441,31 +662,8 @@ function renderStatus(slots) {
       <span style="font-size:1.3rem;font-weight:700;color:var(--brush-teal);">${totalRemain}<span style="font-size:0.8rem;font-weight:400;color:var(--ink-soft);"> remaining</span></span>
     </div>
   `;
-  html += `<div style="background:white;border:1px solid rgba(74,156,140,0.2);border-radius:12px;overflow:hidden;margin-bottom:1.2rem;">`;
+  html += `<div style="background:white;border:1px solid rgba(74,156,140,0.2);border-radius:12px;overflow:hidden;margin-bottom:1.2rem;">` + slotRowsHtml(dateSlots, true, false) + `</div>`;
 
-  dateSlots.forEach(s => {
-    const past = isPast(s.time);
-    const remain = Math.max(0, s.remain);
-    const capacity = s.capacity || s.total || 3;
-    const pct = capacity > 0 ? Math.round((capacity - remain) / capacity * 100) : 0;
-    const isFull = remain === 0 && !past;
-    let label, cls;
-    if (past)         { label = 'Ended'; cls = 'full'; }
-    else if (isFull)  { label = 'Full'; cls = 'full'; }
-    else if (remain === 1) { label = '1 left'; cls = 'low'; }
-    else              { label = `${remain} left`; cls = 'ok'; }
-
-    html += `
-      <div style="display:flex;align-items:center;padding:0.65rem 1rem;border-bottom:1px solid rgba(74,156,140,0.08);gap:0.6rem;${past?'opacity:0.35;':''}">
-        <span style="font-size:0.88rem;font-weight:500;color:var(--ink);min-width:46px;">${s.time}</span>
-        <div style="flex:1;height:6px;background:rgba(74,156,140,0.1);border-radius:3px;overflow:hidden;">
-          <div style="height:100%;border-radius:3px;background:${(isFull||past)?'var(--brush-pink)':'var(--brush-teal)'};width:${past?100:pct}%;transition:width 0.4s ease;"></div>
-        </div>
-        <span style="font-size:0.78rem;font-weight:500;min-width:52px;text-align:right;color:${cls==='ok'?'var(--brush-teal)':cls==='low'?'var(--brush-amber)':'var(--brush-pink)'};">${label}</span>
-      </div>`;
-  });
-
-  html += `</div>`;
   document.getElementById('statusContent').innerHTML = html;
 
   const kst = getKST();
@@ -485,31 +683,24 @@ function buildStockMap(sheetStockArr) {
 function loadAllData() {
   renderStockList(null);
   renderAboutSheets(null);
-  fetch(API_URL)
-    .then(r => r.json())
+  fetchData(true)
     .then(data => {
-      const stockMap = buildStockMap(data.sheetStock);
-      renderStockList(stockMap);
-      renderAboutSheets(stockMap);
-      window._cachedSlots = data.slots;
+      renderStockList(window._cachedStock);
+      renderAboutSheets(window._cachedStock);
+      renderReserveSlots(data.slots);
     })
-    .catch(() => {});
+    .catch(() => { renderReserveSlots(null); });
 }
 
 function loadStatus() {
   document.getElementById('statusContent').innerHTML =
     '<div style="text-align:center;padding:2rem;color:var(--ink-soft);font-size:0.85rem;">Loading availability…<br><span style="font-size:0.75rem;opacity:0.6;">Please wait</span></div>';
-  if (window._cachedSlots) {
-    renderStatus(window._cachedSlots);
-    return;
-  }
-  fetch(API_URL).then(r => r.json())
+  fetchData(false)
     .then(data => {
-      window._cachedSlots = data.slots;
-      const stockMap = buildStockMap(data.sheetStock);
-      renderStockList(stockMap);
-      renderAboutSheets(stockMap);
+      renderStockList(window._cachedStock);
+      renderAboutSheets(window._cachedStock);
       renderStatus(data.slots);
+      renderReserveSlots(data.slots);
     })
     .catch(() => {
       document.getElementById('statusContent').innerHTML =
@@ -522,6 +713,19 @@ window.addEventListener('load', () => {
   const kst = getKST();
   const g = document.getElementById('globalUpdatedAt');
   if (g) g.textContent = `Updated at ${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} KST`;
+
+  setInterval(() => {
+    if (document.hidden) return;
+    fetchData(true)
+      .then(data => {
+        renderReserveSlots(data.slots);
+        if (document.getElementById('panel-status').classList.contains('active')) {
+          renderStatus(data.slots);
+          renderStockList(window._cachedStock);
+        }
+      })
+      .catch(() => {});
+  }, 60000);
 });
 </script>
 

@@ -384,7 +384,7 @@
         </div>
         <p style="font-size:0.68rem;color:var(--ink-soft);margin-top:0.8rem;line-height:1.5;">
           * 재고는 현장 상황에 따라 변동될 수 있습니다.<br>
-          * 예약 후 원하는 도안을 선택하시거나, 현장에서 잔여 수량 중 선택 가능합니다.
+          * 예약 폼에서 원하는 도안을 선택하실 수 있습니다. 선택하지 않으셔도 현장에서 잔여 수량 중 고르실 수 있습니다.
         </p>
       </div>
       <!-- 슬롯 현황 -->
@@ -479,15 +479,29 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9
 const ENTRY_PROGRAM = 'entry.1189251627';   // 예약 폼 '참여 프로그램' 문항 ID (날짜 문항을 대체)
 const ENTRY_TIME    = 'entry.520138299';   // 예약 폼 '예약 시간' 문항 ID
 
-// ── 설문 폼 ──
-// 체험 설문·후기 인증 설문에도 회차를 프리필해 두면, 참가자가 직접 적지 않아도
-// 운영 화면에서 "이 회차 6명 중 몇 명이 설문했는지"를 바로 집계할 수 있다.
-const SURVEY_BASE = 'https://forms.gle/6zvFrtLxtGFNfUJ88';
-const SNS_BASE    = 'https://forms.gle/6zvFrtLxtGFNfUJ88';
-const SURVEY_ENTRY_PROGRAM = '';   // 예: 'entry.111111' — 비워두면 프리필 없이 그냥 열립니다
-const SURVEY_ENTRY_TIME    = '';   // 예: 'entry.222222'
-const SNS_ENTRY_PROGRAM    = '';
-const SNS_ENTRY_TIME       = '';
+// ── 설문 폼 · SNS 후기 폼 ──────────────────────────────────────
+// ⚠ 아래 4줄은 사람이 직접 채워야 합니다. (구글 폼을 새로 만들고 entry ID 를 뽑는 일은 코드로 못 합니다)
+//
+//   1. 구글 폼 2개를 각각 만든다 — [체험 만족도 설문] 과 [SNS 후기 인증]
+//      (지금은 두 폼이 같은 주소라 60건 목표와 28건 목표를 나눠 셀 수 없습니다)
+//   2. 각 폼에 '프로그램' / '시간' 객관식 문항을 넣는다
+//   3. 폼 미리보기 → 우클릭 → 페이지 소스 보기 → entry.숫자 를 찾아 아래에 붙여넣는다
+//   4. Apps Script CONFIG 의 SURVEY_SHEET_NAME / SNS_SHEET_NAME 에 각 응답 시트 이름을 넣는다
+//
+// entry ID 를 채우면 아래 withSlotPrefill() 이 바로 동작해서,
+// 참가자가 회차를 직접 적지 않아도 "어느 회차가 설문했는지" 가 자동으로 연결됩니다.
+const SURVEY_BASE = 'https://forms.gle/6zvFrtLxtGFNfUJ88';   // TODO: 체험 만족도 설문 폼 주소로 교체
+const SNS_BASE    = 'https://forms.gle/6zvFrtLxtGFNfUJ88';   // TODO: SNS 후기 인증 폼 주소로 교체 (설문과 반드시 다른 폼)
+const SURVEY_ENTRY_PROGRAM = '';   // TODO: 예 'entry.111111' — 설문 폼 '프로그램' 문항
+const SURVEY_ENTRY_TIME    = '';   // TODO: 예 'entry.222222' — 설문 폼 '시간' 문항
+const SNS_ENTRY_PROGRAM    = '';   // TODO: SNS 폼 '프로그램' 문항
+const SNS_ENTRY_TIME       = '';   // TODO: SNS 폼 '시간' 문항
+
+// 설문 폼과 SNS 폼이 아직 같은 주소면 콘솔로 알려준다 (집계가 섞이는 것을 조기에 잡기 위함)
+if (SURVEY_BASE === SNS_BASE) {
+  console.warn('[헬로미추] 설문 폼과 SNS 후기 폼이 같은 주소입니다. ' +
+               '분리하지 않으면 설문 60건 / 후기 28건 목표를 따로 집계할 수 없습니다.');
+}
 
 function withSlotPrefill(base, entryProgram, entryTime) {
   const last = getLastSelection();

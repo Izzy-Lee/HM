@@ -355,7 +355,7 @@
         </div>
         <p style="font-size:0.68rem;color:var(--ink-soft);margin-top:0.8rem;line-height:1.6;">
           * Stock may change depending on on-site conditions.<br>
-          * You may choose your preferred sheet when registering, or select from remaining stock on the day.
+          * You can pick your sheet on the booking form. If you skip it, you may choose from the remaining stock on the day.
         </p>
       </div>
       <!-- Slot availability -->
@@ -448,12 +448,20 @@ const ENTRY_PROGRAM = 'entry.1189251627';   // booking form: "program" question
 const ENTRY_TIME    = 'entry.520138299';   // booking form: "time" question
 
 // Survey forms — prefilling the session lets the booth track who has answered.
-const SURVEY_BASE = 'https://forms.gle/6zvFrtLxtGFNfUJ88';
-const SNS_BASE    = 'https://forms.gle/6zvFrtLxtGFNfUJ88';
-const SURVEY_ENTRY_PROGRAM = '';   // e.g. 'entry.111111' — leave blank to open the form as-is
-const SURVEY_ENTRY_TIME    = '';
-const SNS_ENTRY_PROGRAM    = '';
-const SNS_ENTRY_TIME       = '';
+// NOTE: the values below must be filled in by hand — create the two Google Forms
+// first, then read entry.NNNN out of each form's page source.
+// Keep these in sync with index.html; see apps-script/FIELD_SETUP.md.
+const SURVEY_BASE = 'https://forms.gle/6zvFrtLxtGFNfUJ88';   // TODO: satisfaction survey form
+const SNS_BASE    = 'https://forms.gle/6zvFrtLxtGFNfUJ88';   // TODO: SNS review form (must differ from the survey)
+const SURVEY_ENTRY_PROGRAM = '';   // TODO: e.g. 'entry.111111'
+const SURVEY_ENTRY_TIME    = '';   // TODO: e.g. 'entry.222222'
+const SNS_ENTRY_PROGRAM    = '';   // TODO
+const SNS_ENTRY_TIME       = '';   // TODO
+
+if (SURVEY_BASE === SNS_BASE) {
+  console.warn('[Hello Michu] Survey and SNS forms share one URL; ' +
+               'split them or the 60 / 28 targets cannot be counted separately.');
+}
 const FORM_BASE  = 'https://docs.google.com/forms/d/e/1FAIpQLScvLvrppxjadzctUW2HHTvMI789QlbTPXDV4CxZ7gB2tiAKZw/viewform';
 
 // ── Event constants ──

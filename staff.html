@@ -2,166 +2,671 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>헬로미추 운영 현황</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>헬로미추 현장 기록</title>
 <meta name="robots" content="noindex">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
-    --ink: #2a2118; --ink-soft: #5a4e42; --paper: #faf7f2; --surface: #fff;
-    --teal: #4a9c8c; --amber: #d4843a; --pink: #c87878; --blue: #5a7eb8;
-    --rule: rgba(90,78,66,0.12);
+    --ink: #14100b; --soft: #5a4e42; --paper: #f6f2ea; --surface: #fff;
+    --teal: #14796a; --amber: #b8620f; --red: #b23838; --blue: #2f5aa8;
+    --rule: #ddd4c6;
   }
   body {
     background: var(--paper); color: var(--ink);
-    font-family: 'Noto Sans KR', sans-serif; font-size: 14px;
-    padding: 1rem 0.9rem 3rem; max-width: 560px; margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+    font-size: 15px; padding: 0 0 6rem; max-width: 560px; margin: 0 auto;
+    -webkit-text-size-adjust: 100%;
   }
-  header { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.9rem; }
-  h1 { font-size: 1.05rem; font-weight: 700; }
-  .sub { font-size: 0.7rem; color: var(--ink-soft); }
-  .refresh {
-    padding: 0.35rem 0.75rem; background: var(--surface);
-    border: 1px solid rgba(74,156,140,0.4); border-radius: 7px;
-    font-family: inherit; font-size: 0.72rem; color: var(--teal); cursor: pointer;
+
+  /* ── 상단 고정: 누적 매출 ── */
+  .top {
+    position: sticky; top: 0; z-index: 30;
+    background: var(--ink); color: #fff;
+    padding: 0.7rem 0.9rem 0.6rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 0.7rem;
   }
-  .totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.1rem; }
-  .tot { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 0.7rem 0.5rem; text-align: center; }
-  .tot .n { font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
-  .tot .l { font-size: 0.66rem; color: var(--ink-soft); margin-top: 0.2rem; }
-  .tot.warn .n { color: var(--pink); }
-  .tot.goal .n { color: var(--teal); }
+  .top .rev { font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .top .lab { font-size: 0.65rem; opacity: 0.65; letter-spacing: 0.06em; }
+  .top .goal { font-size: 0.67rem; opacity: 0.7; text-align: right; line-height: 1.5; }
+  .revbar { height: 4px; background: rgba(255,255,255,0.15); }
+  .revbar i { display: block; height: 100%; background: #4fd1b5; width: 0; transition: width .4s; }
 
-  .bar-wrap { height: 7px; background: rgba(74,156,140,0.12); border-radius: 4px; overflow: hidden; margin-bottom: 1.2rem; }
-  .bar { height: 100%; background: var(--teal); border-radius: 4px; transition: width 0.4s ease; }
+  /* ── 탭 ── */
+  .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--rule); position: sticky; top: 60px; z-index: 29; }
+  .tabs button {
+    flex: 1; padding: 0.85rem 0.2rem; border: 0; background: none;
+    font-family: inherit; font-size: 0.82rem; font-weight: 700; color: var(--soft);
+    border-bottom: 3px solid transparent; cursor: pointer;
+  }
+  .tabs button[aria-selected="true"] { color: var(--teal); border-bottom-color: var(--teal); }
 
-  h2 { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.08em; color: var(--ink-soft); margin: 1.2rem 0 0.5rem; }
-  .rows { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
-  .row { display: flex; align-items: center; gap: 0.6rem; padding: 0.65rem 0.85rem; border-bottom: 1px solid rgba(90,78,66,0.06); }
-  .row:last-child { border-bottom: none; }
-  .row.past { opacity: 0.42; }
-  .row.alert { background: rgba(200,120,120,0.07); }
-  .row .t { font-size: 0.85rem; font-weight: 500; font-variant-numeric: tabular-nums; min-width: 48px; }
-  .row .mini { flex: 1; height: 6px; background: rgba(90,78,66,0.1); border-radius: 3px; overflow: hidden; }
-  .row .mini i { display: block; height: 100%; background: var(--teal); border-radius: 3px; }
-  .row .c { font-size: 0.76rem; font-variant-numeric: tabular-nums; color: var(--ink-soft); min-width: 46px; text-align: right; }
-  .row .badge { font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9px; white-space: nowrap; min-width: 58px; text-align: center; }
-  .badge.ok { background: rgba(74,156,140,0.13); color: var(--teal); }
-  .badge.miss { background: rgba(200,120,120,0.14); color: var(--pink); }
-  .badge.none { background: rgba(90,78,66,0.08); color: var(--ink-soft); }
+  .pane { padding: 0.9rem; display: none; }
+  .pane.on { display: block; }
+  h2 { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; color: var(--soft); margin: 1.3rem 0 0.55rem; }
+  h2:first-child { margin-top: 0.2rem; }
 
-  .empty, .err { text-align: center; padding: 1.6rem 1rem; font-size: 0.82rem; color: var(--ink-soft); line-height: 1.7; }
-  .err { color: var(--pink); }
-  .tip { background: #fff3e0; border: 1px solid #e0b184; border-radius: 9px; padding: 0.7rem 0.85rem; font-size: 0.72rem; color: #7a5000; line-height: 1.65; margin-top: 1.3rem; }
-  .tip b { color: #b85c00; }
-  .stamp { font-size: 0.66rem; color: rgba(90,78,66,0.5); text-align: right; margin-top: 0.6rem; }
+  /* ── 판매 버튼 ── */
+  .prod { background: var(--surface); border: 2px solid var(--rule); border-radius: 12px; margin-bottom: 0.7rem; overflow: hidden; }
+  .prod-main {
+    display: flex; align-items: center; gap: 0.7rem; width: 100%;
+    padding: 0.95rem 0.9rem; border: 0; background: none; text-align: left;
+    font-family: inherit; cursor: pointer; min-height: 64px;
+  }
+  .prod-main .nm { flex: 1; font-size: 1.05rem; font-weight: 700; }
+  .prod-main .pr { font-size: 0.9rem; font-weight: 700; color: var(--teal); font-variant-numeric: tabular-nums; }
+  .prod-main .st { font-size: 0.68rem; color: var(--soft); }
+  .qty { display: flex; align-items: center; gap: 0.45rem; padding: 0 0.9rem 0.75rem; }
+  .qty span { font-size: 0.68rem; color: var(--soft); margin-right: auto; }
+  .qty button {
+    width: 44px; height: 40px; border: 1px solid var(--rule); background: var(--paper);
+    border-radius: 9px; font-size: 1.2rem; font-weight: 700; font-family: inherit;
+    color: var(--ink); cursor: pointer;
+  }
+  .qty b { min-width: 34px; text-align: center; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+
+  /* ── 결제수단 시트 ── */
+  .sheet { position: fixed; inset: 0; z-index: 60; display: none; }
+  .sheet.on { display: block; }
+  .sheet .veil { position: absolute; inset: 0; background: rgba(20,16,11,0.5); }
+  .sheet .card {
+    position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface);
+    border-radius: 18px 18px 0 0; padding: 1rem 0.9rem calc(1rem + env(safe-area-inset-bottom));
+    max-width: 560px; margin: 0 auto;
+  }
+  .sheet h3 { font-size: 1rem; margin-bottom: 0.15rem; }
+  .sheet .sub { font-size: 0.76rem; color: var(--soft); margin-bottom: 0.9rem; }
+  .pays { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+  .pays button {
+    min-height: 68px; border: 2px solid var(--teal); background: var(--surface);
+    border-radius: 12px; font-family: inherit; font-size: 1rem; font-weight: 700;
+    color: var(--teal); cursor: pointer;
+  }
+  .sheet .cancel {
+    width: 100%; margin-top: 0.7rem; min-height: 48px; border: 0; background: none;
+    font-family: inherit; font-size: 0.85rem; color: var(--soft); cursor: pointer;
+  }
+  .buyer { margin-top: 0.85rem; }
+  .buyer label { font-size: 0.7rem; color: var(--soft); display: block; margin-bottom: 0.3rem; }
+  .buyer select { width: 100%; min-height: 48px; border: 1px solid var(--rule); border-radius: 10px;
+                  font-family: inherit; font-size: 0.9rem; padding: 0 0.6rem; background: var(--surface); color: var(--ink); }
+
+  /* ── 회차 선택 ── */
+  .slotbar { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; }
+  .slotbar select {
+    flex: 1; min-height: 52px; border: 1px solid var(--rule); border-radius: 10px;
+    font-family: inherit; font-size: 0.95rem; font-weight: 600; padding: 0 0.6rem;
+    background: var(--surface); color: var(--ink);
+  }
+
+  /* ── 명단 ── */
+  .person { background: var(--surface); border: 1px solid var(--rule); border-radius: 11px; margin-bottom: 0.6rem; padding: 0.7rem 0.8rem; }
+  .person .hd { display: flex; align-items: center; gap: 0.6rem; }
+  .person .nm { flex: 1; font-size: 0.98rem; font-weight: 700; }
+  .toggle { display: flex; gap: 0.4rem; }
+  .toggle button {
+    min-height: 44px; padding: 0 0.85rem; border: 2px solid var(--rule); background: var(--surface);
+    border-radius: 9px; font-family: inherit; font-size: 0.85rem; font-weight: 700; color: var(--soft); cursor: pointer;
+  }
+  .toggle button.on-att { border-color: var(--teal); background: var(--teal); color: #fff; }
+  .toggle button.on-no  { border-color: var(--red);  background: var(--red);  color: #fff; }
+  .designs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+  .designs button {
+    min-height: 44px; padding: 0 0.7rem; border: 1px solid var(--rule); background: var(--paper);
+    border-radius: 8px; font-family: inherit; font-size: 0.8rem; color: var(--ink); cursor: pointer;
+  }
+  .designs button.on { border-color: var(--amber); background: var(--amber); color: #fff; font-weight: 700; }
+  .designs button.fin { margin-left: auto; }
+  .designs button.fin.on { border-color: var(--blue); background: var(--blue); }
+
+  /* ── 관찰 태그 ── */
+  .tags { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+  .tags button {
+    min-height: 72px; border: 2px solid var(--amber); background: var(--surface);
+    border-radius: 12px; font-family: inherit; font-size: 0.92rem; font-weight: 700;
+    color: var(--amber); cursor: pointer;
+  }
+
+  /* ── 재고 ── */
+  .stk { display: flex; align-items: center; gap: 0.6rem; background: var(--surface);
+         border: 1px solid var(--rule); border-radius: 10px; padding: 0.55rem 0.8rem; margin-bottom: 0.5rem; }
+  .stk .nm { flex: 1; font-size: 0.88rem; }
+  .stk input { width: 66px; min-height: 44px; text-align: center; border: 1px solid var(--rule);
+               border-radius: 8px; font-family: inherit; font-size: 1rem; font-variant-numeric: tabular-nums; color: var(--ink); background: var(--paper); }
+  .stk button { min-height: 44px; padding: 0 0.8rem; border: 1px solid var(--teal); background: var(--surface);
+                border-radius: 8px; font-family: inherit; font-size: 0.78rem; font-weight: 700; color: var(--teal); cursor: pointer; }
+
+  /* ── 하단 고정: Undo ── */
+  .undobar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    max-width: 560px; margin: 0 auto; padding: 0.6rem 0.9rem calc(0.6rem + env(safe-area-inset-bottom));
+    background: rgba(246,242,234,0.96); border-top: 1px solid var(--rule);
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .undobar .last { flex: 1; font-size: 0.74rem; color: var(--soft); line-height: 1.4; }
+  .undobar button {
+    min-height: 52px; padding: 0 1.1rem; border: 2px solid var(--red); background: var(--surface);
+    border-radius: 11px; font-family: inherit; font-size: 0.92rem; font-weight: 700; color: var(--red); cursor: pointer;
+  }
+  .undobar button:disabled { opacity: 0.35; }
+
+  /* ── 토스트 ── */
+  #toast {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 5.4rem; z-index: 70;
+    background: var(--ink); color: #fff; padding: 0.7rem 1.1rem; border-radius: 10px;
+    font-size: 0.85rem; font-weight: 600; max-width: 92%; text-align: center;
+    opacity: 0; pointer-events: none; transition: opacity .18s;
+  }
+  #toast.on { opacity: 1; }
+  #toast.bad { background: var(--red); }
+
+  .queue { background: #fff3e0; border: 1px solid #e0b184; border-radius: 9px;
+           padding: 0.6rem 0.8rem; font-size: 0.75rem; color: #7a5000; margin-bottom: 0.8rem; display: none; }
+  .queue.on { display: block; }
+  .note { font-size: 0.73rem; color: var(--soft); line-height: 1.65; margin-top: 0.7rem; }
+  .gate { padding: 3rem 1.2rem; text-align: center; font-size: 0.9rem; color: var(--soft); line-height: 1.8; }
+  .gate code { background: var(--surface); padding: 0.15rem 0.4rem; border-radius: 5px; border: 1px solid var(--rule); }
 </style>
 </head>
 <body>
 
-<header>
+<div id="app" hidden>
+
+<div class="top">
   <div>
-    <h1>운영 현황</h1>
-    <div class="sub">9월 19일 (토) · 학산마당극 놀래</div>
+    <div class="lab">누적 매출</div>
+    <div class="rev" id="rev">0원</div>
   </div>
-  <button class="refresh" type="button" onclick="load(true)">새로고침</button>
-</header>
-
-<div class="totals">
-  <div class="tot goal"><div class="n" id="tDone">–</div><div class="l">설문 완료</div></div>
-  <div class="tot warn"><div class="n" id="tMiss">–</div><div class="l">미작성</div></div>
-  <div class="tot"><div class="n" id="tFrame">–</div><div class="l">액자 잔여</div></div>
+  <div class="goal" id="goal">목표 2,700,000원</div>
 </div>
-<div class="bar-wrap"><div class="bar" id="goalBar" style="width:0%"></div></div>
+<div class="revbar"><i id="revbar"></i></div>
 
-<div id="content">
-  <div class="empty">불러오는 중...</div>
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true"  data-p="sale">판매</button>
+  <button role="tab" aria-selected="false" data-p="check">체크인</button>
+  <button role="tab" aria-selected="false" data-p="memo">관찰</button>
+  <button role="tab" aria-selected="false" data-p="stock">재고</button>
 </div>
 
-<div class="tip">
-  <b>설문 이탈을 막는 가장 확실한 방법</b><br>
-  작품을 바로 건네지 말고, <b>설문 완료 화면을 확인한 뒤</b> 엽서 봉투에 담아 전달하세요.
-  수채화가 마르는 5분이 설문 작성 시간입니다. 위 표에서 <b>미작성</b>이 뜬 회차는
-  아직 부스 근처에 계실 가능성이 높습니다.
+<div class="queue" id="queue"></div>
+
+<!-- ── 판매 ── -->
+<section class="pane on" id="p-sale">
+  <div class="slotbar">
+    <select id="saleSlot" aria-label="현재 회차"></select>
+  </div>
+  <div id="prods"></div>
+  <p class="note">상품을 누르면 결제수단을 고르고 바로 기록됩니다. 잘못 눌렀으면 아래 <b>직전 취소</b>를 누르세요.
+  회차를 맞춰두면 무료 체험자의 유료 전환율이 자동으로 계산됩니다.</p>
+</section>
+
+<!-- ── 체크인 ── -->
+<section class="pane" id="p-check">
+  <div class="slotbar">
+    <select id="checkSlot" aria-label="체크인 회차"></select>
+  </div>
+  <div id="roster"><p class="note">회차를 선택하세요.</p></div>
+</section>
+
+<!-- ── 관찰 ── -->
+<section class="pane" id="p-memo">
+  <div class="slotbar"><select id="memoSlot" aria-label="관찰 회차"></select></div>
+  <div class="tags">
+    <button type="button" data-tag="미완성">미완성</button>
+    <button type="button" data-tag="대기발생">대기발생</button>
+    <button type="button" data-tag="문의많음">문의많음</button>
+  </div>
+  <p class="note">누른 시각과 회차가 함께 기록됩니다. 30분 안에 못 끝낸 참가자가 생기면 <b>미완성</b>을 눌러 주세요 —
+  결과보고서 개선사항의 근거가 됩니다.</p>
+</section>
+
+<!-- ── 재고 ── -->
+<section class="pane" id="p-stock">
+  <div id="stocks"><p class="note">불러오는 중...</p></div>
+  <p class="note">실물과 어긋날 때만 쓰세요. 입력한 숫자가 <b>잔여</b>가 되도록 보정값이 자동 계산됩니다.</p>
+</section>
+
+<div class="undobar">
+  <span class="last" id="lastLine">아직 기록 없음</span>
+  <button type="button" id="undoBtn" disabled>직전 취소</button>
 </div>
 
-<p class="stamp" id="stamp"></p>
+</div><!-- /app -->
+
+<div class="gate" id="gate" hidden>
+  접근키가 필요합니다.<br>
+  <code>staff.html?k=접근키</code> 형태로 열어 주세요.
+</div>
+
+<!-- 결제수단 시트 -->
+<div class="sheet" id="paySheet">
+  <div class="veil" data-close></div>
+  <div class="card">
+    <h3 id="payTitle">결제수단</h3>
+    <div class="sub" id="paySub"></div>
+    <div class="pays">
+      <button type="button" data-pay="현금">현금</button>
+      <button type="button" data-pay="카드">카드</button>
+      <button type="button" data-pay="계좌">계좌</button>
+    </div>
+    <div class="buyer" id="buyerWrap" hidden>
+      <label for="buyerSel">구매자 연결 (선택) — 전환율 집계용</label>
+      <select id="buyerSel"><option value="">연결 안 함</option></select>
+    </div>
+    <button type="button" class="cancel" data-close>닫기</button>
+  </div>
+</div>
+
+<div id="toast"></div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
-const SURVEY_GOAL = 60;
-const PROGRAM_NAMES = { '컬러링': '컬러링 체험', '바인더': '바인더 체험' };
+'use strict';
 
-function esc(v) {
-  return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
+
+const KEY   = new URLSearchParams(location.search).get('k') || '';
+const STAFF = new URLSearchParams(location.search).get('staff') || '';
+
+const REVENUE_GOAL = 2700000;
+const PRODUCTS = [
+  { key: '바인더 체험',   price: 20000 },
+  { key: '바인더 완성품', price: 30000 },
+  { key: '스티커',       price: 2000, label: '데코 스티커' },
+  { key: '액자',         price: 0,    label: 'SNS 후기 액자 증정' }
+];
+const PROGRAMS = ['컬러링', '바인더'];
+const TIMES = (function () {
+  const out = [];
+  for (let m = 13 * 60 + 30; m <= 18 * 60; m += 30) {
+    out.push(String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'));
+  }
+  return out;
+})();
+
+const qty = {};       // 상품별 수량
+let pending = null;   // 결제수단 대기 중인 판매
+let stockMap = {};
+
+/* ══ JSONP — GitHub Pages 에서 Apps Script 로 쓰려면 이 방법뿐이다 ══
+   fetch() POST 는 CORS 로 막히고, 파라미터 이름 c 는 구글 예약어라 400 이 난다.
+   그래서 수량은 co 로 보낸다. */
+let jsonpSeq = 0;
+function call(params) {
+  return new Promise((resolve, reject) => {
+    const cb = '__hm' + (++jsonpSeq) + '_' + Date.now();
+    const url = new URL(API_URL);
+    Object.keys(params).forEach(k => {
+      if (params[k] !== undefined && params[k] !== null && params[k] !== '') url.searchParams.set(k, params[k]);
+    });
+    url.searchParams.set('cb', cb);
+
+    const s = document.createElement('script');
+    let done = false;
+    const cleanup = () => { delete window[cb]; s.remove(); clearTimeout(timer); };
+    const timer = setTimeout(() => { if (!done) { done = true; cleanup(); reject(new Error('시간 초과')); } }, 15000);
+
+    window[cb] = data => { done = true; cleanup(); (data && data.ok === false) ? reject(new Error(data.error || '오류')) : resolve(data); };
+    s.onerror = () => { if (!done) { done = true; cleanup(); reject(new Error('네트워크 오류')); } };
+    s.src = url.toString();
+    document.body.appendChild(s);
+  });
 }
 
-function render(data) {
-  const rows  = Array.isArray(data.surveyProgress) ? data.surveyProgress : [];
-  const goods = Array.isArray(data.goods) ? data.goods : [];
-  const frame = goods.filter(g => g.key === '액자')[0];
+/* ══ 오프라인 큐 — 전송 실패한 쓰기는 쌓아두고 재시도 ══ */
+const QKEY = 'hm_queue_v1';
+function queueGet()  { try { return JSON.parse(localStorage.getItem(QKEY) || '[]'); } catch (e) { return []; } }
+function queueSet(v) { try { localStorage.setItem(QKEY, JSON.stringify(v)); } catch (e) {} paintQueue(); }
+function queuePush(p) { const q = queueGet(); q.push(p); queueSet(q); }
 
-  const done = rows.reduce((a, r) => a + r.done, 0);
-  const miss = rows.reduce((a, r) => a + r.missing, 0);
+function paintQueue() {
+  const n = queueGet().length;
+  const el = document.getElementById('queue');
+  el.classList.toggle('on', n > 0);
+  el.textContent = n ? '전송 대기 ' + n + '건 — 네트워크가 돌아오면 자동으로 보냅니다.' : '';
+}
 
-  document.getElementById('tDone').textContent  = done;
-  document.getElementById('tMiss').textContent  = miss;
-  document.getElementById('tFrame').textContent = frame ? frame.remain : '–';
-  document.getElementById('goalBar').style.width =
-    Math.min(100, Math.round(done / SURVEY_GOAL * 100)) + '%';
+async function flushQueue() {
+  const q = queueGet();
+  if (!q.length) return;
+  while (q.length) {
+    try { await call(q[0]); q.shift(); queueSet(q.slice()); }
+    catch (e) { queueSet(q.slice()); return; }
+  }
+  refresh();
+}
 
-  const el = document.getElementById('content');
-  if (!rows.length) {
-    el.innerHTML = '<div class="empty">아직 예약이 없습니다.<br>' +
-      '<span style="font-size:0.72rem;opacity:0.75;">설문 진행률이 안 보이면 Apps Script의 ' +
-      'SURVEY_SHEET_NAME 설정을 확인하세요.</span></div>';
+/** 쓰기 요청 — 실패하면 큐에 넣고 화면은 그대로 진행시킨다 */
+async function send(params, okMsg) {
+  const payload = Object.assign({ k: KEY, staff: STAFF }, params);
+  try {
+    const r = await call(payload);
+    if (okMsg) toast(okMsg);
+    return r;
+  } catch (e) {
+    queuePush(payload);
+    toast('전송 실패 — 대기열에 저장했습니다', true);
+    return null;
+  }
+}
+
+/* ══ UI 유틸 ══ */
+let toastTimer;
+function toast(msg, bad) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.toggle('bad', !!bad);
+  el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('on'), 2200);
+}
+const won = n => Number(n || 0).toLocaleString('ko-KR') + '원';
+const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const label = p => p.label || p.key;
+
+/* ══ 회차 선택기 ══ */
+function slotOptions(sel, includeBlank) {
+  let html = includeBlank ? '<option value="">회차 미지정</option>' : '';
+  PROGRAMS.forEach(pg => {
+    html += '<optgroup label="' + pg + '">';
+    TIMES.forEach(t => { html += '<option value="' + pg + ' ' + t + '">' + pg + ' ' + t + '</option>'; });
+    html += '</optgroup>';
+  });
+  sel.innerHTML = html;
+}
+
+/** 지금 시각에 가장 가까운 회차를 기본값으로 */
+function currentSlotTime() {
+  const now = new Date();
+  const kst = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + 9 * 3600000);
+  const m = kst.getHours() * 60 + kst.getMinutes();
+  let best = TIMES[0];
+  TIMES.forEach(t => {
+    const [h, mi] = t.split(':').map(Number);
+    if (h * 60 + mi <= m) best = t;
+  });
+  return best;
+}
+
+/* ══ 판매 ══ */
+function paintProducts() {
+  document.getElementById('prods').innerHTML = PRODUCTS.map(p => {
+    const st = stockMap[p.key];
+    const n = qty[p.key] || 1;
+    return '<div class="prod">' +
+      '<button class="prod-main" type="button" data-item="' + esc(p.key) + '">' +
+        '<span class="nm">' + esc(label(p)) +
+          (st !== undefined ? '<br><span class="st">재고 ' + st + '</span>' : '') +
+        '</span>' +
+        '<span class="pr">' + (p.price > 0 ? won(p.price) : '증정') + '</span>' +
+      '</button>' +
+      '<div class="qty">' +
+        '<span>수량</span>' +
+        '<button type="button" data-step="-1" data-item="' + esc(p.key) + '">−</button>' +
+        '<b id="q-' + esc(p.key) + '">' + n + '</b>' +
+        '<button type="button" data-step="1" data-item="' + esc(p.key) + '">+</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+document.getElementById('prods').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const item = btn.dataset.item;
+  if (btn.dataset.step) {
+    qty[item] = Math.max(1, Math.min(20, (qty[item] || 1) + Number(btn.dataset.step)));
+    document.getElementById('q-' + item).textContent = qty[item];
+    return;
+  }
+  openPay(item);
+});
+
+function openPay(item) {
+  const p = PRODUCTS.filter(x => x.key === item)[0];
+  const n = qty[item] || 1;
+  pending = { item: item, co: n, price: p.price };
+
+  document.getElementById('payTitle').textContent = label(p) + ' × ' + n;
+  document.getElementById('paySub').textContent =
+    p.price > 0 ? won(p.price * n) + ' — 결제수단을 고르면 바로 기록됩니다' : '증정 기록 — 결제수단 없이 기록됩니다';
+
+  const wrap = document.getElementById('buyerWrap');
+  wrap.hidden = (p.price <= 0);
+  fillBuyers();
+
+  document.querySelectorAll('.pays button').forEach(b => {
+    b.hidden = (p.price <= 0 && b.dataset.pay !== '현금');
+    b.textContent = (p.price <= 0 && b.dataset.pay === '현금') ? '증정 기록' : b.dataset.pay;
+  });
+  document.getElementById('paySheet').classList.add('on');
+}
+
+function closePay() {
+  document.getElementById('paySheet').classList.remove('on');
+  pending = null;
+}
+document.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', closePay));
+
+document.querySelectorAll('.pays button').forEach(b => b.addEventListener('click', async () => {
+  if (!pending) return;
+  const p = pending; pending = null;
+  const buyer = document.getElementById('buyerSel').value;
+  const slotSel = document.getElementById('saleSlot').value;
+  const slot = slotSel ? (buyer ? slotSel + '|' + buyer : slotSel) : '';
+  closePay();
+
+  qty[p.item] = 1;
+  paintProducts();
+
+  const r = await send(
+    { action: 'sale', item: p.item, co: p.co, pay: (p.price > 0 ? b.dataset.pay : ''), slot: slot },
+    (p.price > 0 ? won(p.price * p.co) : '증정') + ' 기록 완료'
+  );
+  setLast(p.item + ' × ' + p.co + (p.price > 0 ? ' · ' + b.dataset.pay : ' · 증정'));
+  if (r && r.revenue !== undefined) paintRevenue(r.revenue);
+  refresh();
+}));
+
+function fillBuyers() {
+  const sel = document.getElementById('buyerSel');
+  const slot = document.getElementById('saleSlot').value;
+  sel.innerHTML = '<option value="">연결 안 함</option>';
+  if (!slot) return;
+  call({ action: 'roster', slot: slot }).then(d => {
+    (d.people || []).filter(p => p.status === '참석').forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.name; o.textContent = p.name;
+      sel.appendChild(o);
+    });
+  }).catch(() => {});
+}
+
+/* ══ Undo ══ */
+function setLast(text) {
+  document.getElementById('lastLine').textContent = '직전: ' + text;
+  document.getElementById('undoBtn').disabled = false;
+}
+document.getElementById('undoBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('undoBtn');
+  btn.disabled = true;
+  try {
+    const r = await call({ action: 'sale', undo: 1, k: KEY });
+    toast((r.item || '판매') + ' × ' + (r.qty || 1) + ' 취소됨');
+    document.getElementById('lastLine').textContent = '직전 기록을 취소했습니다';
+    if (r.revenue !== undefined) paintRevenue(r.revenue);
+    refresh();
+  } catch (e) {
+    toast(e.message || '취소 실패', true);
+    btn.disabled = false;
+  }
+});
+
+/* ══ 체크인 ══ */
+async function loadRoster() {
+  const slot = document.getElementById('checkSlot').value;
+  const el = document.getElementById('roster');
+  el.innerHTML = '<p class="note">불러오는 중...</p>';
+  try {
+    const d = await call({ action: 'roster', slot: slot });
+    const people = d.people || [];
+    if (!people.length) { el.innerHTML = '<p class="note">이 회차 예약자가 없습니다. 현장 접수는 아래에서 추가하세요.</p>' + addRowHtml(); return; }
+    el.innerHTML = people.map(p => personHtml(p, d.designs || [])).join('') + addRowHtml();
+  } catch (e) {
+    el.innerHTML = '<p class="note">명단을 불러오지 못했습니다. ' + esc(e.message) + '</p>' + addRowHtml();
+  }
+}
+
+function addRowHtml() {
+  return '<div class="person"><div class="hd">' +
+    '<input class="nm" id="walkIn" placeholder="현장 접수 이름" ' +
+      'style="border:1px solid var(--rule);border-radius:8px;min-height:44px;padding:0 .6rem;font-family:inherit;font-size:.95rem;background:var(--paper);color:var(--ink);">' +
+    '<button type="button" id="walkInBtn" style="min-height:44px;padding:0 .9rem;border:2px solid var(--teal);background:var(--teal);color:#fff;border-radius:9px;font-family:inherit;font-weight:700;cursor:pointer;">추가</button>' +
+  '</div></div>';
+}
+
+function personHtml(p, designs) {
+  const att = p.status === '참석', no = p.status === '노쇼';
+  return '<div class="person" data-name="' + esc(p.name) + '">' +
+    '<div class="hd">' +
+      '<span class="nm">' + esc(p.name) + '</span>' +
+      '<span class="toggle">' +
+        '<button type="button" data-st="참석" class="' + (att ? 'on-att' : '') + '">참석</button>' +
+        '<button type="button" data-st="노쇼" class="' + (no ? 'on-no' : '') + '">노쇼</button>' +
+      '</span>' +
+    '</div>' +
+    (att ? '<div class="designs">' +
+      designs.map(d => '<button type="button" data-design="' + esc(d) + '" class="' + (p.design === d ? 'on' : '') + '">' + esc(d) + '</button>').join('') +
+      '<button type="button" class="fin ' + (p.done === '완성' ? 'on' : '') + '" data-done="1">완성</button>' +
+    '</div>' : '') +
+  '</div>';
+}
+
+document.getElementById('roster').addEventListener('click', async e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const slot = document.getElementById('checkSlot').value;
+
+  if (btn.id === 'walkInBtn') {
+    const nm = (document.getElementById('walkIn').value || '').trim();
+    if (!nm) { toast('이름을 입력하세요', true); return; }
+    await send({ action: 'checkin', slot: slot, name: nm, status: '참석' }, nm + ' 참석 기록');
+    loadRoster();
     return;
   }
 
-  let html = '';
-  Object.keys(PROGRAM_NAMES).forEach(key => {
-    const list = rows.filter(r => r.program === key);
-    if (!list.length) return;
-    html += '<h2>' + esc(PROGRAM_NAMES[key]) + '</h2><div class="rows">';
-    list.forEach(r => {
-      const pct = r.booked > 0 ? Math.round(r.done / r.booked * 100) : 0;
-      let badge = '<span class="badge none">–</span>';
-      if (r.missing > 0)      badge = '<span class="badge miss">' + r.missing + '명 미작성</span>';
-      else if (r.booked > 0)  badge = '<span class="badge ok">완료</span>';
-      const cls = ['row', r.past ? 'past' : '', (r.missing > 0 && !r.past) ? 'alert' : ''].filter(Boolean).join(' ');
-      html += '<div class="' + cls + '">' +
-                '<span class="t">' + esc(r.time) + '</span>' +
-                '<span class="mini"><i style="width:' + pct + '%"></i></span>' +
-                '<span class="c">' + r.done + ' / ' + r.booked + '</span>' +
-                badge +
-              '</div>';
-    });
-    html += '</div>';
+  const card = btn.closest('.person');
+  if (!card || !card.dataset.name) return;
+  const name = card.dataset.name;
+
+  if (btn.dataset.st) {
+    const on = btn.classList.contains('on-att') || btn.classList.contains('on-no');
+    const status = on ? '' : btn.dataset.st;            // 다시 누르면 해제
+    const design = card.querySelector('.designs button.on[data-design]');
+    await send({ action: 'checkin', slot: slot, name: name, status: status || '미처리',
+                 design: design ? design.dataset.design : '' },
+               name + ' ' + (status || '해제'));
+    loadRoster();
+    return;
+  }
+
+  if (btn.dataset.design) {
+    const cur = card.querySelector('.designs button.on');
+    const same = cur === btn;
+    card.querySelectorAll('.designs button[data-design]').forEach(x => x.classList.remove('on'));
+    if (!same) btn.classList.add('on');
+    const done = card.querySelector('.fin.on') ? '완성' : '';
+    await send({ action: 'checkin', slot: slot, name: name, status: '참석',
+                 design: same ? '' : btn.dataset.design, done: done },
+               same ? '도안 해제' : btn.dataset.design + ' 선택');
+    refresh();
+    return;
+  }
+
+  if (btn.dataset.done) {
+    const on = btn.classList.contains('on');
+    btn.classList.toggle('on', !on);
+    const d = card.querySelector('.designs button.on[data-design]');
+    await send({ action: 'checkin', slot: slot, name: name, status: '참석',
+                 design: d ? d.dataset.design : '', done: on ? '미완성' : '완성' },
+               on ? '미완성으로 표시' : '완성 처리');
+  }
+});
+
+/* ══ 관찰 태그 ══ */
+document.querySelectorAll('.tags button').forEach(b => b.addEventListener('click', () => {
+  const slot = document.getElementById('memoSlot').value;
+  send({ action: 'memo', tag: b.dataset.tag, slot: slot, note: '현장 기록' }, b.dataset.tag + ' 기록됨');
+}));
+
+/* ══ 재고 ══ */
+function paintStocks(rows) {
+  document.getElementById('stocks').innerHTML = rows.map(r =>
+    '<div class="stk">' +
+      '<span class="nm">' + esc(r.key) + '</span>' +
+      '<input type="number" min="0" value="' + r.remain + '" data-item="' + esc(r.key) + '" inputmode="numeric">' +
+      '<button type="button" data-fix="' + esc(r.key) + '">보정</button>' +
+    '</div>').join('');
+}
+document.getElementById('stocks').addEventListener('click', async e => {
+  const btn = e.target.closest('button[data-fix]');
+  if (!btn) return;
+  const item = btn.dataset.fix;
+  const inp = document.querySelector('#stocks input[data-item="' + CSS.escape(item) + '"]');
+  await send({ action: 'stock', item: item, val: inp.value }, item + ' 잔여 ' + inp.value + '로 보정');
+  refresh();
+});
+
+/* ══ 매출 표시 ══ */
+function paintRevenue(v) {
+  document.getElementById('rev').textContent = won(v);
+  document.getElementById('revbar').style.width = Math.min(100, v / REVENUE_GOAL * 100) + '%';
+  document.getElementById('goal').innerHTML =
+    '목표 ' + won(REVENUE_GOAL) + '<br>달성 ' + (Math.round(v / REVENUE_GOAL * 1000) / 10) + '%';
+}
+
+/* ══ 갱신 ══ */
+let refreshing = false;
+async function refresh() {
+  if (refreshing) return;
+  refreshing = true;
+  try {
+    const r = await call({ action: 'report' });
+    paintRevenue(r.sales.revenue);
+    stockMap = {};
+    (r.stock || []).forEach(s => { stockMap[s.key] = s.remain; });
+    paintProducts();
+    paintStocks(r.stock || []);
+  } catch (e) { /* 조용히 넘어간다 — 기록은 계속 가능해야 한다 */ }
+  refreshing = false;
+}
+
+/* ══ 탭 ══ */
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === 'p-' + b.dataset.p));
+  if (b.dataset.p === 'check') loadRoster();
+}));
+
+/* ══ 시작 ══ */
+if (!KEY) {
+  document.getElementById('gate').hidden = false;
+} else {
+  document.getElementById('app').hidden = false;
+  ['saleSlot', 'checkSlot', 'memoSlot'].forEach(id => {
+    const sel = document.getElementById(id);
+    slotOptions(sel, id === 'saleSlot');
+    sel.value = '컬러링 ' + currentSlotTime();
   });
-  el.innerHTML = html;
-}
+  document.getElementById('saleSlot').addEventListener('change', fillBuyers);
+  document.getElementById('checkSlot').addEventListener('change', loadRoster);
 
-function load(manual) {
-  if (manual) document.getElementById('content').innerHTML = '<div class="empty">불러오는 중...</div>';
-  fetch(API_URL)
-    .then(r => r.json())
-    .then(data => {
-      render(data);
-      const now = new Date();
-      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-      const kst = new Date(utc + 9 * 3600000);
-      document.getElementById('stamp').textContent =
-        kst.getHours() + ':' + String(kst.getMinutes()).padStart(2, '0') + ' 기준 (KST)';
-    })
-    .catch(() => {
-      document.getElementById('content').innerHTML =
-        '<div class="err">현황을 불러오지 못했습니다.<br>네트워크를 확인하고 새로고침해 주세요.</div>';
-    });
+  paintProducts();
+  paintQueue();
+  refresh();
+  flushQueue();
+  setInterval(() => { if (!document.hidden) { flushQueue(); refresh(); } }, 30000);
+  window.addEventListener('online', flushQueue);
 }
-
-load();
-setInterval(() => { if (!document.hidden) load(false); }, 30000);
 </script>
 
 </body>

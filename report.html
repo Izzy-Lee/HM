@@ -50,6 +50,10 @@
   .r.mid  { color: var(--amber); }
   .r.low  { color: var(--red); }
   tfoot td { background: #faf7f2; font-weight: 800; border-top: 1px solid var(--rule); }
+  tr.over td { background: #fdecea; }
+  tr.over td:last-child { color: var(--red); font-weight: 800; }
+  .overnote { font-size: 0.72rem; color: var(--red); line-height: 1.6; margin-top: 0.5rem; display: none; }
+  .overnote.on { display: block; }
 
   .bars { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 0.3rem 0.8rem; }
   .bar { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(90,78,66,0.07); }
@@ -120,6 +124,7 @@
 
 <h2>8. 종료 시점 재고</h2>
 <table id="tStock"></table>
+<p class="overnote" id="stockOver"></p>
 
 <h2>9. 결과보고서 붙여넣기용</h2>
 <button class="btn" type="button" id="copyBtn" style="margin-bottom:0.6rem;">전체 복사</button>
@@ -159,7 +164,8 @@ const rateCls = p => p >= 100 ? 'ok' : (p >= 70 ? 'mid' : 'low');
 function tbl(el, head, rows, foot) {
   let h = '<thead><tr>' + head.map(x => '<th>' + esc(x) + '</th>').join('') + '</tr></thead><tbody>';
   rows.forEach(r => {
-    h += '<tr>' + r.map((cell, i) => {
+    const cls = r.__cls ? ' class="' + r.__cls + '"' : '';
+    h += '<tr' + cls + '>' + r.map((cell, i) => {
       if (i === 0) return '<td>' + esc(cell) + '</td>';
       if (cell && cell.rate !== undefined) {
         return '<td class="r ' + rateCls(cell.rate) + '">' + cell.rate + '%</td>';
@@ -250,9 +256,19 @@ function render(d) {
     '이번 파일럿의 핵심 지표입니다.';
 
   /* 8. 재고 */
-  tbl(document.getElementById('tStock'),
-    ['품목', '잔여', '초기', '소진'],
-    (d.stock || []).map(s => [s.key, num(s.remain), num(s.total), num(s.used !== undefined ? s.used : s.total - s.remain)]));
+  let over = 0;
+  const stockRows = (d.stock || []).map(s => {
+    const used = (s.used !== undefined) ? s.used : (s.total - s.remain);
+    const row = [s.key, num(s.remain), num(s.total), num(used)];
+    if (used > s.total) { row.__cls = 'over'; over++; }   // 소진이 초기 재고를 넘은 품목
+    return row;
+  });
+  tbl(document.getElementById('tStock'), ['품목', '잔여', '초기', '소진'], stockRows);
+  const on = document.getElementById('stockOver');
+  on.classList.toggle('on', over > 0);
+  on.textContent = over > 0
+    ? '⚠ ' + over + '개 품목의 소진 수량이 초기 재고를 넘었습니다. 실물 수량을 세어 staff.html 재고 탭에서 보정하세요.'
+    : '';
 
   /* 9. 붙여넣기용 */
   document.getElementById('paste').textContent = pasteBlock(d);

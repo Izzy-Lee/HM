@@ -526,9 +526,20 @@ function buildReport_() {
   var framesGiven = (byItem['액자'] && byItem['액자'].qty) || 0;
   if (!sns) sns = framesGiven;   // 후기 시트가 아직 없으면 액자 증정 건수로 대신한다
 
+  /* 되돌릴 수 있는 직전 판매 — staff.html 이 폰을 새로고침해도 Undo 를 살려두기 위함 */
+  var lastSale = null;
+  for (var li = sales.length - 1; li >= 0; li--) {
+    if (!sales[li].cancelled) {
+      lastSale = { item: sales[li].item, qty: sales[li].qty,
+                   amount: sales[li].amount, pay: sales[li].pay, stamp: String(sales[li].stamp) };
+      break;
+    }
+  }
+
   var T = FIELD.TARGETS;
   return {
     generatedAt: nowStamp_(),
+    lastSale: lastSale,
     targets: T,
     attendance: {
       coloring:      attend['컬러링'] || 0,

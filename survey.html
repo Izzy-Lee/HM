@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>헬로미추 체험 설문</title>
+<meta name="robots" content="noindex">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  :root{
+    --ink:#14100b; --soft:#5f5346; --faint:#8b7f70;
+    --paper:#f6f2ea; --surface:#fff; --sunk:#efe9de;
+    --teal:#14796a; --teal-bg:#e4f0ec; --amber:#b8620f; --red:#b23838;
+    --rule:#ddd4c6;
+  }
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:15px; line-height:1.7; padding:0 0 7rem; max-width:560px; margin:0 auto;
+    -webkit-text-size-adjust:100%;
+  }
+
+  /* 진행률 */
+  .top{ position:sticky; top:0; z-index:20; background:var(--paper); padding:.9rem .95rem .5rem; }
+  .top .row{ display:flex; align-items:baseline; justify-content:space-between; gap:.6rem; margin-bottom:.45rem; }
+  .top .who{ font-size:.72rem; font-weight:700; color:var(--teal); letter-spacing:.04em; }
+  .top .cnt{ font-size:.7rem; color:var(--faint); font-variant-numeric:tabular-nums; }
+  .prog{ height:5px; background:var(--sunk); border-radius:3px; overflow:hidden; }
+  .prog i{ display:block; height:100%; background:var(--teal); border-radius:3px; width:0; transition:width .35s ease; }
+
+  .pane{ padding:.6rem .95rem 0; }
+  h1{ font-family:'Nanum Myeongjo',serif; font-size:1.4rem; font-weight:800; line-height:1.35; margin-bottom:.5rem; }
+  h2{ font-family:'Nanum Myeongjo',serif; font-size:1.15rem; font-weight:700; margin:.2rem 0 .25rem; }
+  .sdesc{ font-size:.82rem; color:var(--soft); margin-bottom:1.1rem; }
+
+  .q{ background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:.95rem 1rem; margin-bottom:.75rem; }
+  .q > .label{ font-size:.92rem; font-weight:700; line-height:1.55; margin-bottom:.65rem; }
+  .q .req{ color:var(--red); font-weight:700; margin-left:.15rem; }
+  .q.miss{ border-color:var(--red); background:#fdf3f2; }
+  .hint{ font-size:.75rem; color:var(--faint); font-weight:400; display:block; margin-top:.15rem; }
+
+  .opts{ display:flex; flex-direction:column; gap:.45rem; }
+  .opts.grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(104px,1fr)); }
+  .opt{
+    display:flex; align-items:center; gap:.55rem; min-height:50px; padding:.5rem .75rem;
+    border:1.5px solid var(--rule); border-radius:9px; background:var(--paper);
+    font-size:.87rem; cursor:pointer; line-height:1.45; user-select:none;
+  }
+  .opt .box{
+    flex:none; width:21px; height:21px; border:2px solid var(--rule); background:#fff;
+    border-radius:50%; position:relative;
+  }
+  .opt.multi .box{ border-radius:5px; }
+  .opt.on{ border-color:var(--teal); background:var(--teal-bg); font-weight:700; }
+  .opt.on .box{ border-color:var(--teal); background:var(--teal); }
+  .opt.on .box::after{
+    content:''; position:absolute; left:50%; top:47%; transform:translate(-50%,-50%) rotate(-45deg);
+    width:9px; height:5px; border:2px solid #fff; border-top:0; border-right:0;
+  }
+  input[type=text], input[type=email], textarea{
+    width:100%; font-family:inherit; font-size:.88rem; color:var(--ink);
+    background:var(--paper); border:1.5px solid var(--rule); border-radius:9px;
+    padding:.6rem .7rem; margin-top:.5rem; line-height:1.6;
+  }
+  textarea{ min-height:82px; resize:vertical; }
+  input:focus, textarea:focus{ outline:2px solid var(--teal); outline-offset:1px; border-color:var(--teal); }
+  .count{ font-size:.7rem; color:var(--faint); text-align:right; margin-top:.2rem; font-variant-numeric:tabular-nums; }
+
+  /* 5점 척도 */
+  .mrow{ padding:.6rem 0; border-bottom:1px solid rgba(90,78,66,.09); }
+  .mrow:last-child{ border-bottom:none; padding-bottom:0; }
+  .mrow .mlabel{ font-size:.85rem; font-weight:500; margin-bottom:.45rem; }
+  .scale{ display:grid; grid-template-columns:repeat(5,1fr); gap:.3rem; }
+  .scale button{
+    min-height:52px; border:1.5px solid var(--rule); background:var(--paper); border-radius:8px;
+    font-family:inherit; font-size:.66rem; font-weight:500; color:var(--soft); cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.15rem; padding:.2rem .1rem;
+    line-height:1.25;
+  }
+  .scale button .dot{ font-size:.95rem; font-weight:700; }
+  .scale button.on{ border-color:var(--teal); background:var(--teal); color:#fff; font-weight:700; }
+
+  /* 하단 이동 */
+  .nav{
+    position:fixed; left:0; right:0; bottom:0; z-index:30; max-width:560px; margin:0 auto;
+    display:flex; gap:.6rem; padding:.7rem .95rem calc(.7rem + env(safe-area-inset-bottom));
+    background:rgba(246,242,234,.97); border-top:1px solid var(--rule);
+  }
+  .nav button{
+    min-height:56px; border-radius:11px; font-family:inherit; font-size:1rem; font-weight:700; cursor:pointer;
+    border:2px solid var(--teal);
+  }
+  .nav .prev{ flex:none; padding:0 1.1rem; background:var(--surface); color:var(--teal); }
+  .nav .next{ flex:1; background:var(--teal); color:#fff; }
+  .nav button:disabled{ opacity:.45; }
+
+  /* 완료 */
+  .done{ padding:2.5rem 1.2rem; text-align:center; }
+  .done .mark{ font-size:2.6rem; line-height:1; margin-bottom:.7rem; }
+  .done h1{ margin-bottom:.5rem; }
+  .done p{ font-size:.88rem; color:var(--soft); line-height:1.8; }
+  .code{
+    margin:1.4rem auto 0; max-width:340px; background:var(--surface);
+    border:2px dashed var(--teal); border-radius:14px; padding:1.2rem 1rem;
+  }
+  .code .cl{ font-size:.72rem; font-weight:700; color:var(--teal); letter-spacing:.1em; }
+  .code .cv{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:2.1rem; font-weight:700;
+    letter-spacing:.06em; margin:.35rem 0 .3rem;
+  }
+  .code .cd{ font-size:.8rem; color:var(--soft); line-height:1.65; }
+  .pend{ background:#fff3e0; border:1px solid #e0b184; color:#7a5000; border-radius:9px;
+         padding:.7rem .85rem; font-size:.78rem; margin-top:1rem; line-height:1.6; }
+
+  .pick{ padding:1.4rem .95rem; }
+  .pick .pb{
+    display:block; width:100%; text-align:left; background:var(--surface); border:1.5px solid var(--rule);
+    border-radius:12px; padding:1rem 1.05rem; margin-bottom:.65rem; font-family:inherit; cursor:pointer; color:var(--ink);
+  }
+  .pick .pb .t{ font-size:1rem; font-weight:700; }
+  .pick .pb .d{ font-size:.78rem; color:var(--soft); margin-top:.15rem; }
+  .pick .pb .g{ font-size:.72rem; color:var(--amber); font-weight:700; margin-top:.3rem; }
+
+  .err{ background:#fdecea; border:1px solid var(--red); color:var(--red); border-radius:9px;
+        padding:.7rem .85rem; font-size:.8rem; margin:0 .95rem .8rem; line-height:1.6; display:none; }
+  .err.on{ display:block; }
+  .foot{ font-size:.7rem; color:var(--faint); text-align:center; padding:1.6rem .95rem 0; line-height:1.7; }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+<div class="foot" id="foot">
+  수집된 정보는 상품 개발 및 마케팅 목적으로만 활용됩니다.<br>주식회사 헬로미추
+</div>
+
+<script>
+'use strict';
+
+const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
+
+const QS   = new URLSearchParams(location.search);
+const SLOT = QS.get('slot') || '';
+const NAME = QS.get('name') || '';
+
+/* ── 공통 문항 ─────────────────────────────────────────────── */
+const SCALE5 = ['매우 만족','만족','보통','불만족','매우 불만족'];
+
+const PART0 = {
+  title:'응답자 기본 정보', desc:'네 가지만 여쭙겠습니다.',
+  items:[
+    { k:'Q1 성별', t:'radio', grid:true, req:true, o:['남성','여성','기타/미응답'] },
+    { k:'Q2 연령대', t:'radio', grid:true, req:true, o:['10대','20대','30대','40대','50대 이상'] },
+    { k:'Q3 거주 지역', t:'radio', grid:true, req:true, o:['서울','경기/인천','기타 수도권','비수도권','외국인 관광객'] },
+    { k:'Q4 참여 경로', t:'radio', req:true, o:['지인 추천','SNS 홍보','현장 안내','관광두레 홍보물'], etc:true }
+  ]
+};
+
+const PRODUCT_WISH = { k:'추가되면 좋을 상품', t:'multi', o:[
+  '인천 여행지 컬러링북 세트','어린이용 수채화 체험 키트','여행지 데코스티커 세트',
+  '엽서·포스터 아트프린트','지역 한정 굿즈 (머그, 파우치 등)','온라인 컬러링 클래스'] };
+const PRODUCT_IDEA  = { k:'원하는 상품 아이디어', t:'text', ph:'자유롭게 적어주세요' };
+const BRAND_IMPRESS = { k:'브랜드 전반적 인상', t:'radio', req:true, grid:true, o:['매우 긍정적','긍정적','보통','부정적'] };
+const NEWS = { k:'소식 수신 동의', t:'radio', o:['예','아니오'], follow:{ on:'예', k:'연락처 또는 이메일', ph:'휴대폰 번호 또는 이메일' } };
+const GIFT_SITUATION = { k:'선물하기 적합한 상황', t:'multi', o:[
+  '여행 기념품','지인 생일 선물','어린이 선물','관광지 기념품','명절·행사 선물'], etc:true };
+const AWARENESS = { k:'A-1 헬로미추 사전 인지도', t:'radio', req:true, o:[
+  '오늘 처음 알게 됐다','이름은 들어봤지만 자세히는 몰랐다','알고 있었다'] };
+const REGION_INTEREST = { k:'A-3 인천·미추홀 관심도', t:'radio', grid:true, req:true, o:[
+  '매우 관심 있음','어느 정도 관심 있음','보통','별로 관심 없음'] };
+const PRICE4 = ['매우 저렴하다','적절하다','조금 비싼 편이다','많이 비싸다'];
+const PRICE5 = PRICE4.concat(['매우 비싸다']);
+
+/* ── 설문 4종 ──────────────────────────────────────────────── */
+const SURVEYS = {
+
+  coloring: {
+    name:'컬러링 체험', head:'수채화 컬러링키트 체험 설문',
+    lead:'오늘 체험해 주셔서 감사합니다. 약 5분이면 끝납니다.',
+    sections:[
+      PART0,
+      { title:'체험 전 인식', desc:'체험하시기 전 상황을 여쭙겠습니다.', items:[
+        AWARENESS,
+        { k:'A-2 수채화·컬러링 경험', t:'radio', req:true, o:['자주 한다 (월 1회 이상)','가끔 한다','오늘이 처음이다'] },
+        REGION_INTEREST ]},
+      { title:'체험 만족도', desc:'컬러링키트를 직접 체험하신 후 평가해 주세요.', items:[
+        { k:'B-1', t:'matrix', label:'체험 운영 및 키트 구성', scale:SCALE5, req:true, rows:[
+          '키트 사용 편리성 (바인더·팔레트·붓)','체험 도안(그림 주제)의 매력도','체험 시간의 적절성',
+          '부스 공간 분위기 및 스태프 안내','전반적인 체험 만족도'] },
+        { k:'B-1a 인상 깊었던 점', t:'text', ph:'가장 인상 깊었던 점은 무엇인가요?' },
+        { k:'B-1b 개선했으면 하는 점', t:'text', ph:'불편하거나 개선되었으면 하는 점' },
+        { k:'B-2 도안 스토리텔링 공감도', t:'radio', req:true, o:['매우 공감','공감함','보통','별로 공감 안 됨','전혀 공감 안 됨'],
+          label:'B-2 체험한 도안에 담긴 인천·미추홀 이야기가 얼마나 공감되셨나요?' },
+        { k:'B-2a 원하는 인천 장소·이야기', t:'text', ph:'예: 차이나타운, 자유공원, 소래포구' } ]},
+      { title:'상품 인식 및 구매 의향', desc:'체험하신 컬러링키트 상품에 대한 의견입니다.', items:[
+        { k:'C-1', t:'matrix', label:'상품 심미적 매력도', scale:SCALE5, req:true, rows:[
+          '전체적인 디자인과 일러스트','색감 및 인쇄·제작 품질','인천 여행지 테마 표현도',
+          '패키지(박스·파우치) 디자인','기념품·선물용으로서의 완성도'] },
+        { k:'C-1a 디자인 좋았던 점·아쉬운 점', t:'text', ph:'각각 적어주세요' },
+        { k:'C-2 구매 의향', t:'radio', req:true, o:[
+          '지금 바로 구매하고 싶다','목적이 생기면 구매하고 싶다','잘 모르겠다','구매 의향 없다'] },
+        { k:'C-2a 구매 고려 이유', t:'multi', o:[
+          '디자인이 예쁘다','인천 여행지 테마가 마음에 든다','사용이 간편하다','선물용으로 좋다',
+          '휴대하기 좋다','직접 색칠하는 재미'], etc:true },
+        { k:'C-2b 구매 의향이 없는 이유', t:'text', ph:'있다면 적어주세요' },
+        { k:'C-3 상품 가격 적정성', t:'radio', req:true, o:PRICE5, label:'C-3 상품 가격 적정성 <span class="hint">컬러링 체험은 무료로 운영됩니다. 키트를 상품으로 판매한다면 어떨지 답해 주세요.</span>' },
+        { k:'C-3a 그렇게 생각한 이유·적정 가격대', t:'text', ph:'적정하다고 느끼는 가격대가 있다면' },
+        GIFT_SITUATION,
+        { k:'C-5 타 기념품 대비 차별점', t:'multi', o:[
+          '직접 체험·참여할 수 있는 콘텐츠','인천 지역 스토리가 담긴 테마','휴대·보관이 편리한 구성',
+          '감각적인 일러스트 디자인','어른·아이 모두 즐길 수 있음','정교한 제작과 예술적 가치'] },
+        { k:'C-5a 차별화 아이디어', t:'text', ph:'권하고 싶은 아이디어가 있다면' } ]},
+      { title:'향후 상품 개발 의견', desc:'헬로미추의 다음 상품을 함께 만들어 주세요.', items:[
+        PRODUCT_WISH, PRODUCT_IDEA,
+        { k:'D-2 재참여 의향', t:'radio', grid:true, req:true, o:['매우 긍정적','긍정적','보통','부정적'] },
+        NEWS ]},
+      { title:'종합 의견', desc:'마지막입니다.', items:[
+        BRAND_IMPRESS,
+        { k:'E-1a 브랜드에 바라는 점', t:'text', ph:'바라는 점이나 상품 아이디어' },
+        { k:'E-1b 자유 의견', t:'text', ph:'오늘 체험 전반에 대한 자유 의견' } ]}
+    ]
+  },
+
+  binder: {
+    name:'자개바인더 체험', head:'자개바인더 체험 설문',
+    lead:'오늘 체험해 주셔서 감사합니다. 약 5분이면 끝납니다.',
+    sections:[
+      PART0,
+      { title:'체험 전 인식', desc:'체험하시기 전 상황을 여쭙겠습니다.', items:[
+        AWARENESS,
+        { k:'A-2 자개공예·만들기 경험', t:'radio', req:true, o:['자주 한다 (월 1회 이상)','가끔 한다','오늘이 처음이다'] },
+        REGION_INTEREST ]},
+      { title:'자개바인더 체험 만족도', desc:'직접 체험하신 후 평가해 주세요.', items:[
+        { k:'B-1', t:'matrix', label:'체험 만족도', scale:SCALE5, req:true, rows:[
+          '자개 패턴 및 디자인 매력도','체험 난이도 적절성','체험 시간(30분)의 적절성',
+          '재료(자개·레진) 품질','완성품(바인더)의 만족도'] },
+        { k:'B-1a 인상 깊었던 점', t:'text', ph:'가장 인상 깊었던 점은 무엇인가요?' },
+        { k:'B-1b 개선했으면 하는 점', t:'text', ph:'불편하거나 개선되었으면 하는 점' } ]},
+      { title:'가격 및 구매 의향', desc:'체험과 상품에 대한 의견입니다.', items:[
+        { k:'C-1 체험 가격 적정성', t:'radio', req:true, o:PRICE4, label:'C-1 자개바인더 체험 가격 적정성 <span class="hint">체험가 20,000원</span>' },
+        { k:'C-1a 적정 가격대', t:'short', ph:'예: 15,000원' },
+        { k:'C-2 완성품 구매 의향', t:'radio', req:true, o:[
+          '지금 바로 구매하고 싶다','목적이 생기면 구매하고 싶다','잘 모르겠다','구매 의향 없다'] },
+        { k:'C-2a 구매 고려 이유', t:'multi', o:[
+          '자개 디자인이 아름답다','인천·미추홀 테마가 마음에 든다','직접 만드는 재미',
+          '선물용으로 좋다','실용적이다'], etc:true },
+        { k:'C-2b 구매 의향이 없는 이유', t:'text', ph:'있다면 적어주세요' },
+        GIFT_SITUATION ]},
+      { title:'향후 상품 개발 의견', desc:'헬로미추의 다음 상품을 함께 만들어 주세요.', items:[
+        PRODUCT_WISH, PRODUCT_IDEA,
+        { k:'D-2 재참여 의향', t:'radio', grid:true, req:true, o:['매우 긍정적','긍정적','보통','부정적'] },
+        NEWS ]},
+      { title:'종합 의견', desc:'마지막입니다.', items:[
+        BRAND_IMPRESS,
+        { k:'E-1a 브랜드에 바라는 점', t:'text', ph:'바라는 점이나 상품 아이디어' },
+        { k:'E-1b 자유 의견', t:'text', ph:'오늘 체험 전반에 대한 자유 의견' } ]}
+    ]
+  },
+
+  binder_buy: {
+    name:'자개바인더 구매', head:'자개바인더 구매 설문',
+    lead:'구매해 주셔서 감사합니다. 약 3분이면 끝납니다.',
+    sections:[
+      PART0,
+      { title:'구매 정보', desc:'오늘 구매하신 자개바인더에 대해 알려주세요.', items:[
+        AWARENESS,
+        { k:'A-2 구매 이유', t:'multi', req:true, o:[
+          '자개 디자인이 아름답다','인천·미추홀 테마가 마음에 든다','품질이 좋아 보인다',
+          '선물용으로 좋다','실용적이다 (다이어리·팔레트 활용)'], etc:true },
+        { k:'A-3 주 사용 목적', t:'radio', req:true, grid:true, o:['본인 사용','선물용','소장·기념용','기타'] } ]},
+      { title:'상품 만족도', desc:'구매하신 상품을 평가해 주세요.', items:[
+        { k:'B-1', t:'matrix', label:'상품 심미적 매력도', scale:SCALE5, req:true, rows:[
+          '자개 패턴 및 디자인 매력도','재료(자개·레진) 및 제작 품질','인천·미추홀 테마 표현도',
+          '패키지 디자인','기념품·선물용으로서의 완성도'] },
+        { k:'B-1a 디자인 좋았던 점·아쉬운 점', t:'text', ph:'각각 적어주세요' },
+        { k:'B-2 가격 적정성', t:'radio', req:true, o:PRICE5, label:'B-2 상품 가격 적정성 <span class="hint">판매가 30,000원</span>' },
+        { k:'B-2a 그렇게 생각한 이유·적정 가격대', t:'text', ph:'적정하다고 느끼는 가격대가 있다면' },
+        GIFT_SITUATION,
+        { k:'B-4 타 기념품 대비 차별점', t:'multi', o:[
+          '전통 자개공예의 아름다움','인천 지역 스토리가 담긴 테마','실용적인 구성 (다이어리·팔레트)',
+          '감각적인 디자인','정교한 제작과 예술적 가치'], etc:true } ]},
+      { title:'향후 상품 개발 의견', desc:'헬로미추의 다음 상품을 함께 만들어 주세요.', items:[
+        PRODUCT_WISH, PRODUCT_IDEA, BRAND_IMPRESS, NEWS,
+        { k:'C-3a 자유 의견', t:'text', ph:'브랜드에 바라는 점이나 자유 의견' } ]}
+    ]
+  },
+
+  sticker: {
+    name:'데코스티커 구매', head:'데코스티커 구매 설문',
+    lead:'구매해 주셔서 감사합니다. 약 2분이면 끝납니다.',
+    sections:[
+      PART0,
+      { title:'구매 정보', desc:'오늘 구매하신 데코스티커에 대해 알려주세요.', items:[
+        AWARENESS,
+        { k:'A-2 구매하신 스티커 종류', t:'multi', o:[
+          '01 소서노','02 문학산성','03 갯벌','04 수봉폭포','05 수봉도서관'], etc:true },
+        { k:'A-3 구매 이유', t:'multi', req:true, o:[
+          '디자인이 예쁘다','인천·미추홀 테마가 마음에 든다','가격이 합리적이다',
+          '선물용으로 좋다','노트북·다이어리에 활용하기 좋다'], etc:true } ]},
+      { title:'만족도 및 가격', desc:'구매하신 스티커를 평가해 주세요.', items:[
+        { k:'B-1 디자인 만족도', t:'radio', req:true, o:SCALE5 },
+        { k:'B-2 가격 적정성', t:'radio', req:true, o:PRICE4, label:'B-2 스티커 가격 적정성 <span class="hint">판매가 2,000원</span>' },
+        { k:'B-2a 적정 가격대', t:'short', ph:'예: 1,500원' } ]},
+      { title:'콘텐츠 및 상품 의견', desc:'헬로미추의 다음 상품을 함께 만들어 주세요.', items:[
+        { k:'C 추가되었으면 하는 인천·미추홀 콘텐츠', t:'text', ph:'예: 차이나타운, 자유공원, 소래포구' },
+        PRODUCT_WISH, BRAND_IMPRESS, NEWS,
+        { k:'C-4 브랜드에 바라는 점', t:'text', ph:'자유롭게 적어주세요' } ]}
+    ]
+  }
+};
+
+/* ── 상태 ──────────────────────────────────────────────────── */
+let TYPE = QS.get('t') || '';
+let SPEC = SURVEYS[TYPE] || null;
+let step = 0;
+let A = {};                                   // 응답
+const DKEY = () => 'hm_survey_' + TYPE;
+
+const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const root = document.getElementById('root');
+
+function saveDraft(){ try{ localStorage.setItem(DKEY(), JSON.stringify({step,A})); }catch(e){} }
+function loadDraft(){
+  try{
+    const d = JSON.parse(localStorage.getItem(DKEY())||'null');
+    if (d && d.A){ A = d.A; step = Math.min(d.step||0, SPEC.sections.length-1); }
+  }catch(e){}
+}
+function clearDraft(){ try{ localStorage.removeItem(DKEY()); }catch(e){} }
+
+/* ── JSONP ── */
+let seq = 0;
+function call(params){
+  return new Promise((resolve,reject)=>{
+    const cb = '__sv'+(++seq)+'_'+Date.now();
+    const url = new URL(API_URL);
+    Object.keys(params).forEach(k=>{ if(params[k]!==undefined && params[k]!=='') url.searchParams.set(k, params[k]); });
+    url.searchParams.set('cb', cb);
+    const s = document.createElement('script');
+    let done=false;
+    const clean=()=>{ delete window[cb]; s.remove(); clearTimeout(t); };
+    const t=setTimeout(()=>{ if(!done){done=true;clean();reject(new Error('시간 초과'));} },20000);
+    window[cb]=d=>{ done=true; clean(); (d&&d.ok===false)?reject(new Error(d.error||'오류')):resolve(d); };
+    s.onerror=()=>{ if(!done){done=true;clean();reject(new Error('네트워크 오류'));} };
+    s.src=url.toString();
+    document.body.appendChild(s);
+  });
+}
+
+function b64url(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin=''; bytes.forEach(b=>bin+=String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function newSid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function newCode(){
+  const AL='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s=''; for(let i=0;i<4;i++) s+=AL.charAt(Math.floor(Math.random()*AL.length));
+  return 'HM-'+s;
+}
+
+/* 응답이 길어 한 번에 안 들어가므로 조각내 보낸다. 마지막 조각에서 서버가 시트에 쓴다. */
+const CHUNK = 1200;
+async function submit(sub){
+  const parts = [];
+  for (let i=0; i<sub.d.length; i+=CHUNK) parts.push(sub.d.slice(i, i+CHUNK));
+  let last = null;
+  for (let i=0; i<parts.length; i++){
+    last = await call({ action:'survey', t:sub.t, sid:sub.sid, i:i, n:parts.length,
+                        d:parts[i], slot:sub.slot, name:sub.name, code:sub.code });
+  }
+  return last;
+}
+
+/* 전송 실패한 설문은 통째로 쌓아뒀다가 재시도 */
+const QKEY='hm_survey_queue';
+const qGet=()=>{ try{ return JSON.parse(localStorage.getItem(QKEY)||'[]'); }catch(e){ return []; } };
+const qSet=v=>{ try{ localStorage.setItem(QKEY, JSON.stringify(v)); }catch(e){} };
+async function flushQueue(){
+  const q=qGet();
+  while(q.length){
+    try{ await submit(q[0]); q.shift(); qSet(q.slice()); }
+    catch(e){ qSet(q.slice()); return; }
+  }
+}
+
+/* ── 렌더 ──────────────────────────────────────────────────── */
+function render(){
+  if (!SPEC) return renderPicker();
+  const sec = SPEC.sections[step];
+  const total = SPEC.sections.length;
+
+  let h = '<div class="top"><div class="row">' +
+    '<span class="who">'+esc(SPEC.name)+' 설문</span>' +
+    '<span class="cnt">'+(step+1)+' / '+total+'</span></div>' +
+    '<div class="prog"><i style="width:'+Math.round((step)/total*100)+'%"></i></div></div>';
+
+  h += '<div class="err" id="err"></div><div class="pane">';
+  if (step===0) h += '<h1>'+esc(SPEC.head)+'</h1><p class="sdesc">'+esc(SPEC.lead)+'</p>';
+  h += '<h2>'+esc(sec.title)+'</h2><p class="sdesc">'+esc(sec.desc)+'</p>';
+  sec.items.forEach((it,i)=> h += renderItem(it, i));
+  h += '</div>';
+
+  h += '<div class="nav">' +
+    (step>0 ? '<button class="prev" type="button" id="bPrev">이전</button>' : '') +
+    '<button class="next" type="button" id="bNext">'+(step===total-1?'제출하기':'다음')+'</button></div>';
+
+  root.innerHTML = h;
+  bind(sec);
+}
+
+function renderItem(it, i){
+  const id = 'q'+i;
+  const label = it.label || it.k;
+  const req = it.req ? '<span class="req">*</span>' : '';
+  let inner = '';
+
+  if (it.t==='radio' || it.t==='multi'){
+    const multi = it.t==='multi';
+    const cur = A[it.k];
+    const on = v => multi ? (Array.isArray(cur)&&cur.indexOf(v)!==-1) : cur===v;
+    inner += '<div class="opts'+(it.grid?' grid':'')+'">';
+    it.o.forEach(v=>{
+      inner += '<div class="opt'+(multi?' multi':'')+(on(v)?' on':'')+'" data-k="'+esc(it.k)+'" data-v="'+esc(v)+'" data-m="'+(multi?1:0)+'">' +
+               '<span class="box"></span><span>'+esc(v)+'</span></div>';
+    });
+    if (it.etc){
+      const etcOn = on('기타');
+      inner += '<div class="opt'+(multi?' multi':'')+(etcOn?' on':'')+'" data-k="'+esc(it.k)+'" data-v="기타" data-m="'+(multi?1:0)+'">' +
+               '<span class="box"></span><span>기타</span></div>';
+      inner += '<input type="text" data-etc="'+esc(it.k)+'" placeholder="기타 내용" value="'+esc(A[it.k+' 기타']||'')+'"'+(etcOn?'':' hidden')+'>';
+    }
+    inner += '</div>';
+    if (it.follow){
+      const show = A[it.k]===it.follow.on;
+      inner += '<input type="text" data-follow="'+esc(it.follow.k)+'" placeholder="'+esc(it.follow.ph)+'" value="'+esc(A[it.follow.k]||'')+'"'+(show?'':' hidden')+'>';
+    }
+  }
+  else if (it.t==='matrix'){
+    inner += '<div>';
+    it.rows.forEach(row=>{
+      const key = it.k+' '+row;
+      inner += '<div class="mrow"><div class="mlabel">'+esc(row)+'</div><div class="scale">';
+      it.scale.forEach((sv,si)=>{
+        inner += '<button type="button" data-k="'+esc(key)+'" data-v="'+esc(sv)+'"'+(A[key]===sv?' class="on"':'')+'>' +
+                 '<span class="dot">'+(5-si)+'</span>'+esc(sv)+'</button>';
+      });
+      inner += '</div></div>';
+    });
+    inner += '</div>';
+  }
+  else if (it.t==='text'){
+    inner += '<textarea data-t="'+esc(it.k)+'" maxlength="300" placeholder="'+esc(it.ph||'')+'">'+esc(A[it.k]||'')+'</textarea>' +
+             '<div class="count"><span>'+(A[it.k]||'').length+'</span> / 300</div>';
+  }
+  else if (it.t==='short'){
+    inner += '<input type="text" data-t="'+esc(it.k)+'" maxlength="60" placeholder="'+esc(it.ph||'')+'" value="'+esc(A[it.k]||'')+'">';
+  }
+
+  return '<div class="q" id="'+id+'" data-key="'+esc(it.k)+'"><div class="label">'+label+req+'</div>'+inner+'</div>';
+}
+
+function bind(sec){
+  root.querySelectorAll('.opt').forEach(el=>el.addEventListener('click',()=>{
+    const k=el.dataset.k, v=el.dataset.v, multi=el.dataset.m==='1';
+    if (multi){
+      const cur = Array.isArray(A[k]) ? A[k].slice() : [];
+      const at = cur.indexOf(v);
+      if (at===-1) cur.push(v); else cur.splice(at,1);
+      A[k]=cur;
+    } else {
+      A[k] = (A[k]===v) ? '' : v;
+    }
+    saveDraft(); render();
+  }));
+
+  root.querySelectorAll('.scale button').forEach(el=>el.addEventListener('click',()=>{
+    const k=el.dataset.k;
+    A[k] = (A[k]===el.dataset.v) ? '' : el.dataset.v;
+    saveDraft();
+    el.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));
+    if (A[k]) el.classList.add('on');
+    const card = el.closest('.q'); if (card) card.classList.remove('miss');
+  }));
+
+  root.querySelectorAll('[data-t]').forEach(el=>el.addEventListener('input',()=>{
+    A[el.dataset.t]=el.value; saveDraft();
+    const c = el.parentElement.querySelector('.count span'); if (c) c.textContent = el.value.length;
+  }));
+  root.querySelectorAll('[data-etc]').forEach(el=>el.addEventListener('input',()=>{
+    A[el.dataset.etc+' 기타']=el.value; saveDraft();
+  }));
+  root.querySelectorAll('[data-follow]').forEach(el=>el.addEventListener('input',()=>{
+    A[el.dataset.follow]=el.value; saveDraft();
+  }));
+
+  const p=document.getElementById('bPrev');
+  if (p) p.addEventListener('click',()=>{ step--; saveDraft(); render(); window.scrollTo(0,0); });
+  document.getElementById('bNext').addEventListener('click',()=>next(sec));
+}
+
+function next(sec){
+  const missing = [];
+  sec.items.forEach((it,i)=>{
+    if (!it.req) return;
+    if (it.t==='matrix'){
+      it.rows.forEach(r=>{ if(!A[it.k+' '+r]) missing.push('q'+i); });
+    } else {
+      const v=A[it.k];
+      const empty = Array.isArray(v) ? v.length===0 : !v;
+      if (empty) missing.push('q'+i);
+    }
+  });
+
+  const err=document.getElementById('err');
+  root.querySelectorAll('.q').forEach(q=>q.classList.remove('miss'));
+  if (missing.length){
+    missing.forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add('miss'); });
+    err.textContent='답하지 않은 문항이 '+new Set(missing).size+'개 있습니다. 붉게 표시된 곳을 확인해 주세요.';
+    err.classList.add('on');
+    const first=document.getElementById(missing[0]);
+    if (first) first.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  err.classList.remove('on');
+
+  if (step < SPEC.sections.length-1){ step++; saveDraft(); render(); window.scrollTo(0,0); }
+  else finish();
+}
+
+async function finish(){
+  const btn=document.getElementById('bNext');
+  btn.disabled=true; btn.textContent='보내는 중...';
+
+  const sub = { t:TYPE, sid:newSid(), slot:SLOT, name:NAME, code:newCode(), d:b64url(JSON.stringify(A)) };
+  let res=null, queued=false;
+  try{ res = await submit(sub); }
+  catch(e){ const q=qGet(); q.push(sub); qSet(q); queued=true; }
+
+  clearDraft();
+  renderDone(res, sub, queued);
+}
+
+function renderDone(res, sub, queued){
+  const gift = res ? !!res.gift : (['binder','binder_buy','sticker'].indexOf(sub.t)!==-1);
+  const code = (res && res.code) ? res.code : sub.code;
+
+  let h = '<div class="done"><div class="mark">🎨</div>' +
+    '<h1>설문이 제출되었습니다</h1>' +
+    '<p>소중한 의견 감사드립니다.<br>남겨주신 내용은 다음 상품을 만드는 데 쓰입니다.</p>';
+
+  if (gift){
+    h += '<div class="code"><div class="cl">스티커 증정 코드</div>' +
+         '<div class="cv">'+esc(code)+'</div>' +
+         '<div class="cd">이 화면을 <b>부스 직원에게 보여주시면</b><br>데코스티커 1개를 드립니다.</div></div>';
+  }
+  if (queued){
+    h += '<div class="pend">지금 네트워크가 불안정해 <b>전송 대기 중</b>입니다. ' +
+         '이 화면을 닫지 마시고 직원에게 보여주세요. 신호가 돌아오면 자동으로 전송됩니다.</div>';
+  }
+  h += '</div>';
+  root.innerHTML = h;
+  window.scrollTo(0,0);
+  if (queued) setTimeout(flushQueue, 3000);
+}
+
+function renderPicker(){
+  let h = '<div class="pick"><h1>헬로미추 설문</h1>' +
+    '<p class="sdesc">해당하는 설문을 골라 주세요.</p>';
+  Object.keys(SURVEYS).forEach(k=>{
+    const s=SURVEYS[k];
+    const gift = ['binder','binder_buy','sticker'].indexOf(k)!==-1;
+    h += '<button class="pb" type="button" data-t="'+k+'">' +
+         '<div class="t">'+esc(s.name)+'</div>' +
+         '<div class="d">'+esc(s.lead)+'</div>' +
+         (gift?'<div class="g">작성하시면 데코스티커를 드립니다</div>':'') +
+         '</button>';
+  });
+  h += '</div>';
+  root.innerHTML = h;
+  root.querySelectorAll('.pb').forEach(b=>b.addEventListener('click',()=>{
+    TYPE=b.dataset.t; SPEC=SURVEYS[TYPE]; step=0; A={};
+    loadDraft(); render(); window.scrollTo(0,0);
+  }));
+}
+
+if (SPEC) loadDraft();
+render();
+flushQueue();
+window.addEventListener('online', flushQueue);
+</script>
+
+</body>
+</html>

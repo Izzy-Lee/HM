@@ -37,7 +37,17 @@ const ctx = {
     createTextOutput:t=>({ _t:t,_m:'application/json',
       setMimeType(m){this._m=m;return this;}, getContent(){return this._t;}, getMime(){return this._m;} }) },
   LockService:{ getScriptLock:()=>({waitLock(){},releaseLock(){}}) },
-  Utilities:{ formatDate:(d)=>new Date(d).toISOString().slice(0,19).replace('T',' ') },
+  Utilities:{
+    formatDate:(d)=>new Date(d).toISOString().slice(0,19).replace('T',' '),
+    base64Decode:(b64)=>Array.from(Buffer.from(b64,'base64')),
+    newBlob:(bytes)=>({ getDataAsString:()=>Buffer.from(bytes).toString('utf8') })
+  },
+  CacheService:{ getScriptCache:()=>({
+    _m:(global.__cache = global.__cache || new Map()),
+    get(k){ return this._m.has(k)? this._m.get(k) : null; },
+    put(k,v){ this._m.set(k,v); },
+    remove(k){ this._m.delete(k); }
+  })},
   Logger:{ log:()=>{} }, console
 };
 vm.createContext(ctx);

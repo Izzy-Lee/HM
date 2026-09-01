@@ -223,14 +223,24 @@ function render(d) {
     ['합계', won(S.revenue), S.cancelled ? '취소 ' + S.cancelled + '건 제외' : '100%']);
 
   /* 4. 설문 · SNS */
+  const bt = d.survey.byType || {};
+  const svRows = Object.keys(bt).map(k => {
+    const r = bt[k];
+    return ['　· ' + r.name, num(r.count) + '건', '–',
+            r.gifted ? '스티커 ' + num(r.gifted) + '개 증정' : '–'];
+  });
   tbl(document.getElementById('tSurvey'),
     ['항목', '실적', '목표', '달성률'],
     [
-      ['체험 만족도 설문 응답', num(d.survey.count) + '건', num(T.survey) + '건', { rate: R.survey }],
+      ['설문 응답 합계', num(d.survey.count) + '건', num(T.survey) + '건', { rate: R.survey }]
+    ].concat(svRows).concat([
+      ['체험 설문 / 구매 설문',
+        num(d.survey.experience || 0) + ' / ' + num(d.survey.purchase || 0) + '건', '–', '–'],
+      ['설문 작성 스티커 증정', num(d.survey.stickerGift || 0) + '개', '–', '–'],
       ['SNS 후기 인증', num(d.survey.sns) + '건', num(T.sns) + '건', { rate: R.sns }],
       ['액자 증정', num(d.survey.frames) + '개', num(T.sns) + '개',
         { rate: Math.round(d.survey.frames / T.sns * 1000) / 10 }]
-    ]);
+    ]));
 
   /* 5. 도안별 */
   const dz = d.designs, dTotal = Object.keys(dz).reduce((a, k) => a + dz[k], 0);
@@ -298,7 +308,13 @@ function pasteBlock(d) {
   L.push('· 결제수단별: ' + Object.keys(S.byPay).map(k => k + ' ' + won(S.byPay[k])).join(' / '));
   L.push('');
   L.push('[설문 및 SNS 후기]');
-  L.push('· 만족도 설문 응답: ' + d.survey.count + '건 (목표 ' + T.survey + '건, 달성률 ' + d.rate.survey + '%)');
+  L.push('· 설문 응답 합계: ' + d.survey.count + '건 (목표 ' + T.survey + '건, 달성률 ' + d.rate.survey + '%)');
+  Object.keys(d.survey.byType || {}).forEach(k => {
+    const r = d.survey.byType[k];
+    L.push('  - ' + r.name + ': ' + r.count + '건');
+  });
+  L.push('· 체험 설문 ' + (d.survey.experience || 0) + '건 / 구매 설문 ' + (d.survey.purchase || 0) + '건');
+  L.push('· 설문 작성 스티커 증정: ' + (d.survey.stickerGift || 0) + '개');
   L.push('· SNS 후기 인증 및 액자 증정: ' + d.survey.sns + '건 (목표 ' + T.sns + '건, 달성률 ' + d.rate.sns + '%)');
   L.push('');
   L.push('[도안별 선택 비율]');

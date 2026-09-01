@@ -119,6 +119,22 @@
   .designs button.fin { margin-left: auto; }
   .designs button.fin.on { border-color: var(--blue); background: var(--blue); }
 
+  /* ── 설문 증정 ── */
+  .giftbox { background: var(--surface); border: 1px solid var(--rule); border-radius: 11px; padding: 0.8rem 0.85rem; }
+  .giftrow { display: flex; gap: 0.5rem; }
+  .giftrow input {
+    flex: 1; min-height: 52px; text-align: center; text-transform: uppercase;
+    border: 1.5px solid var(--rule); border-radius: 9px; background: var(--paper); color: var(--ink);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.15rem; font-weight: 700; letter-spacing: .06em;
+  }
+  .giftrow button {
+    min-height: 52px; padding: 0 1.1rem; border: 2px solid var(--teal); background: var(--teal); color: #fff;
+    border-radius: 9px; font-family: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer;
+  }
+  .giftrow button:disabled { opacity: .45; }
+  #giftMsg.ok { color: var(--teal); font-weight: 700; }
+  #giftMsg.bad { color: var(--red); font-weight: 700; }
+
   /* ── 관찰 태그 ── */
   .tags { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
   .tags button {
@@ -198,6 +214,18 @@
   <div id="prods"></div>
   <p class="note">상품을 누르면 결제수단을 고르고 바로 기록됩니다. 잘못 눌렀으면 아래 <b>직전 취소</b>를 누르세요.
   회차를 맞춰두면 무료 체험자의 유료 전환율이 자동으로 계산됩니다.</p>
+
+  <h2>설문 스티커 증정</h2>
+  <div class="giftbox">
+    <p class="note" style="margin:0 0 .55rem;">유료 구매 손님이 설문을 마치면 화면에 <b>HM-0000</b> 코드가 뜹니다.
+    그 코드를 받아 적고 스티커를 드리세요.</p>
+    <div class="giftrow">
+      <input id="giftCode" type="text" inputmode="text" autocapitalize="characters"
+             placeholder="HM-7K3D" maxlength="7" aria-label="증정 코드">
+      <button type="button" id="giftBtn">확인</button>
+    </div>
+    <p class="note" id="giftMsg" style="margin:.5rem 0 0;"></p>
+  </div>
 </section>
 
 <!-- ── 체크인 ── -->
@@ -268,6 +296,7 @@ const KEY   = new URLSearchParams(location.search).get('k') || '';
 const STAFF = new URLSearchParams(location.search).get('staff') || '';
 
 const REVENUE_GOAL = 2700000;
+// '스티커 증정'은 여기 없다 — 설문 코드 확인을 거쳐야만 나가도록 해서 중복 증정을 막는다.
 const PRODUCTS = [
   { key: '바인더 체험',   price: 20000 },
   { key: '바인더 완성품', price: 30000 },
@@ -606,6 +635,33 @@ document.getElementById('roster').addEventListener('click', async e => {
                  design: d ? d.dataset.design : '', done: on ? '미완성' : '완성' },
                on ? '미완성으로 표시' : '완성 처리');
   }
+});
+
+/* ══ 설문 스티커 증정 ══
+   같은 코드로 두 번 받아가는 것은 서버가 막는다. */
+document.getElementById('giftBtn').addEventListener('click', async () => {
+  const inp = document.getElementById('giftCode');
+  const msg = document.getElementById('giftMsg');
+  const btn = document.getElementById('giftBtn');
+  let code = (inp.value || '').trim().toUpperCase().replace(/\s/g, '');
+  if (code && code.indexOf('HM-') !== 0 && code.length === 4) code = 'HM-' + code;   // 뒤 4자리만 받아적은 경우
+  if (!code) { msg.className = 'note bad'; msg.textContent = '코드를 입력하세요.'; return; }
+
+  btn.disabled = true;
+  msg.className = 'note'; msg.textContent = '확인 중...';
+  try {
+    const r = await call({ action: 'gift', code: code, k: KEY, staff: STAFF });
+    msg.className = 'note ok';
+    msg.textContent = '스티커를 드리세요 — ' + r.survey + (r.name ? ' · ' + r.name : '') +
+                      ' (스티커 잔여 ' + r.remain + ')';
+    inp.value = '';
+    toast('설문 증정 기록 완료');
+    refresh();
+  } catch (e) {
+    msg.className = 'note bad';
+    msg.textContent = e.message || '확인하지 못했습니다.';
+  }
+  btn.disabled = false;
 });
 
 /* ══ 관찰 태그 ══ */

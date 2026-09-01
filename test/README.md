@@ -9,6 +9,7 @@ npm i -D playwright            # 또는 전역 playwright 사용
 node test/server.js 8790 &     # 로컬 하네스 (HTML 의 API_URL 만 로컬로 치환)
 node test/drive.js             # 운영자 조작 시나리오 33개
 node test/offline.js           # 네트워크 끊김 → 큐 적재 → 복구 후 자동 전송
+node test/survey.js            # 설문 4종 · 조각 전송 · 증정 코드 중복 차단
 ```
 
 `drive.js` 와 `offline.js` 는 **빈 시트를 전제**로 단언합니다.

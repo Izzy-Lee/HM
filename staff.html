@@ -215,10 +215,10 @@
   <p class="note">상품을 누르면 결제수단을 고르고 바로 기록됩니다. 잘못 눌렀으면 아래 <b>직전 취소</b>를 누르세요.
   회차를 맞춰두면 무료 체험자의 유료 전환율이 자동으로 계산됩니다.</p>
 
-  <h2>설문 스티커 증정</h2>
+  <h2>설문 증정 코드</h2>
   <div class="giftbox">
-    <p class="note" style="margin:0 0 .55rem;">유료 구매 손님이 설문을 마치면 화면에 <b>HM-0000</b> 코드가 뜹니다.
-    그 코드를 받아 적고 스티커를 드리세요.</p>
+    <p class="note" style="margin:0 0 .55rem;">설문을 마치면 손님 화면에 <b>HM-0000</b> 코드가 뜹니다.
+    코드를 넣으면 <b>무엇을 드릴지</b> 알려줍니다 — 유료 구매는 <b>스티커</b>, SNS 후기는 <b>액자</b>입니다.</p>
     <div class="giftrow">
       <input id="giftCode" type="text" inputmode="text" autocapitalize="characters"
              placeholder="HM-7K3D" maxlength="7" aria-label="증정 코드">
@@ -652,8 +652,10 @@ document.getElementById('giftBtn').addEventListener('click', async () => {
   try {
     const r = await call({ action: 'gift', code: code, k: KEY, staff: STAFF });
     msg.className = 'note ok';
-    msg.textContent = '스티커를 드리세요 — ' + r.survey + (r.name ? ' · ' + r.name : '') +
-                      ' (스티커 잔여 ' + r.remain + ')';
+    // 증정품은 설문 종류에 따라 다르다 — SNS 후기는 액자, 나머지는 데코 스티커
+    const what = r.label || r.item || '데코 스티커';
+    msg.textContent = what + ' 1개를 드리세요 — ' + r.survey + (r.name ? ' · ' + r.name : '') +
+                      ' (잔여 ' + r.remain + ')';
     inp.value = '';
     toast('설문 증정 기록 완료');
     refresh();

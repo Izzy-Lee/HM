@@ -72,6 +72,15 @@
   input:focus, textarea:focus{ outline:2px solid var(--teal); outline-offset:1px; border-color:var(--teal); }
   .count{ font-size:.7rem; color:var(--faint); text-align:right; margin-top:.2rem; font-variant-numeric:tabular-nums; }
 
+  .photo-btn{
+    width:100%; min-height:56px; border:2px dashed var(--teal); background:var(--teal-bg);
+    border-radius:11px; font-family:inherit; font-size:.92rem; font-weight:700; color:var(--teal); cursor:pointer;
+  }
+  .photo-btn.on{ border-style:solid; }
+  .photo-state{ font-size:.75rem; color:var(--soft); margin-top:.4rem; text-align:center; min-height:1.2em; }
+  .photo-prev{ display:block; width:100%; max-height:260px; object-fit:contain; margin-top:.6rem;
+               border:1px solid var(--rule); border-radius:9px; background:var(--paper); }
+
   /* 5점 척도 */
   .mrow{ padding:.6rem 0; border-bottom:1px solid rgba(90,78,66,.09); }
   .mrow:last-child{ border-bottom:none; padding-bottom:0; }
@@ -291,6 +300,22 @@ const SURVEYS = {
     ]
   },
 
+  sns: {
+    name:'SNS 후기 인증', head:'SNS 후기 인증',
+    lead:'후기를 올려주셔서 감사합니다. 확인 후 완성 작품을 액자에 넣어 드립니다.',
+    sections:[
+      { title:'후기 인증', desc:'게시물 링크와 캡처 이미지를 올려주세요.', items:[
+        { k:'이름', t:'short', req:true, ph:'작품을 찾으실 이름', label:'이름 <span class="hint">작품을 찾아드릴 때 씁니다.</span>' },
+        { k:'게시물 링크', t:'short', req:true, ph:'https://instagram.com/p/...',
+          label:'게시물 링크(URL) <span class="hint">해시태그 #헬로미추 #수채화컬러링 2개가 들어가야 합니다.</span>' },
+        { k:'캡처 이미지', t:'photo', req:true, label:'게시물 캡처 이미지 <span class="hint">사진은 자동으로 줄여서 올립니다.</span>' },
+        { k:'플랫폼', t:'radio', grid:true, req:true, o:['인스타그램','블로그','페이스북','스레드','기타'] } ]},
+      { title:'후기 한마디', desc:'짧게라도 남겨주시면 큰 힘이 됩니다.', items:[
+        { k:'가장 좋았던 점', t:'text', ph:'자유롭게 적어주세요' },
+        BRAND_IMPRESS ]}
+    ]
+  },
+
   sticker: {
     name:'데코스티커 구매', head:'데코스티커 구매 설문',
     lead:'구매해 주셔서 감사합니다. 약 2분이면 끝납니다.',
@@ -373,7 +398,8 @@ async function submit(sub){
   let last = null;
   for (let i=0; i<parts.length; i++){
     last = await call({ action:'survey', t:sub.t, sid:sub.sid, i:i, n:parts.length,
-                        d:parts[i], slot:sub.slot, name:sub.name, code:sub.code });
+                        d:parts[i], slot:sub.slot, name:sub.name, code:sub.code,
+                        link:sub.link, img:sub.img });
   }
   return last;
 }
@@ -464,10 +490,91 @@ function renderItem(it, i){
              '<div class="count"><span>'+(A[it.k]||'').length+'</span> / 300</div>';
   }
   else if (it.t==='short'){
-    inner += '<input type="text" data-t="'+esc(it.k)+'" maxlength="60" placeholder="'+esc(it.ph||'')+'" value="'+esc(A[it.k]||'')+'">';
+    inner += '<input type="text" data-t="'+esc(it.k)+'" maxlength="200" placeholder="'+esc(it.ph||'')+'" value="'+esc(A[it.k]||'')+'">';
+  }
+  else if (it.t==='photo'){
+    const done = !!A[it.k];
+    inner += '<input type="file" accept="image/*" id="photoInput" hidden>' +
+      '<button type="button" class="photo-btn'+(done?' on':'')+'" id="photoBtn">' +
+        (done ? '✓ 사진 첨부됨 — 다시 고르기' : '사진 고르기') + '</button>' +
+      '<div class="photo-state" id="photoState">' + (done ? '올리기 완료' : '') + '</div>' +
+      (PHOTO.preview ? '<img class="photo-prev" src="'+PHOTO.preview+'" alt="선택한 캡처 이미지">' : '');
   }
 
   return '<div class="q" id="'+id+'" data-key="'+esc(it.k)+'"><div class="label">'+label+req+'</div>'+inner+'</div>';
+}
+
+/* ══ 캡처 이미지 ══
+   폰 사진은 2~4MB라 그대로는 못 보낸다. 화면에서 먼저 줄여 100KB 안팎으로 만든 뒤
+   설문과 같은 방식으로 조각내 올리고, 서버가 구글 드라이브에 저장한다. */
+const PHOTO = { preview:'', b64:'', busy:false };
+
+function shrinkImage(file, maxSide, quality){
+  return new Promise((resolve,reject)=>{
+    const fr = new FileReader();
+    fr.onerror = () => reject(new Error('사진을 읽지 못했습니다.'));
+    fr.onload = () => {
+      const im = new Image();
+      im.onerror = () => reject(new Error('사진 형식을 읽지 못했습니다.'));
+      im.onload = () => {
+        let { width:w, height:h } = im;
+        const scale = Math.min(1, maxSide / Math.max(w, h));
+        w = Math.round(w * scale); h = Math.round(h * scale);
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        const cx = cv.getContext('2d');
+        cx.fillStyle = '#fff'; cx.fillRect(0,0,w,h);       // 투명 PNG 대비
+        cx.drawImage(im, 0, 0, w, h);
+        resolve(cv.toDataURL('image/jpeg', quality));
+      };
+      im.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+async function uploadPhoto(){
+  const state = document.getElementById('photoState');
+  const say = t => { if (state) state.textContent = t; };
+  const sid = newSid();
+  const raw = PHOTO.b64;                                   // base64 (헤더 제외)
+  const b64u = raw.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  const CH = 6000;
+  const parts = [];
+  for (let i=0;i<b64u.length;i+=CH) parts.push(b64u.slice(i,i+CH));
+
+  let last=null;
+  for (let i=0;i<parts.length;i++){
+    say('올리는 중... ' + Math.round((i+1)/parts.length*100) + '%');
+    last = await call({ action:'img', sid:sid, i:i, n:parts.length, d:parts[i], name:A['이름']||'' });
+  }
+  say('올리기 완료');
+  return last && last.url ? last.url : '';
+}
+
+function bindPhoto(){
+  const btn = document.getElementById('photoBtn');
+  const inp = document.getElementById('photoInput');
+  if (!btn || !inp) return;
+  btn.addEventListener('click', ()=>inp.click());
+  inp.addEventListener('change', async ()=>{
+    const f = inp.files && inp.files[0];
+    if (!f) return;
+    const state = document.getElementById('photoState');
+    if (state) state.textContent = '사진을 줄이는 중...';
+    try{
+      const dataUrl = await shrinkImage(f, 900, 0.55);
+      PHOTO.preview = dataUrl;
+      PHOTO.b64 = dataUrl.split(',')[1];
+      A['캡처 이미지'] = '첨부됨';
+      const kb = Math.round(PHOTO.b64.length * 0.75 / 1024);
+      saveDraft(); render();
+      const st2 = document.getElementById('photoState');
+      if (st2) st2.textContent = '첨부됨 · 약 ' + kb + 'KB (제출할 때 올립니다)';
+    }catch(e){
+      if (state) state.textContent = e.message || '사진을 불러오지 못했습니다.';
+    }
+  });
 }
 
 function bind(sec){
@@ -504,6 +611,8 @@ function bind(sec){
     A[el.dataset.follow]=el.value; saveDraft();
   }));
 
+  bindPhoto();
+
   const p=document.getElementById('bPrev');
   if (p) p.addEventListener('click',()=>{ step--; saveDraft(); render(); window.scrollTo(0,0); });
   document.getElementById('bNext').addEventListener('click',()=>next(sec));
@@ -515,6 +624,8 @@ function next(sec){
     if (!it.req) return;
     if (it.t==='matrix'){
       it.rows.forEach(r=>{ if(!A[it.k+' '+r]) missing.push('q'+i); });
+    } else if (it.t==='photo'){
+      if (!PHOTO.b64) missing.push('q'+i);
     } else {
       const v=A[it.k];
       const empty = Array.isArray(v) ? v.length===0 : !v;
@@ -542,7 +653,22 @@ async function finish(){
   const btn=document.getElementById('bNext');
   btn.disabled=true; btn.textContent='보내는 중...';
 
-  const sub = { t:TYPE, sid:newSid(), slot:SLOT, name:NAME, code:newCode(), d:b64url(JSON.stringify(A)) };
+  // 사진이 있으면 먼저 드라이브에 올리고, 그 주소를 설문과 함께 기록한다
+  let imgUrl = '';
+  if (PHOTO.b64){
+    try{ imgUrl = await uploadPhoto(); }
+    catch(e){
+      btn.disabled=false; btn.textContent='제출하기';
+      const err=document.getElementById('err');
+      err.textContent='사진을 올리지 못했습니다: ' + (e.message||'') + ' 잠시 후 다시 눌러주세요.';
+      err.classList.add('on');
+      window.scrollTo({top:0,behavior:'smooth'});
+      return;
+    }
+  }
+
+  const sub = { t:TYPE, sid:newSid(), slot:SLOT, name:A['이름']||NAME, code:newCode(),
+                link:A['게시물 링크']||'', img:imgUrl, d:b64url(JSON.stringify(A)) };
   let res=null, queued=false;
   try{ res = await submit(sub); }
   catch(e){ const q=qGet(); q.push(sub); qSet(q); queued=true; }
@@ -552,7 +678,7 @@ async function finish(){
 }
 
 function renderDone(res, sub, queued){
-  const gift = res ? !!res.gift : (['binder','binder_buy','sticker'].indexOf(sub.t)!==-1);
+  const gift = res ? !!res.gift : (['binder','binder_buy','sticker','sns'].indexOf(sub.t)!==-1);
   const code = (res && res.code) ? res.code : sub.code;
 
   let h = '<div class="done"><div class="mark">🎨</div>' +
@@ -560,9 +686,13 @@ function renderDone(res, sub, queued){
     '<p>소중한 의견 감사드립니다.<br>남겨주신 내용은 다음 상품을 만드는 데 쓰입니다.</p>';
 
   if (gift){
-    h += '<div class="code"><div class="cl">스티커 증정 코드</div>' +
+    const isSns = sub.t === 'sns';
+    const what  = (res && res.giftLabel) ? res.giftLabel : (isSns ? '액자' : '데코 스티커');
+    h += '<div class="code"><div class="cl">' + (isSns ? '액자 증정 코드' : '스티커 증정 코드') + '</div>' +
          '<div class="cv">'+esc(code)+'</div>' +
-         '<div class="cd">이 화면을 <b>부스 직원에게 보여주시면</b><br>데코스티커 1개를 드립니다.</div></div>';
+         '<div class="cd">이 화면을 <b>부스 직원에게 보여주시면</b><br>' +
+         (isSns ? '완성 작품을 <b>액자에 넣어</b> 드립니다.' : esc(what) + ' 1개를 드립니다.') +
+         '</div></div>';
   }
   if (queued){
     h += '<div class="pend">지금 네트워크가 불안정해 <b>전송 대기 중</b>입니다. ' +
@@ -579,11 +709,11 @@ function renderPicker(){
     '<p class="sdesc">해당하는 설문을 골라 주세요.</p>';
   Object.keys(SURVEYS).forEach(k=>{
     const s=SURVEYS[k];
-    const gift = ['binder','binder_buy','sticker'].indexOf(k)!==-1;
+    const gift = ['binder','binder_buy','sticker','sns'].indexOf(k)!==-1;
     h += '<button class="pb" type="button" data-t="'+k+'">' +
          '<div class="t">'+esc(s.name)+'</div>' +
          '<div class="d">'+esc(s.lead)+'</div>' +
-         (gift?'<div class="g">작성하시면 데코스티커를 드립니다</div>':'') +
+         (gift?'<div class="g">'+(k==='sns'?'확인 후 액자를 드립니다':'작성하시면 데코스티커를 드립니다')+'</div>':'') +
          '</button>';
   });
   h += '</div>';

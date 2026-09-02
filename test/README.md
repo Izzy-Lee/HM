@@ -2,7 +2,8 @@
 
 실제 `staff.html` / `report.html` / `index.html` 을 크로미움에서 띄우고,
 실제 `apps-script/Code.gs` 를 로컬에서 실행해 붙여 돌립니다.
-스프레드시트만 메모리 목업이고, 화면과 백엔드 로직은 배포본과 같은 코드입니다.
+스프레드시트와 드라이브만 목업이고(드라이브는 test/drive_mock/ 에 실제로 파일을 씁니다),
+화면과 백엔드 로직은 배포본과 같은 코드입니다.
 
 ```bash
 npm i -D playwright            # 또는 전역 playwright 사용
@@ -11,6 +12,7 @@ node test/drive.js             # 운영자 조작 시나리오 33개
 node test/offline.js           # 네트워크 끊김 → 큐 적재 → 복구 후 자동 전송
 node test/survey.js            # 설문 4종 · 조각 전송 · 증정 코드 중복 차단
 node test/book.js              # 예약 접수 · 정원 초과 차단 · 동시 접수 경합
+node test/sns.js               # SNS 후기 · 사진 압축/업로드 · 드라이브 저장 · 집계 스냅샷
 ```
 
 `drive.js` 와 `offline.js` 는 **빈 시트를 전제**로 단언합니다.

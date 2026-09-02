@@ -376,12 +376,12 @@
         <li>아래 <b>후기 인증 설문</b>에 게시물 <b>링크(URL)</b>와 <b>캡처 이미지</b>를 함께 올려주세요.</li>
         <li>운영자가 확인하면 완성 작품을 <b>액자에 넣어 즉석에서</b> 드립니다.</li>
       </ol>
-      <a class="cta-btn cta-btn--sns" id="snsBtn" href="https://forms.gle/6zvFrtLxtGFNfUJ88" target="_blank">
+      <a class="cta-btn cta-btn--sns" id="snsBtn" href="survey.html?t=sns">
         후기 인증 설문 작성하기
       </a>
       <p class="sns-note">
         선착순 <strong>28명</strong> 한정 · 소진 시 종료<br>
-        이미지 업로드에는 구글 로그인이 필요합니다. 어려우시면 부스에서 화면을 보여주세요.
+사진은 자동으로 줄여서 올라가니 구글 로그인 없이 바로 제출하실 수 있습니다.
       </p>
     </div>
 
@@ -524,10 +524,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9
 // 유료(체험비·구매) 설문을 마치면 완료 화면에 스티커 증정 코드가 뜹니다.
 const SURVEY_PAGE = 'survey.html';
 
-// SNS 후기 인증은 아직 구글 폼을 씁니다. 별도 폼으로 분리하면 아래를 바꿔주세요.
-const SNS_BASE = 'https://forms.gle/6zvFrtLxtGFNfUJ88';
-const SNS_ENTRY_PROGRAM = '';   // 예: 'entry.111111'
-const SNS_ENTRY_TIME    = '';
+// SNS 후기 인증도 이 사이트에서 받습니다. 캡처 이미지는 구글 드라이브에 저장됩니다.
 
 /** 예약한 회차를 설문 주소에 실어준다 */
 function surveyLink() {
@@ -556,7 +553,11 @@ function applySurveyPrefill() {
   const sBtn = document.getElementById('surveyBtn');
   const nBtn = document.getElementById('snsBtn');
   if (sBtn) sBtn.href = surveyLink();
-  if (nBtn) nBtn.href = withSlotPrefill(SNS_BASE, SNS_ENTRY_PROGRAM, SNS_ENTRY_TIME);
+  if (nBtn) {
+    const q = new URLSearchParams({ t: 'sns' });
+    if (last) q.set('slot', last.program + ' ' + last.time);
+    nBtn.href = 'survey.html?' + q.toString();
+  }
 
   const hint = document.getElementById('surveyHint');
   if (hint) {

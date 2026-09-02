@@ -346,7 +346,7 @@
         <li>Open the <b>verification form</b> below and add the post <b>link (URL)</b> and a <b>screenshot</b>.</li>
         <li>Once our team confirms it, we frame your artwork and hand it to you on the spot.</li>
       </ol>
-      <a class="cta-btn cta-btn--sns" id="snsBtn" href="https://forms.gle/6zvFrtLxtGFNfUJ88" target="_blank">
+      <a class="cta-btn cta-btn--sns" id="snsBtn" href="survey.html?t=sns">
         Open the verification form
       </a>
       <p class="sns-note">
@@ -486,10 +486,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9
 // The booked session rides along so answers link back to the right slot.
 const SURVEY_PAGE = 'survey.html';
 
-// SNS review verification still uses a Google Form.
-const SNS_BASE = 'https://forms.gle/6zvFrtLxtGFNfUJ88';
-const SNS_ENTRY_PROGRAM = '';
-const SNS_ENTRY_TIME    = '';
+// SNS review verification also runs here; screenshots are stored in Google Drive.
 
 function surveyLink() {
   const last = getLastSelection();
@@ -633,7 +630,11 @@ function applySurveyPrefill() {
   const sBtn = document.getElementById('surveyBtn');
   const nBtn = document.getElementById('snsBtn');
   if (sBtn) sBtn.href = surveyLink();
-  if (nBtn) nBtn.href = withSlotPrefill(SNS_BASE, SNS_ENTRY_PROGRAM, SNS_ENTRY_TIME);
+  if (nBtn) {
+    const q = new URLSearchParams({ t: 'sns' });
+    if (last) q.set('slot', last.program + ' ' + last.time);
+    nBtn.href = 'survey.html?' + q.toString();
+  }
 
   const hint = document.getElementById('surveyHint');
   if (hint) {

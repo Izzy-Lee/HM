@@ -10,6 +10,9 @@ class Sheet {
   getLastColumn(){ return this.data.reduce((a,r)=>Math.max(a,r.length),0); }
   appendRow(r){ this.data.push(r.slice()); }
   setFrozenRows(){ return this; }
+  clear(){ this.data=[]; return this; }
+  autoResizeColumns(){ return this; }
+  autoResizeColumn(){ return this; }
   getFormUrl(){ return null; }
   getRange(r,c,nr,nc){ const sh=this; nr=nr||1; nc=nc||1;
     return {
@@ -38,9 +41,19 @@ const ctx = {
       setMimeType(m){this._m=m;return this;}, getContent(){return this._t;}, getMime(){return this._m;} }) },
   LockService:{ getScriptLock:()=>({waitLock(){},releaseLock(){}}) },
   Utilities:{
-    formatDate:(d)=>new Date(d).toISOString().slice(0,19).replace('T',' '),
+    formatDate:(d,tz,f)=>{
+      const iso=new Date(d).toISOString();
+      if(f==='yyyyMMdd_HHmmss') return iso.slice(0,19).replace(/[-:T]/g,'').replace(/(\d{8})(\d{6})/,'$1_$2');
+      if(f==='yyyyMMdd_HHmm')   return iso.slice(0,16).replace(/[-:T]/g,'').replace(/(\d{8})(\d{4})/,'$1_$2');
+      return iso.slice(0,19).replace('T',' ');
+    },
     base64Decode:(b64)=>Array.from(Buffer.from(b64,'base64')),
-    newBlob:(bytes)=>({ getDataAsString:()=>Buffer.from(bytes).toString('utf8') })
+    newBlob:(data,type,name)=>({
+      _bytes: Array.isArray(data)?data:null,
+      _text: typeof data==='string'?data:null,
+      getDataAsString:()=>Array.isArray(data)?Buffer.from(data).toString('utf8'):String(data),
+      getName:()=>name||'blob'
+    })
   },
   CacheService:{ getScriptCache:()=>({
     _m:(global.__cache = global.__cache || new Map()),
@@ -48,7 +61,32 @@ const ctx = {
     put(k,v){ this._m.set(k,v); },
     remove(k){ this._m.delete(k); }
   })},
-  Logger:{ log:()=>{} }, console
+  Logger:{ log:()=>{} }, console,
+
+  /* 드라이브 목업 — 실제로 로컬 디렉터리에 파일을 쓴다 (검증용) */
+  DriveApp: (()=>{
+    const DRIVE = path.join(__dirname,'drive_mock');
+    fs.mkdirSync(DRIVE,{recursive:true});
+    const mk = dir => {
+      fs.mkdirSync(dir,{recursive:true});
+      return {
+        _d:dir,
+        getUrl:()=>'file://'+dir,
+        getFoldersByName(n){ const d=path.join(dir,n); const has=fs.existsSync(d);
+          let used=false; return { hasNext:()=>has&&!used, next:()=>{used=true;return mk(d);} }; },
+        createFolder(n){ return mk(path.join(dir,n)); },
+        createFile(blob){
+          const f=path.join(dir,blob.getName());
+          fs.writeFileSync(f, blob._bytes ? Buffer.from(blob._bytes) : blob._text);
+          return { getUrl:()=>'file://'+f, getId:()=>blob.getName(), getName:()=>blob.getName(),
+                   setSharing(){ return this; } };
+        }
+      };
+    };
+    const root = mk(DRIVE);
+    return { getFoldersByName:n=>root.getFoldersByName(n), createFolder:n=>root.createFolder(n),
+             Access:{ANYONE_WITH_LINK:'anyone'}, Permission:{VIEW:'view'} };
+  })()
 };
 vm.createContext(ctx);
 

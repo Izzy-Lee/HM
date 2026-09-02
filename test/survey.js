@@ -49,9 +49,11 @@ async function fillSurvey(page, type, opts={}){
   console.log('\n═══ 1. 설문 선택 화면 ═══');
   await page.goto(BASE+'/survey.html',{waitUntil:'networkidle'});
   await page.waitForTimeout(400);
-  ok(await page.locator('.pb').count()===4, '설문 4종 표시');
+  ok(await page.locator('.pb').count()===5, '설문 5종 표시 (체험2 · 구매2 · SNS후기1)');
   ok((await page.locator('.pb').allTextContents()).filter(t=>t.includes('스티커를 드립니다')).length===3,
-     '유료 설문 3종에만 스티커 안내 (무료 컬러링 제외)');
+     '유료 3종에만 스티커 안내 (무료 컬러링 제외)');
+  ok((await page.locator('.pb').allTextContents()).filter(t=>t.includes('액자를 드립니다')).length===1,
+     'SNS 후기는 액자 안내');
 
   console.log('\n═══ 2. 컬러링 체험 설문 (무료 · 증정 없음) ═══');
   const r1 = await fillSurvey(page,'coloring',{slot:'컬러링 13:30',name:'참가자1'});
@@ -83,7 +85,7 @@ async function fillSurvey(page, type, opts={}){
   await st.locator('#giftBtn').click();
   await st.waitForTimeout(1800);
   const msg1 = (await st.locator('#giftMsg').textContent()).trim();
-  ok(msg1.includes('스티커를 드리세요'), '유효 코드 → 증정 승인: "'+msg1+'"');
+  ok(msg1.includes('데코 스티커 1개를 드리세요'), '유효 코드 → 증정 승인: "'+msg1+'"');
 
   console.log('\n═══ 6. 같은 코드 재사용 차단 ═══');
   await st.locator('#giftCode').fill(r2.code);

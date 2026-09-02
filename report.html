@@ -242,7 +242,7 @@ function render(d) {
       ['체험 설문 / 구매 설문',
         num(d.survey.experience || 0) + ' / ' + num(d.survey.purchase || 0) + '건', '–', '–'],
       ['설문 작성 스티커 증정', num(d.survey.stickerGift || 0) + '개', '–', '–'],
-      ['SNS 후기 인증', num(d.survey.sns) + '건', num(T.sns) + '건', { rate: R.sns }],
+      ['SNS 후기 인증 (캡처 이미지 포함)', num(d.survey.sns) + '건', num(T.sns) + '건', { rate: R.sns }],
       ['액자 증정', num(d.survey.frames) + '개', num(T.sns) + '개',
         { rate: Math.round(d.survey.frames / T.sns * 1000) / 10 }]
     ]));

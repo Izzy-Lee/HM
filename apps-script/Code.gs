@@ -82,17 +82,24 @@ var FIELD = {
     coloring:   { name: '컬러링 체험',     tab: '설문_컬러링체험',   group: 'experience' },
     binder:     { name: '자개바인더 체험', tab: '설문_바인더체험',   group: 'experience' },
     binder_buy: { name: '자개바인더 구매', tab: '설문_바인더구매',   group: 'purchase'   },
-    sticker:    { name: '데코스티커 구매', tab: '설문_스티커구매',   group: 'purchase'   }
+    sticker:    { name: '데코스티커 구매', tab: '설문_스티커구매',   group: 'purchase'   },
+    sns:        { name: 'SNS 후기 인증',   tab: '설문_SNS후기',      group: 'sns', gift: '액자' }
   },
+
+  /* 캡처 이미지와 집계 백업을 담을 구글 드라이브 폴더.
+     없으면 내 드라이브에 자동으로 만든다. */
+  DRIVE_FOLDER: '헬로미추 2026-09-19 현장자료',
+  DRIVE_IMAGE_SUBFOLDER: 'SNS 후기 캡처',
 
   /* 설문을 쓰면 스티커를 드리는 설문 종류.
      [발주자 확정] 유료 구매자에게만 준다. 무료 컬러링은 제외 — 이쪽 혜택은 SNS 후기 액자다.
      바꿔야 하면 여기에 'coloring' 을 넣으면 되지만, 확정된 운영 방침이므로 임의로 넣지 말 것. */
-  GIFT_SURVEYS: ['binder', 'binder_buy', 'sticker'],
-  GIFT_ITEM: '스티커 증정',
+  GIFT_SURVEYS: ['binder', 'binder_buy', 'sticker', 'sns'],
+  GIFT_ITEM: '스티커 증정',        // 기본 증정품. 설문별로 다르면 SURVEYS[t].gift 가 이긴다.
 
   /* 설문 앞뒤로 붙는 고정 컬럼. 나머지 문항 컬럼은 응답 키를 보고 자동으로 늘어난다. */
-  SURVEY_HEAD: ['시각', '설문종류', '회차', '이름', '증정코드', '증정여부', '증정시각']
+  SURVEY_HEAD: ['시각', '설문종류', '회차', '이름', '증정코드', '증정여부', '증정시각',
+                '게시물 링크', '캡처 이미지']
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -115,6 +122,8 @@ function doGet(e) {
       case 'survey':  out = actSurvey_(p);              break;
       case 'gift':    out = actGift_(p);                break;
       case 'book':    out = actBook_(p);                break;
+      case 'img':     out = actImage_(p);               break;
+      case 'snapshot':out = actSnapshot_(p);            break;
       default:        out = { ok: false, error: '알 수 없는 action: ' + action };
     }
     if (out && out.ok === undefined) out.ok = true;
@@ -632,6 +641,7 @@ function writeSurveyRow_(type, meta, answers, p) {
   });
 
   var gift = FIELD.GIFT_SURVEYS.indexOf(type) !== -1;
+  var giftItem = giftItemFor_(type);
   /* 코드는 설문 화면이 만들어 보낸다 — 네트워크가 끊겨도 완료 화면에 코드를 띄우기 위함.
      혹시 겹치면 여기서 새로 뽑아 돌려준다. */
   var code = '';
@@ -641,13 +651,15 @@ function writeSurveyRow_(type, meta, answers, p) {
   }
 
   var fixed = {
-    '시각':     nowStamp_(),
-    '설문종류': meta.name,
-    '회차':     String(p.slot || '').trim(),
-    '이름':     String(p.name || '').trim(),
-    '증정코드': code,
-    '증정여부': '',
-    '증정시각': ''
+    '시각':        nowStamp_(),
+    '설문종류':    meta.name,
+    '회차':        String(p.slot || '').trim(),
+    '이름':        String(p.name || '').trim(),
+    '증정코드':    code,
+    '증정여부':    '',
+    '증정시각':    '',
+    '게시물 링크': String(p.link || '').trim(),
+    '캡처 이미지': String(p.img || '').trim()      // 드라이브에 올린 파일 주소
   };
 
   var row = header.map(function (h) {
@@ -660,7 +672,7 @@ function writeSurveyRow_(type, meta, answers, p) {
 
   return {
     ok: true, done: true, type: type, survey: meta.name,
-    gift: gift, code: code
+    gift: gift, giftItem: giftItem, giftLabel: giftLabel_(giftItem), code: code
   };
 }
 
@@ -700,6 +712,17 @@ function b64urlDecode_(str) {
  * 코드를 찾아 아직 안 준 것이면 스티커 1개를 증정 처리하고 재고를 깎는다.
  * 이미 준 코드는 거절한다(같은 코드로 두 번 받아가는 것을 막는다).
  */
+/** 이 설문을 쓰면 무엇을 드리는지 — SNS 후기는 액자, 나머지는 스티커 */
+function giftItemFor_(type) {
+  var meta = FIELD.SURVEYS[type];
+  return (meta && meta.gift) ? meta.gift : FIELD.GIFT_ITEM;
+}
+
+/** 화면에 띄울 이름. '스티커 증정' 은 내부 상품 키라 손님 앞에서 쓸 말이 아니다. */
+function giftLabel_(item) {
+  return item === FIELD.GIFT_ITEM ? '데코 스티커' : item;
+}
+
 function actGift_(p) {
   requireKey_(p);
   var code = String(p.code || '').trim().toUpperCase();
@@ -711,6 +734,7 @@ function actGift_(p) {
     var types = Object.keys(FIELD.SURVEYS);
     for (var t = 0; t < types.length; t++) {
       var meta = FIELD.SURVEYS[types[t]];
+      var item = giftItemFor_(types[t]);
       var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(meta.tab);
       if (!sh || sh.getLastRow() < 2) continue;
 
@@ -738,14 +762,15 @@ function actGift_(p) {
         if (cDone) sh.getRange(row, cDone).setValue('증정');
         if (cWhen) sh.getRange(row, cWhen).setValue(nowStamp_());
 
-        // 판매 시트에도 남긴다 — 매출 0원, 재고는 스티커에서 나간다
+        // 판매 시트에도 남긴다 — 매출 0원, 재고는 해당 품목에서 나간다
         var sale = ensureSheet_(FIELD.TAB_SALE, FIELD.HEAD_SALE);
-        sale.appendRow([nowStamp_(), FIELD.GIFT_ITEM, 0, 1, 0, '설문증정',
+        sale.appendRow([nowStamp_(), item, 0, 1, 0, '설문증정',
                         slot + (name ? '|' + name : ''), String(p.staff || '').trim(), '']);
-        bumpStock_(stockKeyOf_(FIELD.GIFT_ITEM), 1);
+        bumpStock_(stockKeyOf_(item), 1);
 
         return { ok: true, survey: meta.name, name: name,
-                 remain: stockRemain_(stockRows_().map[stockKeyOf_(FIELD.GIFT_ITEM)] || { total: 0, used: 0, adj: 0 }) };
+                 item: item, label: giftLabel_(item),
+                 remain: stockRemain_(stockRows_().map[stockKeyOf_(item)] || { total: 0, used: 0, adj: 0 }) };
       }
     }
     throw new Error('없는 코드입니다. 설문 완료 화면의 코드를 다시 확인해 주세요.');
@@ -756,7 +781,7 @@ function actGift_(p) {
 
 /** 설문 종류별 응답 수 */
 function surveyCounts_() {
-  var out = { byType: {}, experience: 0, purchase: 0, total: 0, gifted: 0 };
+  var out = { byType: {}, experience: 0, purchase: 0, sns: 0, total: 0, gifted: 0 };
   Object.keys(FIELD.SURVEYS).forEach(function (t) {
     var meta = FIELD.SURVEYS[t];
     var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(meta.tab);
@@ -777,6 +802,168 @@ function surveyCounts_() {
     out.gifted += g;
   });
   return out;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   5-3. 구글 드라이브 — 캡처 이미지와 집계 백업
+   ══════════════════════════════════════════════════════════════ */
+/** 행사 자료 폴더. 없으면 내 드라이브에 만든다. */
+function eventFolder_() {
+  var it = DriveApp.getFoldersByName(FIELD.DRIVE_FOLDER);
+  return it.hasNext() ? it.next() : DriveApp.createFolder(FIELD.DRIVE_FOLDER);
+}
+
+function imageFolder_() {
+  var parent = eventFolder_();
+  var it = parent.getFoldersByName(FIELD.DRIVE_IMAGE_SUBFOLDER);
+  return it.hasNext() ? it.next() : parent.createFolder(FIELD.DRIVE_IMAGE_SUBFOLDER);
+}
+
+/**
+ * 캡처 이미지 업로드 — action=img&sid=..&i=0&n=12&d=<base64url 조각>&name=홍길동
+ *
+ * 사진은 그대로 보내면 GET 한 번에 안 들어간다. 설문 화면에서 미리 줄여
+ * 100KB 안팎으로 만든 뒤 조각내 보내고, 마지막 조각에서 드라이브에 저장한다.
+ * 저장한 파일 주소를 돌려주면 설문 제출 때 그 주소를 함께 기록한다.
+ */
+function actImage_(p) {
+  var sid = String(p.sid || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40);
+  var idx = parseInt(p.i, 10);
+  var tot = parseInt(p.n, 10);
+  var data = String(p.d || '');
+  if (!sid || isNaN(idx) || isNaN(tot) || tot < 1) throw new Error('전송 정보가 올바르지 않습니다.');
+
+  var cache = CacheService.getScriptCache();
+  var guard = 'imgdone_' + sid;
+  var prev = cache.get(guard);
+  if (prev) return JSON.parse(prev);          // 재전송이면 이미 만든 파일을 그대로 돌려준다
+
+  cache.put('img_' + sid + '_' + idx, data, 900);
+
+  var parts = [];
+  for (var i = 0; i < tot; i++) {
+    var part = (i === idx) ? data : cache.get('img_' + sid + '_' + i);
+    if (part === null) return { ok: true, received: idx + 1, of: tot, done: false };
+    parts.push(part);
+  }
+
+  var b64 = parts.join('').replace(/-/g, '+').replace(/_/g, '/');
+  while (b64.length % 4) b64 += '=';
+
+  var who   = String(p.name || '익명').replace(/[\\/:*?"<>|]/g, '').slice(0, 20);
+  var stamp = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyyMMdd_HHmmss');
+  var blob  = Utilities.newBlob(Utilities.base64Decode(b64), 'image/jpeg',
+                                'SNS_' + who + '_' + stamp + '.jpg');
+
+  var file = imageFolder_().createFile(blob);
+  try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (err) {}
+
+  var out = { ok: true, done: true, url: file.getUrl(), id: file.getId(), name: file.getName() };
+  cache.put(guard, JSON.stringify(out), 900);
+  for (var j = 0; j < tot; j++) cache.remove('img_' + sid + '_' + j);
+  return out;
+}
+
+/**
+ * 집계 스냅샷 — action=snapshot&k=키
+ * 지금 시점의 집계를 '집계' 탭에 쓰고, 같은 내용을 드라이브에도 남긴다.
+ * 행사 종료 직후 한 번 눌러두면 결과보고서를 쓸 때 그 시점 숫자가 보존된다.
+ */
+function actSnapshot_(p) {
+  requireKey_(p);
+  var r = buildReport_();
+  var rows = snapshotRows_(r);
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('집계');
+  if (!sh) sh = ss.insertSheet('집계');
+  sh.clear();
+  sh.getRange(1, 1, rows.length, 4).setValues(rows);
+  sh.getRange(1, 1, 1, 4).setFontWeight('bold').setBackground('#efe9e0');
+  sh.setFrozenRows(1);
+  sh.autoResizeColumns(1, 4);
+
+  // 드라이브에도 같은 내용을 CSV 로 남긴다 (시트를 잘못 건드려도 근거가 남는다)
+  var csv = rows.map(function (row) {
+    return row.map(function (c) {
+      var v = String(c === null || c === undefined ? '' : c);
+      return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+    }).join(',');
+  }).join('\n');
+
+  var stamp = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyyMMdd_HHmm');
+  var folder = eventFolder_();
+  var csvFile  = folder.createFile(Utilities.newBlob('\uFEFF' + csv, 'text/csv', '집계_' + stamp + '.csv'));
+  var jsonFile = folder.createFile(Utilities.newBlob(JSON.stringify(r, null, 2), 'application/json', '집계_' + stamp + '.json'));
+
+  return { ok: true, rows: rows.length - 1, csv: csvFile.getUrl(), json: jsonFile.getUrl(),
+           folder: folder.getUrl(), at: r.generatedAt };
+}
+
+/** 집계 탭에 쓸 내용 — 결과보고서 항목 순서 그대로 */
+function snapshotRows_(r) {
+  var T = r.targets, A = r.attendance, S = r.sales;
+  var item = function (k) { return S.byItem[k] || { qty: 0, amount: 0 }; };
+  var pct  = function (v, t) { return t ? (Math.round(v / t * 1000) / 10) + '%' : '–'; };
+  var rows = [['항목', '실적', '목표', '달성률']];
+  // 값 없이 부르면 구분선(섹션 제목)으로 본다
+  var add  = function (a, b, c, d) {
+    if (b === undefined) { rows.push([a, '', '', '']); return; }
+    rows.push([a, b, c === undefined ? '' : c, d === undefined ? '' : d]);
+  };
+
+  add('■ 체험 프로그램');
+  add('컬러링 체험 (무료)', A.coloring + '명', T.coloring + '명', pct(A.coloring, T.coloring));
+  add('자개바인더 체험',    A.binder + '명',   T.binder + '명',   pct(A.binder, T.binder));
+  add('노쇼',               (A.noshowColoring + A.noshowBinder) + '명');
+
+  add('■ 판매');
+  add('바인더 체험료',   item('바인더 체험').qty + '건',   T.binder + '건',        pct(item('바인더 체험').qty, T.binder));
+  add('바인더 완성품',   item('바인더 완성품').qty + '개', T.binderProduct + '개', pct(item('바인더 완성품').qty, T.binderProduct));
+  add('데코 스티커 판매', item('스티커').qty + '개',       T.sticker + '개',       pct(item('스티커').qty, T.sticker));
+  add('데코 스티커 증정', item(FIELD.GIFT_ITEM).qty + '개');
+  add('총 매출',         S.revenue + '원', T.revenue + '원', pct(S.revenue, T.revenue));
+  Object.keys(S.byPay).forEach(function (k) { add('  · ' + k, S.byPay[k] + '원'); });
+
+  add('■ 설문');
+  add('설문 응답 합계', r.survey.count + '건', T.survey + '건', pct(r.survey.count, T.survey));
+  Object.keys(r.survey.byType || {}).forEach(function (k) {
+    add('  · ' + r.survey.byType[k].name, r.survey.byType[k].count + '건');
+  });
+  add('SNS 후기 인증', r.survey.sns + '건', T.sns + '건', pct(r.survey.sns, T.sns));
+  add('액자 증정',     r.survey.frames + '개', T.sns + '개', pct(r.survey.frames, T.sns));
+
+  add('■ 도안별 선택');
+  Object.keys(r.designs).forEach(function (k) { add('  · ' + k, r.designs[k] + '건'); });
+
+  add('■ 운영 관찰');
+  Object.keys(r.tags).forEach(function (k) { add('  · ' + k, r.tags[k] + '건'); });
+  add('30분 내 미완성', r.unfinished + '건');
+
+  add('■ 무료 → 유료 전환');
+  add('무료 참석', r.conversion.freeAttend + '명');
+  add('그중 구매', r.conversion.converted + '명', '', r.conversion.rate + '%');
+
+  add('■ 종료 시점 재고');
+  (r.stock || []).forEach(function (x) { add('  · ' + x.key, x.remain + ' / ' + x.total, '소진 ' + x.used); });
+
+  add('집계 시각', r.generatedAt);
+  return rows;
+}
+
+/** 스프레드시트 메뉴 — 대표님이 버튼으로 스냅샷을 남길 수 있게 */
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('헬로미추')
+    .addItem('현장 데이터 탭 만들기', 'setupFieldSheets')
+    .addItem('집계 스냅샷 저장 (시트 + 드라이브)', 'snapshotFromMenu')
+    .addToUi();
+}
+
+function snapshotFromMenu() {
+  var r = actSnapshot_({ k: FIELD.STAFF_KEY });
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    '집계 탭과 드라이브에 저장했습니다.\n' + r.at, '헬로미추', 8);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -912,9 +1099,11 @@ function buildReport_() {
   // 예전 구글 폼 시트가 남아 있으면 그 응답도 더한다 (이관 중 유실 방지)
   survey += countFormRows_(typeof CONFIG !== 'undefined' ? CONFIG.SURVEY_SHEET_NAME : '');
 
-  var sns    = countFormRows_(typeof CONFIG !== 'undefined' ? CONFIG.SNS_SHEET_NAME    : '');
+  // SNS 후기도 이제 이 시스템이 직접 받는다. 예전 구글 폼 시트가 남아 있으면 함께 센다.
+  var sns = (sv.byType.sns ? sv.byType.sns.count : 0) +
+            countFormRows_(typeof CONFIG !== 'undefined' ? CONFIG.SNS_SHEET_NAME : '');
   var framesGiven = (byItem['액자'] && byItem['액자'].qty) || 0;
-  if (!sns) sns = framesGiven;   // 후기 시트가 아직 없으면 액자 증정 건수로 대신한다
+  if (!sns) sns = framesGiven;   // 아직 한 건도 없으면 액자 증정 건수로 대신한다
 
   /* 되돌릴 수 있는 직전 판매 — staff.html 이 폰을 새로고침해도 Undo 를 살려두기 위함 */
   var lastSale = null;

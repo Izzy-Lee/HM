@@ -172,6 +172,18 @@
   /* SNS 후기 인증 */
   .cta-btn--sns { background: var(--brush-blue); color: white; }
   .cta-btn--sns:hover { background: #4d6ea3; }
+  .survey-box { background: white; border: 1px solid rgba(245,174,188,0.55); border-radius: 12px; padding: 0.9rem 1rem 0.6rem; margin-bottom: 0.7rem; text-align: left; }
+  .gift-pill { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; font-weight: 700; padding: 0.18rem 0.55rem; border-radius: 10px; background: rgba(212,132,58,0.14); color: var(--brush-amber); white-space: nowrap; }
+  .survey-sub { font-family: 'Noto Sans KR', sans-serif; font-size: 0.72rem; color: var(--ink-soft); line-height: 1.65; margin: 0.1rem 0 0.5rem; }
+  .survey-sub b { color: var(--brush-amber); }
+  .survey-buys { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 0.7rem; }
+  .buy-btn { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.75rem 0.9rem;
+             border: 1.5px solid rgba(212,132,58,0.4); border-radius: 10px; background: #fffaf3; text-decoration: none;
+             font-family: 'Noto Sans KR', sans-serif; transition: background 0.15s ease; }
+  .buy-btn:hover { background: #fdf1e2; }
+  .buy-btn .bt { font-size: 0.85rem; font-weight: 700; color: var(--ink); }
+  .buy-btn .bg { font-size: 0.66rem; font-weight: 700; color: var(--brush-amber); white-space: nowrap; }
+
   .sns-box { background: white; border: 1px solid rgba(90,126,184,0.28); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.7rem; text-align: left; }
   .sns-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
   .sns-title { font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--ink); }
@@ -324,10 +336,29 @@
       </div>
     </div>
 
-    <a class="cta-btn cta-btn--survey" id="surveyBtn" href="survey.html">
-      ① 체험 후 설문 작성하기
-    </a>
-    <p class="sns-note" id="surveyHint" style="display:none;margin:-0.35rem 0 0.7rem;"></p>
+    <div class="survey-box">
+      <div class="sns-head">
+        <span class="sns-title">① 설문 작성</span>
+        <span class="gift-pill">유료 참여 시 스티커 증정</span>
+      </div>
+
+      <a class="cta-btn cta-btn--survey" id="surveyBtn" href="survey.html">
+        체험 후 설문 작성하기
+      </a>
+      <p class="sns-note" id="surveyHint" style="display:none;margin:-0.45rem 0 0.7rem;"></p>
+
+      <p class="survey-sub">굿즈를 구매하셨다면 아래 설문도 부탁드립니다. 작성하시면 <b>데코 스티커 1개</b>를 드려요.</p>
+      <div class="survey-buys">
+        <a class="buy-btn" href="survey.html?t=binder_buy">
+          <span class="bt">자개바인더 구매 설문</span>
+          <span class="bg">스티커 증정</span>
+        </a>
+        <a class="buy-btn" href="survey.html?t=sticker">
+          <span class="bt">데코스티커 구매 설문</span>
+          <span class="bg">스티커 증정</span>
+        </a>
+      </div>
+    </div>
 
     <!-- SNS 후기 인증 -->
     <div class="sns-box">
@@ -350,8 +381,7 @@
     </div>
 
     <p class="note">
-      예약 후 <strong>SMS로 확인 메시지</strong>가 발송됩니다.<br>
-      바인더 체험·구매, 스티커 구매 후 설문에 참여하시면 <strong>데코 스티커 1종</strong>을 드려요.
+      예약 후 <strong>SMS로 확인 메시지</strong>가 발송됩니다.
     </p>
 
     <div style="background:#f5f3ee;border:1px solid rgba(90,78,66,0.15);border-radius:10px;padding:0.8rem 1rem;margin-top:0.4rem;">

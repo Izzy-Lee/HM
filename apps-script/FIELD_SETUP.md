@@ -8,6 +8,7 @@
 | 현장 기록 | `izzy-lee.github.io/HM/staff.html?k=접근키` | 운영자 2명 (휴대폰) |
 | 실적 집계 | `izzy-lee.github.io/HM/report.html` | 대표 · 보고서 작성자 |
 | 참가자 안내 | `izzy-lee.github.io/HM/` | 일반 |
+| 예약 | `izzy-lee.github.io/HM/reserve.html` | 참가자 |
 | 설문 | `izzy-lee.github.io/HM/survey.html` | 참가자 (본인 휴대폰) |
 
 ---
@@ -54,13 +55,21 @@ https://izzy-lee.github.io/HM/staff.html?k=바꾼키&staff=김운영
 > `CONFIG.SURVEY_SHEET_NAME` 은 **비워두세요.** 예전 구글 폼 설문 시트가 남아 있을 때만
 > 그 응답까지 합산하는 용도입니다.
 
-### ④ 예약 폼에 '도안 선택' 문항 추가
+### ④ 예약도 구글 폼을 쓰지 않습니다 — 할 일 없음
 
-객관식으로 아래 5개를 그대로 넣으세요. **띄어쓰기까지 정확히 같아야** 재고가 자동 차감됩니다.
+예약은 `reserve.html` 에서 직접 받습니다. **도안 선택 문항을 폼에 추가하실 필요가 없습니다.**
+예약 화면에 이미 도안 5종이 잔여 수량과 함께 나옵니다.
 
-```
-01 소서노 / 02 문학산성 / 03 갯벌 / 04 수봉폭포 / 05 수봉도서관
-```
+기존 **예약 응답 시트에 그대로 쌓입니다.** 시트 헤더를 읽어 이름으로 맞춰 넣기 때문에
+폼이 어떤 컬럼을 갖고 있든 상관없고, 구글 폼을 당분간 병행해도 한 곳에 모입니다.
+없는 항목(연락처·도안·접수경로 등)은 헤더 끝에 컬럼을 만듭니다.
+
+정원 검사는 **서버에서 잠금을 걸고** 합니다. 구글 폼은 미리 열어둔 화면으로 제출하면
+초과 접수가 들어온 뒤 사후 취소되는 구조였는데, 이제는 애초에 접수가 되지 않습니다.
+마지막 한 자리에 여러 명이 동시에 신청해도 한 명만 접수됩니다.
+
+> 구글 폼으로 되돌려야 하면 `index.html` 의 `goReserve()` 를 예전 `openForm()` 으로
+> 돌리면 됩니다. 주석 처리해 둔 `FORM_BASE` / `ENTRY_*` 상수를 다시 살리세요.
 
 ### ⑤ 스티커 증정 이벤트 확인
 
@@ -87,6 +96,7 @@ https://izzy-lee.github.io/HM/staff.html?k=바꾼키&staff=김운영
 curl -s "https://izzy-lee.github.io/HM/staff.html" | grep -c "직전 취소"
 curl -s "https://izzy-lee.github.io/HM/report.html" | grep -c "붙여넣기용"
 curl -s "https://izzy-lee.github.io/HM/survey.html" | grep -c "스티커 증정 코드"
+curl -s "https://izzy-lee.github.io/HM/reserve.html" | grep -c "예약하기"
 
 # ② Apps Script 직접 호출 — -L 이 없으면 Drive 오류 페이지가 나옵니다.
 URL="배포URL"
@@ -103,9 +113,10 @@ curl -L "$URL?action=roster&slot=컬러링%2013:30"
 2. `report.html` 에서 **총 매출과 결제수단별 매출**이 올라갔는지 확인
 3. **직전 취소** 1회 → 매출이 원래대로 돌아오고 **재고가 복구**되는지 확인
 4. **체크인** 탭에서 아무나 참석 처리 + 도안 선택 → `report.html` 도안 비율에 반영 확인
-5. `survey.html?t=sticker` 로 설문을 하나 제출 → 완료 화면의 **증정 코드**를 `staff.html` 판매 탭에 입력 →
+5. `reserve.html` 에서 예약을 1건 넣어보고 예약 응답 시트에 제대로 들어갔는지 확인
+6. `survey.html?t=sticker` 로 설문을 하나 제출 → 완료 화면의 **증정 코드**를 `staff.html` 판매 탭에 입력 →
    "스티커를 드리세요" 가 뜨는지, 같은 코드를 다시 넣으면 거절되는지 확인
-6. 스프레드시트에서 **테스트로 만든 행을 삭제**하고, `재고` 탭의 `차감` 을 0 으로 되돌리기
+7. 스프레드시트에서 **테스트로 만든 행을 삭제**하고, `재고` 탭의 `차감` 을 0 으로 되돌리기
 
 ## 4. 운영 중 알아둘 것
 
@@ -156,6 +167,7 @@ GitHub Pages 에서 Apps Script 로 `fetch()` POST 를 하면 CORS 로 막히기
 | `stock` | `item` `val` `k` | 재고 보정 |
 | `survey` | `t` `sid` `i` `n` `d` `slot` `name` `code` | 설문 1건 저장 (조각 전송) |
 | `gift` | `code` `k` | 설문 증정 코드 확인 → 스티커 1개 차감 |
+| `book` | `program` `time` `name` `tel` `design` `agree` | 예약 접수 (정원 검사 포함) |
 
 > ⚠ 수량 파라미터는 **`co`** 입니다. **`c` 는 구글 인프라 예약어**라서 `?c=` 를 붙이면
 > 스크립트에 도달하기 전에 **HTTP 400** 이 납니다.

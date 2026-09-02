@@ -114,6 +114,7 @@ function doGet(e) {
       case 'stock':   out = actStock_(p);               break;
       case 'survey':  out = actSurvey_(p);              break;
       case 'gift':    out = actGift_(p);                break;
+      case 'book':    out = actBook_(p);                break;
       default:        out = { ok: false, error: '알 수 없는 action: ' + action };
     }
     if (out && out.ok === undefined) out.ok = true;
@@ -422,6 +423,132 @@ function actStock_(p) {
   st.sheet.getRange(rec.row, 4).setValue(adj);
   st.sheet.getRange(rec.row, 5).setValue(val);
   return { ok: true, item: item, remain: val };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   5-1. 체험 예약
+   ══════════════════════════════════════════════════════════════ */
+/**
+ * 예약 접수 — action=book&program=컬러링&time=13:30&name=홍길동&tel=010...&design=...&agree=1
+ *
+ * 구글 폼을 대체하되 **같은 응답 시트**에 쓴다. 그래야 정원 마감·예약 현황·
+ * 회차별 명단이 지금 그대로 돌아가고, 폼을 병행해도 한 곳에 모인다.
+ * 시트 헤더를 읽어 이름으로 맞춰 넣으므로, 폼이 어떤 컬럼을 갖고 있든 상관없다.
+ *
+ * 정원 검사는 잠금 안에서 한다. 구글 폼은 미리 열어둔 화면으로 제출하면
+ * 초과 접수가 들어온 뒤 사후 취소되는 구조였는데, 여기서는 애초에 막는다.
+ */
+function actBook_(p) {
+  var program = normalizeProgram_(String(p.program || '').trim());
+  var time    = normalizeTime_(String(p.time || '').trim());
+  var name    = String(p.name || '').trim();
+  var tel     = String(p.tel || '').trim();
+  var design  = String(p.design || '').trim();
+
+  if (!program || !time) throw new Error('프로그램과 시간을 선택해 주세요.');
+  if (!name)             throw new Error('이름을 입력해 주세요.');
+  if (!tel)              throw new Error('연락처를 입력해 주세요.');
+  if (String(p.agree || '') !== '1') throw new Error('개인정보 수집·이용에 동의해 주세요.');
+  if (isSlotPast_(time)) throw new Error('이미 지난 시간대입니다.');
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sh   = getSheet_();
+    var cols = getColumns_(sh);
+
+    // 정원 검사 — 잠금 안에서 세고 바로 쓴다
+    var counts   = countBySlot_(sh, cols);
+    var capacity = capacityOf_(program);
+    var used     = counts[slotKey_(program, time)] || 0;
+    if (used >= capacity) {
+      throw new Error(program + ' ' + time + ' 회차는 방금 마감되었습니다. 다른 시간대를 선택해 주세요.');
+    }
+
+    // 같은 이름·연락처로 같은 회차를 두 번 넣는 것을 막는다 (버튼 두 번 누름 대비)
+    if (bookedAlready_(sh, cols, program, time, name, tel)) {
+      return { ok: true, duplicate: true, program: program, time: time,
+               remain: Math.max(0, capacity - used) };
+    }
+
+    var header = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), 1)).getValues()[0]
+                   .map(function (v) { return String(v).trim(); });
+
+    /* 시트 헤더 이름으로 값을 맞춰 넣는다. 없는 항목은 헤더 끝에 컬럼을 만든다. */
+    var want = [
+      { names: ['타임스탬프', 'Timestamp'],            value: nowStamp_() },
+      { names: [CONFIG.COL_PROGRAM, '프로그램'],        value: program },
+      { names: [CONFIG.COL_TIME, '시간'],               value: time },
+      { names: ['이름', '성함', '성명'],                 value: name },
+      { names: ['연락처', '전화', '휴대폰', '핸드폰'],    value: tel }
+    ];
+    if (design) want.push({ names: ['도안', '희망 도안'], value: design });
+    want.push({ names: ['접수경로'], value: '홈페이지' });
+
+    var row = [];
+    for (var i = 0; i < header.length; i++) row.push('');
+
+    want.forEach(function (w) {
+      var at = -1;
+      for (var i = 0; i < header.length && at === -1; i++) {
+        for (var j = 0; j < w.names.length; j++) {
+          if (w.names[j] && header[i].indexOf(w.names[j]) !== -1) { at = i; break; }
+        }
+      }
+      if (at === -1) {                       // 없으면 컬럼을 만든다
+        header.push(w.names[0]);
+        sh.getRange(1, header.length).setValue(w.names[0]).setFontWeight('bold');
+        at = header.length - 1;
+        row.push('');
+      }
+      row[at] = w.value;
+    });
+
+    while (row.length < header.length) row.push('');
+    sh.appendRow(row);
+
+    // 정원이 찼으면 폼 선택지도 정리해 둔다 (구글 폼을 병행하는 경우 대비)
+    try { if (typeof syncFormChoices === 'function') syncFormChoices(); } catch (err) {}
+
+    return {
+      ok: true, program: program, time: time, name: name,
+      remain: Math.max(0, capacity - used - 1), capacity: capacity
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** 같은 사람이 같은 회차를 이미 잡아뒀는지 */
+function bookedAlready_(sh, cols, program, time, name, tel) {
+  if (sh.getLastRow() < 2) return false;
+  var lastCol = sh.getLastColumn();
+  var header  = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(function (v) { return String(v).trim(); });
+  var find = function (names) {
+    for (var i = 0; i < header.length; i++) {
+      for (var j = 0; j < names.length; j++) {
+        if (names[j] && header[i].indexOf(names[j]) !== -1) return i + 1;
+      }
+    }
+    return 0;
+  };
+  var cName = find(['이름', '성함', '성명']);
+  var cTel  = find(['연락처', '전화', '휴대폰', '핸드폰']);
+  if (!cName && !cTel) return false;
+
+  var vals = sh.getRange(2, 1, sh.getLastRow() - 1, lastCol).getValues();
+  var digits = function (v) { return String(v).replace(/[^0-9]/g, ''); };
+  for (var r = 0; r < vals.length; r++) {
+    if (normalizeProgram_(vals[r][cols.program - 1]) !== program) continue;
+    if (normalizeTime_(vals[r][cols.time - 1]) !== time) continue;
+    var status = String(vals[r][cols.status - 1] || '');
+    if (CONFIG.EXCLUDE_STATUS.some(function (x) { return status.indexOf(x) !== -1; })) continue;
+    var sameName = cName && String(vals[r][cName - 1]).trim() === name;
+    var sameTel  = cTel  && digits(vals[r][cTel - 1]) === digits(tel) && digits(tel) !== '';
+    if (sameName && (sameTel || !cTel)) return true;
+    if (sameTel && !cName) return true;
+  }
+  return false;
 }
 
 /* ══════════════════════════════════════════════════════════════

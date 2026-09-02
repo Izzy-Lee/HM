@@ -51,7 +51,18 @@ const ctx = {
   Logger:{ log:()=>{} }, console
 };
 vm.createContext(ctx);
+
+/* 실제 Apps Script 프로젝트와 같게 두 파일을 모두 로드한다.
+   Code.gs 가 slot-capacity.gs 의 함수(getSlotAvailability, getSheet_ 등)를 쓰기 때문이다. */
+vm.runInContext(fs.readFileSync(path.join(ROOT,'apps-script/slot-capacity.gs'),'utf8'), ctx);
 vm.runInContext(fs.readFileSync(path.join(ROOT,'apps-script/Code.gs'),'utf8'), ctx);
+
+/* 구글 폼이 만들어 둔 예약 응답 시트를 흉내낸다 — 헤더 이름만 맞으면 된다 */
+const resv = ss.insertSheet('설문지 응답 시트1');
+resv.appendRow(['타임스탬프','참여 프로그램','예약 시간','이름','연락처']);
+/* CONFIG 는 const 라 전역 객체에 안 붙는다. 컨텍스트 안에서 직접 설정한다. */
+vm.runInContext("CONFIG.SHEET_NAME = '설문지 응답 시트1'; CONFIG.NOTIFY_EMAIL = '';", ctx);
+
 ctx.setupFieldSheets();
 
 /* 예약 명단 목업 — roster 가 예약 시트를 못 읽을 때의 동작도 함께 본다 */
@@ -73,6 +84,11 @@ const PORT = Number(process.argv[2]||8787);
 
 http.createServer((req,res)=>{
   const u = url.parse(req.url, true);
+  if (u.pathname === '/_dump') {
+    const sh = ss.getSheetByName(u.query.tab);
+    res.writeHead(200,{'Content-Type':'application/json; charset=utf-8'});
+    return res.end(JSON.stringify(sh ? sh.data : null));
+  }
   if (u.pathname === '/exec') {
     let out;
     try { out = ctx.doGet({parameter:u.query}); }

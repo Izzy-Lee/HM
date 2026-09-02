@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>헬로미추 체험 예약</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- 폰트는 렌더링을 막지 않게 나중에 적용한다. 부스 네트워크가 느려도
+     시스템 폰트로 화면이 먼저 뜬다. -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap"></noscript>
+<style>
+  *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  :root{
+    --ink:#14100b; --soft:#5f5346; --faint:#8b7f70;
+    --paper:#f6f2ea; --surface:#fff; --sunk:#efe9de;
+    --teal:#14796a; --teal-bg:#e4f0ec; --amber:#b8620f; --red:#b23838; --rule:#ddd4c6;
+  }
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:15px; line-height:1.7; padding:0 0 7rem; max-width:560px; margin:0 auto;
+    -webkit-text-size-adjust:100%;
+  }
+  header{ padding:1.4rem .95rem .8rem; }
+  h1{ font-family:'Nanum Myeongjo',serif; font-size:1.5rem; font-weight:800; line-height:1.35; }
+  header .when{ font-size:.82rem; color:var(--soft); margin-top:.35rem; }
+  .pane{ padding:0 .95rem; }
+  h2{ font-size:.72rem; font-weight:700; letter-spacing:.1em; color:var(--soft); margin:1.4rem 0 .5rem; }
+  h2:first-child{ margin-top:.4rem; }
+
+  .card{ background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:.95rem 1rem; }
+
+  /* 프로그램 */
+  .progs{ display:grid; grid-template-columns:1fr 1fr; gap:.55rem; }
+  .prog{
+    border:2px solid var(--rule); background:var(--surface); border-radius:11px;
+    padding:.85rem .7rem; text-align:left; font-family:inherit; cursor:pointer; color:var(--ink); min-height:78px;
+  }
+  .prog .n{ font-size:.98rem; font-weight:700; }
+  .prog .m{ font-size:.72rem; color:var(--soft); margin-top:.2rem; line-height:1.5; }
+  .prog.on{ border-color:var(--teal); background:var(--teal-bg); }
+  .prog.on .n{ color:var(--teal); }
+
+  /* 시간 */
+  .times{ display:grid; grid-template-columns:repeat(auto-fit,minmax(96px,1fr)); gap:.5rem; }
+  .time{
+    border:2px solid var(--rule); background:var(--surface); border-radius:10px; padding:.6rem .3rem;
+    font-family:inherit; cursor:pointer; color:var(--ink); min-height:62px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.15rem;
+  }
+  .time .t{ font-size:1rem; font-weight:700; font-variant-numeric:tabular-nums; }
+  .time .r{ font-size:.68rem; color:var(--soft); }
+  .time.on{ border-color:var(--teal); background:var(--teal); }
+  .time.on .t,.time.on .r{ color:#fff; }
+  .time.low .r{ color:var(--amber); font-weight:700; }
+  .time:disabled{ opacity:.4; cursor:not-allowed; background:var(--sunk); }
+  .time:disabled .r{ color:var(--red); }
+
+  /* 도안 */
+  .designs{ display:flex; flex-direction:column; gap:.45rem; }
+  .design{
+    display:flex; align-items:center; gap:.6rem; border:1.5px solid var(--rule); background:var(--paper);
+    border-radius:10px; padding:.6rem .75rem; font-family:inherit; cursor:pointer; color:var(--ink); text-align:left; min-height:52px;
+  }
+  .design .n{ flex:1; font-size:.87rem; font-weight:500; }
+  .design .r{ font-size:.7rem; color:var(--soft); }
+  .design.on{ border-color:var(--amber); background:#fdf4e9; }
+  .design.on .n{ font-weight:700; color:var(--amber); }
+  .design:disabled{ opacity:.4; }
+
+  label.f{ display:block; font-size:.8rem; font-weight:700; margin-bottom:.3rem; }
+  label.f .req{ color:var(--red); margin-left:.15rem; }
+  input[type=text],input[type=tel]{
+    width:100%; font-family:inherit; font-size:.95rem; color:var(--ink); background:var(--paper);
+    border:1.5px solid var(--rule); border-radius:9px; padding:.7rem .8rem; min-height:52px;
+  }
+  input:focus{ outline:2px solid var(--teal); outline-offset:1px; border-color:var(--teal); }
+  .field{ margin-bottom:.8rem; }
+  .field:last-child{ margin-bottom:0; }
+  .hint{ font-size:.72rem; color:var(--faint); margin-top:.3rem; line-height:1.6; }
+
+  .agree{ display:flex; align-items:flex-start; gap:.6rem; cursor:pointer; }
+  .agree .box{ flex:none; width:24px; height:24px; margin-top:.1rem; border:2px solid var(--rule); background:#fff; border-radius:6px; position:relative; }
+  .agree.on .box{ border-color:var(--teal); background:var(--teal); }
+  .agree.on .box::after{ content:''; position:absolute; left:50%; top:46%; transform:translate(-50%,-50%) rotate(-45deg); width:10px; height:5px; border:2px solid #fff; border-top:0; border-right:0; }
+  .agree .tx{ font-size:.8rem; line-height:1.65; }
+  .agree .tx b{ font-weight:700; }
+  .agree .tx span{ display:block; font-size:.72rem; color:var(--faint); margin-top:.15rem; }
+
+  .bar{
+    position:fixed; left:0; right:0; bottom:0; z-index:30; max-width:560px; margin:0 auto;
+    padding:.7rem .95rem calc(.7rem + env(safe-area-inset-bottom));
+    background:rgba(246,242,234,.97); border-top:1px solid var(--rule);
+  }
+  .bar .sum{ font-size:.75rem; color:var(--soft); margin-bottom:.45rem; text-align:center; }
+  .bar .sum b{ color:var(--teal); }
+  .bar button{
+    width:100%; min-height:56px; border:2px solid var(--teal); background:var(--teal); color:#fff;
+    border-radius:11px; font-family:inherit; font-size:1.02rem; font-weight:700; cursor:pointer;
+  }
+  .bar button:disabled{ opacity:.4; }
+
+  .err{ background:#fdecea; border:1px solid var(--red); color:var(--red); border-radius:9px;
+        padding:.7rem .85rem; font-size:.82rem; margin:0 .95rem .8rem; line-height:1.6; display:none; }
+  .err.on{ display:block; }
+
+  .done{ padding:2.6rem 1.2rem; text-align:center; }
+  .done .mark{ font-size:2.6rem; margin-bottom:.7rem; }
+  .done h1{ margin-bottom:.5rem; }
+  .done p{ font-size:.88rem; color:var(--soft); line-height:1.8; }
+  .ticket{ margin:1.4rem auto 0; max-width:340px; background:var(--surface); border:2px solid var(--teal); border-radius:14px; padding:1.1rem 1rem; }
+  .ticket .l{ font-size:.7rem; font-weight:700; color:var(--teal); letter-spacing:.1em; }
+  .ticket .v{ font-family:'Nanum Myeongjo',serif; font-size:1.5rem; font-weight:800; margin:.3rem 0; }
+  .ticket .d{ font-size:.8rem; color:var(--soft); line-height:1.7; }
+  .again{ display:inline-block; margin-top:1.4rem; font-size:.82rem; color:var(--teal); font-weight:700; text-decoration:none; border-bottom:1px solid currentColor; }
+  .foot{ font-size:.7rem; color:var(--faint); text-align:center; padding:1.6rem .95rem 0; line-height:1.7; }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+<div class="foot">주식회사 헬로미추 · 2026. 9. 19.(토) 학산마당극 놀래</div>
+
+<script>
+'use strict';
+
+const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
+
+const EVENT_DATE = '2026. 9. 19.(토)';
+const PROGRAMS = [
+  { key:'컬러링', name:'컬러링 체험', meta:'무료 · 30분 · 회차당 6명' },
+  { key:'바인더', name:'자개바인더 체험', meta:'20,000원 · 30분 · 회차당 4명' }
+];
+const DESIGNS = ['01 소서노','02 문학산성','03 갯벌','04 수봉폭포','05 수봉도서관'];
+
+let slots = [], stock = {}, loaded = false;
+
+/* 사이트 예약 현황에서 회차를 눌러 넘어오면 그대로 선택해 둔다 */
+const QS = new URLSearchParams(location.search);
+const F = {
+  program: PROGRAMS.some(p=>p.key===QS.get('program')) ? QS.get('program') : '',
+  time: /^\d{2}:\d{2}$/.test(QS.get('time')||'') ? QS.get('time') : '',
+  name:'', tel:'', design:'', agree:false
+};
+
+const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const root = document.getElementById('root');
+
+let seq = 0;
+function call(params){
+  return new Promise((resolve,reject)=>{
+    const cb='__rv'+(++seq)+'_'+Date.now();
+    const url=new URL(API_URL);
+    Object.keys(params).forEach(k=>{ if(params[k]!==undefined && params[k]!=='') url.searchParams.set(k,params[k]); });
+    url.searchParams.set('cb',cb);
+    const s=document.createElement('script');
+    let done=false;
+    const clean=()=>{ delete window[cb]; s.remove(); clearTimeout(t); };
+    const t=setTimeout(()=>{ if(!done){done=true;clean();reject(new Error('시간 초과. 네트워크를 확인해 주세요.'));} },20000);
+    window[cb]=d=>{ done=true; clean(); (d&&d.ok===false)?reject(new Error(d.error||'오류')):resolve(d); };
+    s.onerror=()=>{ if(!done){done=true;clean();reject(new Error('네트워크 오류'));} };
+    s.src=url.toString();
+    document.body.appendChild(s);
+  });
+}
+
+async function load(){
+  try{
+    const d = await call({});
+    slots = Array.isArray(d.slots) ? d.slots : [];
+    stock = {};
+    (d.sheetStock||[]).forEach(s=>{ stock[s.key]=s.remain; });
+  }catch(e){ slots=[]; }
+  loaded = true;
+  render();
+}
+
+function slotsFor(program){
+  return slots.filter(s=>s.program===program);
+}
+
+function render(){
+  const prog = PROGRAMS.filter(p=>p.key===F.program)[0];
+  const list = F.program ? slotsFor(F.program) : [];
+  const ready = F.program && F.time && F.name.trim() && F.tel.trim() && F.agree;
+
+  let h = '<header><h1>체험 예약</h1>' +
+    '<div class="when">' + EVENT_DATE + ' · 수봉산 폭포 앞<br>13:30 ~ 18:30 · 30분 10회차</div></header>' +
+    '<div class="err" id="err"></div><div class="pane">';
+
+  h += '<h2>참여 프로그램</h2><div class="progs">';
+  PROGRAMS.forEach(p=>{
+    h += '<button class="prog'+(F.program===p.key?' on':'')+'" type="button" data-prog="'+esc(p.key)+'">' +
+         '<div class="n">'+esc(p.name)+'</div><div class="m">'+esc(p.meta)+'</div></button>';
+  });
+  h += '</div>';
+
+  h += '<h2>예약 시간</h2>';
+  if (!F.program){
+    h += '<div class="card"><p class="hint" style="margin:0;">프로그램을 먼저 선택해 주세요.</p></div>';
+  } else if (!loaded){
+    h += '<div class="card"><p class="hint" style="margin:0;">잔여 현황을 불러오는 중...</p></div>';
+  } else if (!list.length){
+    h += '<div class="card"><p class="hint" style="margin:0;">잔여 현황을 불러오지 못했습니다. 새로고침해 주세요.</p></div>';
+  } else {
+    h += '<div class="times">';
+    list.forEach(s=>{
+      const off = s.past || s.remain<=0;
+      const label = s.past ? '지난 회차' : (s.remain<=0 ? '마감' : '잔여 '+s.remain);
+      h += '<button class="time'+(F.time===s.time?' on':'')+(!off&&s.remain<=2?' low':'')+'" type="button"' +
+           ' data-time="'+esc(s.time)+'"'+(off?' disabled':'')+'>' +
+           '<span class="t">'+esc(s.time)+'</span><span class="r">'+label+'</span></button>';
+    });
+    h += '</div>';
+  }
+
+  h += '<h2>예약자 정보</h2><div class="card">' +
+    '<div class="field"><label class="f" for="fName">이름<span class="req">*</span></label>' +
+    '<input id="fName" type="text" maxlength="20" placeholder="홍길동" value="'+esc(F.name)+'"></div>' +
+    '<div class="field"><label class="f" for="fTel">연락처<span class="req">*</span></label>' +
+    '<input id="fTel" type="tel" inputmode="numeric" maxlength="15" placeholder="010-0000-0000" value="'+esc(F.tel)+'">' +
+    '<p class="hint">예약 확인 안내를 보내드립니다.</p></div></div>';
+
+  h += '<h2>희망 도안 <span style="font-weight:400;letter-spacing:0;">(선택)</span></h2><div class="designs">';
+  DESIGNS.forEach(d=>{
+    const left = stock[d];
+    const out = (left !== undefined && left <= 0);
+    h += '<button class="design'+(F.design===d?' on':'')+'" type="button" data-design="'+esc(d)+'"'+(out?' disabled':'')+'>' +
+         '<span class="n">'+esc(d)+'</span>' +
+         '<span class="r">'+(left===undefined?'':(out?'품절':'잔여 '+left))+'</span></button>';
+  });
+  h += '</div><p class="hint">고르지 않으셔도 현장에서 남은 도안 중 선택하실 수 있습니다.</p>';
+
+  h += '<h2>동의</h2><div class="card">' +
+    '<div class="agree'+(F.agree?' on':'')+'" id="agree"><span class="box"></span>' +
+    '<span class="tx"><b>개인정보 수집·이용에 동의합니다.</b>' +
+    '<span>수집 항목: 이름, 연락처 · 목적: 체험 예약 확인 및 현장 안내 · 보유 기간: 행사 종료 후 3개월</span></span></div></div>';
+
+  h += '</div>';
+
+  h += '<div class="bar">' +
+    '<div class="sum">' + (F.program && F.time
+      ? '<b>'+esc(prog.name)+' '+esc(F.time)+'</b> 회차로 예약합니다'
+      : '프로그램과 시간을 선택해 주세요') + '</div>' +
+    '<button type="button" id="submit"'+(ready?'':' disabled')+'>예약하기</button></div>';
+
+  root.innerHTML = h;
+  bind();
+}
+
+function bind(){
+  root.querySelectorAll('[data-prog]').forEach(el=>el.addEventListener('click',()=>{
+    F.program = (F.program===el.dataset.prog) ? '' : el.dataset.prog;
+    F.time = '';
+    render();
+  }));
+  root.querySelectorAll('[data-time]').forEach(el=>el.addEventListener('click',()=>{
+    F.time = (F.time===el.dataset.time) ? '' : el.dataset.time;
+    render();
+  }));
+  root.querySelectorAll('[data-design]').forEach(el=>el.addEventListener('click',()=>{
+    F.design = (F.design===el.dataset.design) ? '' : el.dataset.design;
+    render();
+  }));
+  const ag = document.getElementById('agree');
+  if (ag) ag.addEventListener('click',()=>{ F.agree=!F.agree; render(); });
+
+  const n=document.getElementById('fName'), t=document.getElementById('fTel');
+  if (n) n.addEventListener('input',()=>{ F.name=n.value; toggleSubmit(); });
+  if (t) t.addEventListener('input',()=>{ F.tel=t.value; toggleSubmit(); });
+
+  const b=document.getElementById('submit');
+  if (b) b.addEventListener('click',submit);
+}
+
+function toggleSubmit(){
+  const b=document.getElementById('submit');
+  if (b) b.disabled = !(F.program && F.time && F.name.trim() && F.tel.trim() && F.agree);
+}
+
+async function submit(){
+  const b=document.getElementById('submit');
+  const err=document.getElementById('err');
+  b.disabled=true; b.textContent='접수 중...';
+  err.classList.remove('on');
+  try{
+    const r = await call({ action:'book', program:F.program, time:F.time,
+                           name:F.name.trim(), tel:F.tel.trim(), design:F.design, agree:1 });
+    done(r);
+  }catch(e){
+    err.textContent = e.message || '예약하지 못했습니다.';
+    err.classList.add('on');
+    b.disabled=false; b.textContent='예약하기';
+    window.scrollTo({top:0,behavior:'smooth'});
+    load();                                   // 마감됐을 수 있으니 잔여를 다시 읽는다
+  }
+}
+
+function done(r){
+  const prog = PROGRAMS.filter(p=>p.key===r.program)[0] || {name:r.program};
+  root.innerHTML =
+    '<div class="done"><div class="mark">🎨</div>' +
+    '<h1>' + (r.duplicate ? '이미 예약되어 있습니다' : '예약이 접수되었습니다') + '</h1>' +
+    '<p>' + EVENT_DATE + ' 수봉산 폭포 앞에서 뵙겠습니다.</p>' +
+    '<div class="ticket"><div class="l">예약 회차</div>' +
+    '<div class="v">' + esc(prog.name) + ' ' + esc(r.time) + '</div>' +
+    '<div class="d">' + esc(F.name) + ' 님' + (F.design ? '<br>희망 도안 · ' + esc(F.design) : '') + '</div></div>' +
+    '<p style="margin-top:1.2rem;font-size:.8rem;">체험 후 <b>설문 작성</b>을 부탁드립니다.<br>' +
+    '작품은 설문 완료 화면을 보여주시면 봉투에 담아 드려요.</p>' +
+    '<a class="again" href="index.html">사이트로 돌아가기</a></div>';
+  window.scrollTo(0,0);
+}
+
+render();
+load();
+</script>
+
+</body>
+</html>

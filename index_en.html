@@ -6,8 +6,12 @@
 <title>Hello Michu – Watercolor Coloring Experience</title>
 <meta name="description" content="Hello Michu watercolor coloring experience – Haksan Madanggeuk Nolrae 2026">
 
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Fonts load without blocking first paint; system fonts show immediately. -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap"></noscript>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --ink: #2a2118; --ink-soft: #5a4e42; --paper: #faf7f2;
@@ -278,7 +282,7 @@
       </p>
     </div>
     <div id="reserveFallback" style="display:none;">
-      <a class="cta-btn cta-btn--reserve" href="https://forms.gle/m1RxTFzPX1DFLZa99" target="_blank">
+      <a class="cta-btn cta-btn--reserve" href="reserve.html">
         Book Your Session →
       </a>
       <p class="reserve-slot-note" style="text-align:center;margin-bottom:0.7rem;">
@@ -474,11 +478,10 @@
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
-const ENTRY_PROGRAM = 'entry.1189251627';   // booking form: "program" question
-const ENTRY_TIME    = 'entry.520138299';   // booking form: "time" question
+// Legacy Google booking form question IDs — booking now runs on reserve.html.
+// const ENTRY_PROGRAM = 'entry.1189251627';
+// const ENTRY_TIME    = 'entry.520138299';
 
-// Survey forms — prefilling the session lets the booth track who has answered.
-// ── Survey ────────────────────────────────────────────────────
 // Surveys are collected by this site's own survey.html, not a Google Form.
 // The booked session rides along so answers link back to the right slot.
 const SURVEY_PAGE = 'survey.html';
@@ -497,6 +500,123 @@ function surveyLink() {
   }
   const q = p.toString();
   return SURVEY_PAGE + (q ? '?' + q : '');
+}
+// Legacy Google booking form (kept for reference only).
+// const FORM_BASE = 'https://docs.google.com/forms/d/e/1FAIpQLScvLvrppxjadzctUW2HHTvMI789QlbTPXDV4CxZ7gB2tiAKZw/viewform';
+
+// ── Event constants ──
+const EVENT_DATE  = '9월 19일 (토)';           // key used by the API
+const EVENT_LABEL = 'Saturday, September 19';
+
+// ── Bookable programs (same ten sessions, separate capacity) ──
+const PROGRAMS = [
+  { key: '컬러링', name: 'Coloring',       meta: 'Free · 30 min · 6 seats',     capacity: 6, paid: false },
+  { key: '바인더', name: 'Binder',         meta: '\u20A920,000 · 30 min · 4 seats', capacity: 4, paid: true  },
+];
+let activeProgram = PROGRAMS[0].key;
+
+function programOf(key) {
+  return PROGRAMS.find(p => p.key === key) || PROGRAMS[0];
+}
+
+const SHEETS_META = [
+  { num:'01', key:'01 소서노',     name:'Soseono Arrives',   img:'img/sheet_sosuno.jpg',      desc:'Soseono pointing out to sea beside a moored sailboat, with the Munhaksan ridge behind — the moment the journey south ends', tags:'# Soseono # Legend # Founding' },
+  { num:'02', key:'02 문학산성',   name:'Munhak Fortress',   img:'img/sheet_munhak.jpg',      desc:'The stone ring fortress crowning the summit, azalea slopes below, and the tidal flats as they looked before reclamation',  tags:'# Fortress # History # Azalea' },
+  { num:'03', key:'03 갯벌',       name:'Michuhol Tidal Flat', img:'img/sheet_tidal.jpg',     desc:'Ripple marks, crab burrows and tidal channels, with ghost crabs, mudskippers and shell beds of the West Sea',            tags:'# TidalFlat # Ecology # WestSea' },
+  { num:'04', key:'04 수봉폭포',   name:'Subong Waterfall',  img:'img/sheet_subong_fall.jpg', desc:'Water falling between rock faces into a round pond, framed by wooden steps and dense summer woods',                    tags:'# Subongsan # Waterfall # Nature' },
+  { num:'05', key:'05 수봉도서관', name:'Subong Library',    img:'img/sheet_tidal2.jpg',      desc:'The library tucked into Subong Mountain — a reading refuge in Michuhol',                                                tags:'# Library # Michuhol # Family' },
+];
+
+// 60 sheets in total — 12 of each design
+const STOCK_FALLBACK = {
+  '01 소서노':12, '02 문학산성':12, '03 갯벌':12, '04 수봉폭포':12, '05 수봉도서관':12
+};
+
+// ── Goods and frames (not bookable — stock display only) ──
+const GOODS_META = [
+  { key:'바인더 체험',   name:'Binder workshop',   note:'\u20A920,000' },
+  { key:'바인더 완성품', name:'Finished binder',   note:'\u20A930,000' },
+  { key:'스티커',       name:'Deco stickers',     note:'\u20A92,000' },
+  { key:'액자',         name:'Frames for posts',  note:'while they last' },
+];
+const GOODS_FALLBACK = { '바인더 체험':40, '바인더 완성품':50, '스티커':100, '액자':28 };
+
+function getStockInfo(remain) {
+  if (remain === 0)  return { cls:'soldout',   label:'Sold Out',  countLabel:'0' };
+  if (remain <= 10)  return { cls:'low',       label:'Low Stock', countLabel:`${remain} left` };
+  return               { cls:'available', label:'Available',  countLabel:`${remain} left` };
+}
+
+function renderStockList(stockMap) {
+  const el = document.getElementById('stockList');
+  if (!el) return;
+  let html = '';
+  SHEETS_META.forEach(s => {
+    const remain = (stockMap && stockMap[s.key] !== undefined) ? stockMap[s.key] : STOCK_FALLBACK[s.key];
+    const info = getStockInfo(remain);
+    html += `
+      <div class="stock-item">
+        <div class="stock-num ${remain === 0 ? 'out' : ''}">${s.num}</div>
+        <div class="stock-name">${s.name}</div>
+        <span class="stock-badge ${info.cls}">${info.label}</span>
+        <span class="stock-count">${info.countLabel}</span>
+      </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function renderAboutSheets(stockMap) {
+  const el = document.getElementById('aboutSheetCards');
+  if (!el) return;
+  let html = '';
+  SHEETS_META.forEach(s => {
+    const remain = (stockMap && stockMap[s.key] !== undefined) ? stockMap[s.key] : STOCK_FALLBACK[s.key];
+    const info = getStockInfo(remain);
+    html += `
+      <div class="sheet-card">
+        <div class="sheet-thumb-img" style="background-image:url('${s.img}')"></div>
+        <div class="sheet-card-info">
+          <div class="sheet-num-badge">${s.num}</div>
+          <div class="sheet-title-row">
+            <div>
+              <div class="sheet-card-title">${s.name}</div>
+              <div class="sheet-card-title-en">${s.nameKo}</div>
+            </div>
+            <span class="sheet-stock-badge ${info.cls}">${info.label} · ${info.countLabel}</span>
+          </div>
+          <div class="sheet-card-desc">${s.descEn}</div>
+          <div class="sheet-card-tags">${s.tags}</div>
+        </div>
+      </div>`;
+  });
+  el.innerHTML = html;
+}
+
+// Booking happens on this site's reserve.html, not a Google Form.
+function makeReserveUrl(program, time) {
+  const params = new URLSearchParams();
+  params.set('program', program);
+  params.set('time', time);
+  return 'reserve.html?' + params.toString();
+}
+
+function saveLastSelection(program, time) {
+  try {
+    localStorage.setItem('hm_last_program', program);
+    localStorage.setItem('hm_last_time', time);
+    localStorage.setItem('hm_last_ts', Date.now());
+  } catch(e) {}
+}
+
+function getLastSelection() {
+  try {
+    const ts = parseInt(localStorage.getItem('hm_last_ts') || '0');
+    if (Date.now() - ts > 30 * 60 * 1000) return null;
+    const program = localStorage.getItem('hm_last_program');
+    const time    = localStorage.getItem('hm_last_time');
+    if (program && time) return { program, time };
+  } catch(e) {}
+  return null;
 }
 
 function withSlotPrefill(base, entryProgram, entryTime) {
@@ -725,35 +845,15 @@ function bookSlot(program, time) {
     return;
   }
 
-  const win = window.open('', '_blank');
-
-  fetchData(true)
-    .then(data => {
-      const slots = Array.isArray(data.slots) ? data.slots : [];
-      renderAllSlotViews();
-      if (!isSlotBookable(slots, program, time)) {
-        if (win) win.close();
-        showToast('The <strong>' + label + '</strong> session just filled up.<br>Please choose another time.');
-        return;
-      }
-      openForm(win, program, time);
-    })
-    .catch(() => {
-      if (cached && !isSlotBookable(cached, program, time)) {
-        if (win) win.close();
-        showToast('The <strong>' + label + '</strong> session is fully booked.');
-        return;
-      }
-      openForm(win, program, time);
-    });
+  // Same-site page — no popup to open, and no popup blocker to fight.
+  // The final capacity check runs server-side on the booking page.
+  goReserve(program, time);
 }
 
-function openForm(win, program, time) {
+function goReserve(program, time) {
   saveLastSelection(program, time);
   applySurveyPrefill();
-  const url = makeFormUrl(program, time);
-  if (win) win.location.href = url;
-  else window.open(url, '_blank');
+  location.href = makeReserveUrl(program, time);
 }
 
 function renderAllSlotViews() {

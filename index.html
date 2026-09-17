@@ -104,7 +104,18 @@
   .summary-num { font-size: 1.3rem; font-weight: 700; color: var(--brush-teal); }
   .summary-num span { font-size: 0.8rem; font-weight: 400; color: var(--ink-soft); }
   .slot-list { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 12px; overflow: hidden; margin-bottom: 1.2rem; }
-  .slot-row { display: flex; align-items: center; padding: 0.65rem 1rem; border-bottom: 1px solid rgba(74,156,140,0.08); gap: 0.6rem; }
+  .slot-row { display: flex; align-items: center; width: 100%; padding: 0.65rem 1rem; border: none; border-bottom: 1px solid rgba(74,156,140,0.08); gap: 0.6rem; background: none; font-family: inherit; text-align: left; }
+  /* 회차 줄 자체를 누르는 방식 — 줄마다 작은 버튼을 두지 않는다 */
+  button.slot-row { cursor: pointer; }
+  button.slot-row:disabled { cursor: not-allowed; opacity: 0.45; }
+  button.slot-row.picked { background: rgba(74,156,140,0.12); }
+  button.slot-row.picked .slot-time { color: var(--brush-teal); font-weight: 700; }
+  .slot-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid rgba(74,156,140,0.35); flex-shrink: 0; position: relative; }
+  button.slot-row.picked .slot-check { border-color: var(--brush-teal); background: var(--brush-teal); }
+  button.slot-row.picked .slot-check::after { content: ''; position: absolute; left: 5px; top: 2px; width: 4px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  button.slot-row:disabled .slot-check { border-style: dashed; }
+  .reserve-cta { margin-top: 0.8rem; }
+  .reserve-cta:disabled { background: rgba(74,156,140,0.25); color: #fff; cursor: not-allowed; transform: none; }
   .slot-row:last-child { border-bottom: none; }
   .slot-row.past { opacity: 0.35; }
   .slot-time { font-size: 0.88rem; font-weight: 500; color: var(--ink); min-width: 46px; }
@@ -143,7 +154,8 @@
   .reserve-slot-title { font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--ink); }
   .slot-refresh-btn { padding: 0.22rem 0.6rem; background: transparent; border: 1px solid rgba(74,156,140,0.35); border-radius: 6px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.7rem; color: var(--brush-teal); cursor: pointer; }
   .slot-refresh-btn:active { background: rgba(74,156,140,0.08); }
-  .reserve-slot-list { border: 1px solid rgba(74,156,140,0.15); border-radius: 10px; max-height: 300px; overflow-y: auto; }
+  /* 안쪽 스크롤을 두지 않는다 — 회차 목록과 예약 버튼이 한 흐름으로 보이게 */
+  .reserve-slot-list { border: 1px solid rgba(74,156,140,0.15); border-radius: 10px; overflow: hidden; }
   .reserve-slot-note { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; color: var(--ink-soft); line-height: 1.6; margin-top: 0.55rem; }
   .slot-empty { text-align: center; padding: 1.4rem 1rem; font-size: 0.8rem; color: var(--brush-pink); font-weight: 500; line-height: 1.6; }
 
@@ -290,7 +302,7 @@
       </div>
       <div class="event-row">
         <span class="event-label">운영</span>
-        <span class="event-value">13:30 — 18:30 · 30분 10타임</span>
+        <span class="event-value">13:00 — 18:30 · 30분 11타임</span>
       </div>
       <div class="event-row">
         <span class="event-label">참가</span>
@@ -310,9 +322,9 @@
         <div class="status-loading" style="padding:1.2rem 0;">예약 가능한 시간대를 불러오는 중...</div>
       </div>
       <p class="reserve-slot-note">
+        원하는 <strong>회차를 먼저 누르고</strong>, 아래 <strong style="color:var(--brush-teal);">예약하기</strong> 버튼을 눌러주세요.<br>
         회차당 정원(<strong id="slotCapacityLabel">6</strong>명)이 모두 찬 시간대는
-        <strong style="color:var(--brush-pink);">마감</strong>으로 표시되며 신청할 수 없습니다.<br>
-        예약 버튼을 누르면 잔여 인원을 다시 확인한 뒤 신청 폼이 열립니다.
+        <strong style="color:var(--brush-pink);">마감</strong>으로 표시되며 선택할 수 없습니다.
       </p>
     </div>
     <div id="reserveFallback" style="display:none;">
@@ -582,16 +594,19 @@ const EVENT_DATE = '9월 19일 (토)';
 
 // ── 예약 프로그램 (같은 타임을 공유하되 정원은 별개) ──
 const PROGRAMS = [
-  { key: '컬러링',      name: '컬러링 체험',  meta: '무료 · 30분 · 6명',      capacity: 6, paid: false },
-  { key: '바인더',      name: '바인더 체험',  meta: '20,000원 · 30분 · 5명',  capacity: 5, paid: true  },
+  /* dayLimit = 하루에 받을 수 있는 최대 인원. 재료 수량이 상한이다.
+     컬러링 60 = 체험용 수채화지 60장 / 바인더 50 = 종이바인더 100개 중 체험분 50개 */
+  { key: '컬러링',      name: '컬러링 체험',  meta: '무료 · 30분 · 6명',      capacity: 6, dayLimit: 60, paid: false },
+  { key: '바인더',      name: '바인더 체험',  meta: '20,000원 · 30분 · 5명',  capacity: 5, dayLimit: 50, paid: true  },
 ];
 let activeProgram = PROGRAMS[0].key;
 
-/* ── 회차표 (계획 확정) ──
-   결과보고서 계획: 회당 30분 · 1일 10타임 · 13:30~18:30 운영.
+/* ── 회차표 (확정) ──
+   운영 13:00~18:30 · 회당 30분 · 11타임, 쉬는 시간 없이 연속 운영.
+   (주최 측 체험시간은 15:00~18:30이지만 목표 인원 60명을 채우려면 13:00 시작이 필요하다)
    API 응답을 그대로 믿지 않고 이 표를 기준으로 그린다. 배포가 밀린 구버전 스크립트가
    옛 행사의 20분 격자(12:20·13:20…)를 내려주면 화면이 통째로 어긋나기 때문이다. */
-const SLOT_TIMES = ['13:30','14:00','14:30','15:00','15:30',
+const SLOT_TIMES = ['13:00','13:30','14:00','14:30','15:00','15:30',
                     '16:00','16:30','17:00','17:30','18:00'];
 const EVENT_YMD  = { y: 2026, m: 9, d: 19 };   // 지난 회차 판정 기준일
 
@@ -863,38 +878,57 @@ function showToast(msg) {
   window._toastTimer = setTimeout(() => el.classList.remove('show'), 3800);
 }
 
-// ── 슬롯 목록 HTML (withBtn=true면 예약 버튼 포함) ──
-function slotRowsHtml(slots, withBtn, hidePast) {
+/* 슬롯 목록 HTML
+   selectable=true 면 줄 전체가 '이 회차 고르기' 버튼이 된다.
+   줄마다 작은 예약 버튼을 두지 않고, 목록 아래 큰 버튼 하나로 예약을 진행한다. */
+function slotRowsHtml(slots, selectable, hidePast) {
   let html = '';
   slots.forEach(s => {
-    const st = slotState(s);
+    const st   = slotState(s);
+    const prog = slotProgram(s);
     if (hidePast && st.past) return;
 
-    let btn = '';
-    if (withBtn) {
-      if (st.past) {
-        btn = '<span class="slot-book-btn disabled">종료</span>';
-      } else if (st.pending) {
-        btn = '<span class="slot-book-btn disabled">준비 중</span>';
-      } else if (st.full) {
-        btn = '<span class="slot-book-btn full">마감</span>';
-      } else {
-        btn = '<button type="button" class="slot-book-btn" onclick="bookSlot(\'' +
-              slotProgram(s) + '\',\'' + s.time + '\')">예약</button>';
-      }
+    const inner =
+      (selectable ? '<span class="slot-check"></span>' : '') +
+      '<span class="slot-time">' + s.time + '</span>' +
+      '<div class="slot-bar-wrap">' +
+        '<div class="slot-bar ' + ((st.full || st.past) ? 'full' : '') +
+        '" style="width:' + (st.past ? 100 : st.pct) + '%"></div>' +
+      '</div>' +
+      '<span class="slot-remain ' + st.cls + '">' + st.label + '</span>';
+
+    if (!selectable) {
+      html += '<div class="slot-row ' + (st.past ? 'past' : '') + '">' + inner + '</div>';
+      return;
     }
 
-    html += '<div class="slot-row ' + (st.past ? 'past' : '') + '">' +
-              '<span class="slot-time">' + s.time + '</span>' +
-              '<div class="slot-bar-wrap">' +
-                '<div class="slot-bar ' + ((st.full || st.past) ? 'full' : '') +
-                '" style="width:' + (st.past ? 100 : st.pct) + '%"></div>' +
-              '</div>' +
-              '<span class="slot-remain ' + st.cls + '">' + st.label + '</span>' +
-              btn +
-            '</div>';
+    const picked = (pickedProgram() === prog && pickedTime() === s.time);
+    html += '<button type="button" class="slot-row' + (st.past ? ' past' : '') +
+              (picked ? ' picked' : '') + '"' +
+              (st.bookable ? '' : ' disabled') +
+              ' onclick="pickSlot(\'' + prog + '\',\'' + s.time + '\')">' +
+              inner +
+            '</button>';
   });
   return html;
+}
+
+// ── 회차 선택 상태 (프로그램별로 따로 기억한다) ──
+const _picked = {};
+function pickedProgram() { return activeProgram; }
+function pickedTime()    { return _picked[activeProgram] || ''; }
+
+function pickSlot(program, time) {
+  activeProgram = program;
+  _picked[program] = (_picked[program] === time) ? '' : time;   // 다시 누르면 해제
+  renderAllSlotViews();
+}
+
+/* 큰 예약 버튼 — 고른 회차로 예약 화면을 연다 */
+function goReserveCta() {
+  const time = pickedTime();
+  if (!time) { showToast('먼저 예약할 회차를 선택해 주세요.'); return; }
+  bookSlot(activeProgram, time);
 }
 
 // ── 예약 패널: 프로그램 탭 + 시간대 선택 목록 ──
@@ -955,14 +989,34 @@ function renderReserveSlots(slots) {
 
   const head = live
     ? '<p class="status-date-label">' + EVENT_DATE + ' · ' + prog.name +
-      ' 예약 가능 ' + openSlots.reduce((a, s) => a + slotState(s).remain, 0) + '석</p>'
+      ' 예약 가능 ' + openSeats(progSlots, prog) + '석</p>'
     : '<div class="slot-notice"><b>예약 서버 점검 중입니다.</b><br>' +
-      '회차는 계획대로 ' + EVENT_DATE + ' 13:30~18:30 · 30분 10타임으로 운영하지만, ' +
+      '회차는 예정대로 ' + EVENT_DATE + ' 13:00~18:30 · 30분 11타임으로 운영하지만, ' +
       '실시간 잔여 인원은 잠시 후 표시됩니다. 예약 문의는 현장 부스로 부탁드립니다.</div>' +
-      '<p class="status-date-label">' + EVENT_DATE + ' · ' + prog.name + ' · 30분 10타임</p>';
+      '<p class="status-date-label">' + EVENT_DATE + ' · ' + prog.name + ' · 30분 11타임</p>';
+
+  const time = pickedTime();
+  const cta  = '<button type="button" class="cta-btn cta-btn--reserve reserve-cta"' +
+               (time ? '' : ' disabled') + ' onclick="goReserveCta()">' +
+               (time ? prog.name + ' ' + time + ' 예약하기' : '회차를 선택해 주세요') +
+               '</button>';
 
   el.innerHTML = head +
-                 '<div class="reserve-slot-list">' + slotRowsHtml(progSlots, true, true) + '</div>';
+                 '<div class="reserve-slot-list">' + slotRowsHtml(progSlots, true, true) + '</div>' +
+                 cta;
+}
+
+/* 예약 가능 좌석 — 회차 잔여의 합이지만, 재료 수량(dayLimit)을 넘을 수 없다 */
+function openSeats(progSlots, prog) {
+  let remain = 0, used = 0;
+  progSlots.forEach(s => {
+    const st = slotState(s);
+    if (st.pending) return;
+    if (st.bookable) remain += st.remain;
+    used += (st.capacity - st.remain);
+  });
+  if (!prog.dayLimit) return remain;
+  return Math.min(remain, Math.max(0, prog.dayLimit - used));
 }
 
 function bookSlot(program, time) {
@@ -1050,7 +1104,7 @@ function renderStatus(slots) {
     html += '<p class="status-date-label" style="margin-top:0.9rem;color:' +
               (p.paid ? 'var(--brush-blue)' : 'var(--brush-teal)') + ';">' +
               p.name + ' · ' + p.meta + ' · 잔여 ' + open + '석</p>' +
-            '<div class="slot-list">' + slotRowsHtml(list, true, false) + '</div>';
+            '<div class="slot-list">' + slotRowsHtml(list, false, false) + '</div>';
   });
 
   document.getElementById('statusContent').innerHTML = html;

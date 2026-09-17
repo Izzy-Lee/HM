@@ -32,7 +32,7 @@ async function book(page, {program,time,name,tel,design}){
   ok(await p.locator('[data-prog]').count()===2, '프로그램 2종');
   ok(await p.locator('#submit').isDisabled(), '아무것도 안 고르면 예약 버튼 비활성');
   await p.locator('[data-prog="컬러링"]').click(); await p.waitForTimeout(500);
-  ok(await p.locator('[data-time]').count()===10, '회차 10개 표시 ('+await p.locator('[data-time]').count()+')');
+  ok(await p.locator('[data-time]').count()===11, '회차 11개 표시 ('+await p.locator('[data-time]').count()+')');
   const firstLabel = await p.locator('[data-time]').first().textContent();
   ok(firstLabel.includes('잔여'), '잔여 인원 표시: "'+firstLabel.trim().replace(/\s+/g,' ')+'"');
   ok(await p.locator('[data-design]').count()===5, '도안 5종');

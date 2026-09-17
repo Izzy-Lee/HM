@@ -74,7 +74,17 @@
   .cta-btn--reserve:hover { background: #347a6c; }
 
   /* Time-slot booking */
-  .slot-row { display: flex; align-items: center; padding: 0.65rem 1rem; border-bottom: 1px solid rgba(74,156,140,0.08); gap: 0.6rem; }
+  .slot-row { display: flex; align-items: center; width: 100%; padding: 0.65rem 1rem; border: none; border-bottom: 1px solid rgba(74,156,140,0.08); gap: 0.6rem; background: none; font-family: inherit; text-align: left; }
+  button.slot-row { cursor: pointer; }
+  button.slot-row:disabled { cursor: not-allowed; opacity: 0.45; }
+  button.slot-row.picked { background: rgba(74,156,140,0.12); }
+  button.slot-row.picked .slot-time { color: var(--brush-teal); font-weight: 700; }
+  .slot-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid rgba(74,156,140,0.35); flex-shrink: 0; position: relative; }
+  button.slot-row.picked .slot-check { border-color: var(--brush-teal); background: var(--brush-teal); }
+  button.slot-row.picked .slot-check::after { content: ''; position: absolute; left: 5px; top: 2px; width: 4px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  button.slot-row:disabled .slot-check { border-style: dashed; }
+  .reserve-cta { margin-top: 0.8rem; }
+  .reserve-cta:disabled { background: rgba(74,156,140,0.25); color: #fff; cursor: not-allowed; transform: none; }
   .slot-row:last-child { border-bottom: none; }
   .slot-row.past { opacity: 0.35; }
   .slot-time { font-size: 0.88rem; font-weight: 500; color: var(--ink); min-width: 46px; }
@@ -93,7 +103,7 @@
   .reserve-slot-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
   .reserve-slot-title { font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--ink); }
   .slot-refresh-btn { padding: 0.22rem 0.6rem; background: transparent; border: 1px solid rgba(74,156,140,0.35); border-radius: 6px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.7rem; color: var(--brush-teal); cursor: pointer; }
-  .reserve-slot-list { border: 1px solid rgba(74,156,140,0.15); border-radius: 10px; max-height: 300px; overflow-y: auto; }
+  .reserve-slot-list { border: 1px solid rgba(74,156,140,0.15); border-radius: 10px; overflow: hidden; }
   .reserve-slot-note { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; color: var(--ink-soft); line-height: 1.6; margin-top: 0.55rem; }
   .slot-notice { background: rgba(212,132,58,0.09); border: 1px solid rgba(212,132,58,0.28);
                  border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 0.8rem;
@@ -256,7 +266,7 @@
       </div>
       <div class="event-row">
         <span class="event-label">HOURS</span>
-        <span class="event-value">13:30 – 18:30 · ten 30-min sessions</span>
+        <span class="event-value">13:00 – 18:30 · eleven 30-min sessions</span>
       </div>
       <div class="event-row">
         <span class="event-label">EVENT</span>
@@ -280,9 +290,9 @@
         <div style="text-align:center;padding:1.2rem 0;color:var(--ink-soft);font-size:0.85rem;">Loading available time slots…</div>
       </div>
       <p class="reserve-slot-note">
-        Each session takes up to <strong id="slotCapacityLabel">6</strong> people.
-        Sessions marked <strong style="color:var(--brush-pink);">Full</strong> cannot be booked.<br>
-        Availability is re-checked the moment you tap Book, before the form opens.
+        <strong>Tap a session first</strong>, then tap the <strong style="color:var(--brush-teal);">Book</strong> button below.<br>
+        Each session takes up to <strong id="slotCapacityLabel">6</strong> people;
+        sessions marked <strong style="color:var(--brush-pink);">Full</strong> cannot be selected.
       </p>
     </div>
     <div id="reserveFallback" style="display:none;">
@@ -511,15 +521,16 @@ const EVENT_LABEL = 'Saturday, September 19';
 
 // ── Bookable programs (same ten sessions, separate capacity) ──
 const PROGRAMS = [
-  { key: '컬러링', name: 'Coloring',       meta: 'Free · 30 min · 6 seats',     capacity: 6, paid: false },
-  { key: '바인더', name: 'Binder',         meta: '\u20A920,000 · 30 min · 5 seats', capacity: 5, paid: true  },
+  /* dayLimit = seats available for the whole day, capped by materials on hand */
+  { key: '컬러링', name: 'Coloring',       meta: 'Free · 30 min · 6 seats',     capacity: 6, dayLimit: 60, paid: false },
+  { key: '바인더', name: 'Binder',         meta: '\u20A920,000 · 30 min · 5 seats', capacity: 5, dayLimit: 50, paid: true  },
 ];
 let activeProgram = PROGRAMS[0].key;
 
-/* Session grid fixed by the event plan: ten 30-minute sessions, 13:30–18:30.
+/* Session grid: eleven 30-minute sessions, 13:00–18:30, run back to back.
    Rendered from this list rather than from the API response, so a stale
    deployment serving an older 20-minute grid cannot distort the page. */
-const SLOT_TIMES = ['13:30','14:00','14:30','15:00','15:30',
+const SLOT_TIMES = ['13:00','13:30','14:00','14:30','15:00','15:30',
                     '16:00','16:30','17:00','17:30','18:00'];
 const EVENT_YMD  = { y: 2026, m: 9, d: 19 };
 
@@ -806,32 +817,63 @@ function showToast(msg) {
   window._toastTimer = setTimeout(() => el.classList.remove('show'), 3800);
 }
 
-function slotRowsHtml(slots, withBtn, hidePast) {
+/* selectable = the whole row is the picker; one large Book button sits below the list */
+function slotRowsHtml(slots, selectable, hidePast) {
   let html = '';
   slots.forEach(s => {
-    const st = slotState(s);
+    const st   = slotState(s);
+    const prog = slotProgram(s);
     if (hidePast && st.past) return;
 
-    let btn = '';
-    if (withBtn) {
-      if (st.past)         btn = '<span class="slot-book-btn disabled">Ended</span>';
-      else if (st.pending) btn = '<span class="slot-book-btn disabled">Soon</span>';
-      else if (st.full)    btn = '<span class="slot-book-btn full">Full</span>';
-      else              btn = '<button type="button" class="slot-book-btn" onclick="bookSlot(\'' +
-                              slotProgram(s) + '\',\'' + s.time + '\')">Book</button>';
+    const inner =
+      (selectable ? '<span class="slot-check"></span>' : '') +
+      '<span class="slot-time">' + s.time + '</span>' +
+      '<div class="slot-bar-wrap">' +
+        '<div class="slot-bar ' + ((st.full || st.past) ? 'full' : '') +
+        '" style="width:' + (st.past ? 100 : st.pct) + '%"></div>' +
+      '</div>' +
+      '<span class="slot-remain ' + st.cls + '">' + st.label + '</span>';
+
+    if (!selectable) {
+      html += '<div class="slot-row ' + (st.past ? 'past' : '') + '">' + inner + '</div>';
+      return;
     }
 
-    html += '<div class="slot-row ' + (st.past ? 'past' : '') + '">' +
-              '<span class="slot-time">' + s.time + '</span>' +
-              '<div class="slot-bar-wrap">' +
-                '<div class="slot-bar ' + ((st.full || st.past) ? 'full' : '') +
-                '" style="width:' + (st.past ? 100 : st.pct) + '%"></div>' +
-              '</div>' +
-              '<span class="slot-remain ' + st.cls + '">' + st.label + '</span>' +
-              btn +
-            '</div>';
+    const picked = (activeProgram === prog && pickedTime() === s.time);
+    html += '<button type="button" class="slot-row' + (st.past ? ' past' : '') +
+              (picked ? ' picked' : '') + '"' + (st.bookable ? '' : ' disabled') +
+              ' onclick="pickSlot(\'' + prog + '\',\'' + s.time + '\')">' + inner + '</button>';
   });
   return html;
+}
+
+// ── Picked session, kept per program ──
+const _picked = {};
+function pickedTime() { return _picked[activeProgram] || ''; }
+
+function pickSlot(program, time) {
+  activeProgram = program;
+  _picked[program] = (_picked[program] === time) ? '' : time;
+  renderAllSlotViews();
+}
+
+function goReserveCta() {
+  const time = pickedTime();
+  if (!time) { showToast('Please choose a session first.'); return; }
+  bookSlot(activeProgram, time);
+}
+
+/* Seats left — capped by the materials available for the day */
+function openSeats(progSlots, prog) {
+  let remain = 0, used = 0;
+  progSlots.forEach(s => {
+    const st = slotState(s);
+    if (st.pending) return;
+    if (st.bookable) remain += st.remain;
+    used += (st.capacity - st.remain);
+  });
+  if (!prog.dayLimit) return remain;
+  return Math.min(remain, Math.max(0, prog.dayLimit - used));
 }
 
 function renderProgramTabs(slots) {
@@ -890,14 +932,20 @@ function renderReserveSlots(slots) {
 
   const head = live
     ? '<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">' +
-      getActiveDateLabel() + ' · ' + openSlots.reduce((a, s) => a + slotState(s).remain, 0) + ' seats left</p>'
+      getActiveDateLabel() + ' · ' + openSeats(progSlots, prog) + ' seats left</p>'
     : '<div class="slot-notice"><b>The booking service is being updated.</b><br>' +
-      'Sessions run as planned on ' + getActiveDateLabel() + ', 13:30–18:30 (ten 30-minute sessions), ' +
+      'Sessions run as planned on ' + getActiveDateLabel() + ', 13:00–18:30 (eleven 30-minute sessions), ' +
       'but live seat counts are unavailable right now. Please ask at the booth.</div>' +
       '<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">' +
-      getActiveDateLabel() + ' · ' + prog.name + ' · ten 30-min sessions</p>';
+      getActiveDateLabel() + ' · ' + prog.name + ' · eleven 30-min sessions</p>';
 
-  el.innerHTML = head + '<div class="reserve-slot-list">' + slotRowsHtml(progSlots, true, true) + '</div>';
+  const time = pickedTime();
+  const cta  = '<button type="button" class="cta-btn cta-btn--reserve reserve-cta"' +
+               (time ? '' : ' disabled') + ' onclick="goReserveCta()">' +
+               (time ? 'Book ' + prog.name + ' at ' + time : 'Choose a session above') +
+               '</button>';
+
+  el.innerHTML = head + '<div class="reserve-slot-list">' + slotRowsHtml(progSlots, true, true) + '</div>' + cta;
 }
 
 function bookSlot(program, time) {
@@ -963,7 +1011,7 @@ function renderStatus(slots) {
 
   if (window._slotsLive === false) {
     html += '<div class="slot-notice"><b>The booking service is being updated.</b><br>' +
-            'The sessions below follow the event plan (ten 30-minute sessions); ' +
+            'The sessions below follow the event plan (eleven 30-minute sessions); ' +
             'live seat counts will appear shortly.</div>';
   }
 
@@ -989,7 +1037,7 @@ function renderStatus(slots) {
               (p.paid ? 'var(--brush-blue)' : 'var(--brush-teal)') + ';">' +
               p.name + ' · ' + p.meta + ' · ' + open + ' left</p>' +
             '<div style="background:white;border:1px solid rgba(74,156,140,0.2);border-radius:12px;overflow:hidden;margin-bottom:0.4rem;">' +
-              slotRowsHtml(list, true, false) + '</div>';
+              slotRowsHtml(list, false, false) + '</div>';
   });
 
   document.getElementById('statusContent').innerHTML = html;

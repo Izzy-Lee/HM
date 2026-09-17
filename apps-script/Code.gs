@@ -517,6 +517,13 @@ function actBook_(p) {
       throw new Error(program + ' ' + time + ' 회차는 방금 마감되었습니다. 다른 시간대를 선택해 주세요.');
     }
 
+    // 재료 수량 상한 — 회차 자리가 남아도 준비한 인원분을 넘겨 받지 않는다
+    var dayLimit = dayLimitOf_(program);
+    if (dayLimit && dayUsed_(counts, program) >= dayLimit) {
+      throw new Error(program + ' 체험은 준비한 ' + dayLimit +
+                      '명분이 모두 예약되었습니다. 현장 부스로 문의해 주세요.');
+    }
+
     // 같은 이름·연락처로 같은 회차를 두 번 넣는 것을 막는다 (버튼 두 번 누름 대비)
     if (bookedAlready_(sh, cols, program, time, name, tel)) {
       return { ok: true, duplicate: true, program: program, time: time,

@@ -10,10 +10,13 @@
  */
 
 const CONFIG = {
-  // 예약 프로그램별 정원 — 같은 타임을 공유하되 정원은 따로 관리한다
+  /* 예약 프로그램별 정원 — 같은 타임을 공유하되 정원은 따로 관리한다.
+     capacity = 회차당 동시 인원, dayLimit = 하루에 받을 수 있는 최대 인원(재료 수량).
+     11타임 × 6명 = 66명이지만 체험용 수채화지가 60장이라 60명에서 막아야 한다.
+     바인더도 11타임 × 5명 = 55명이지만 체험용 종이바인더가 50개다. */
   PROGRAMS: [
-    { key: '컬러링', capacity: 6 },
-    { key: '바인더', capacity: 5 },
+    { key: '컬러링', capacity: 6, dayLimit: 60 },
+    { key: '바인더', capacity: 5, dayLimit: 50 },
   ],
 
   /* 예약이 쌓이는 시트(탭) 이름.
@@ -35,9 +38,9 @@ const CONFIG = {
   // 행사 날짜 (하루)
   EVENT_DATE: '9월 19일 (토)',
 
-  // 운영 시간 (30분 단위 10타임)
-  START_TIME: '13:30',
-  END_TIME:   '18:00',
+  // 운영 시간 — 13:00~18:30 · 30분 단위 11타임 (쉬는 시간 없이 연속 운영)
+  START_TIME: '13:00',
+  END_TIME:   '18:00',      // 마지막 회차 시작 시각. 종료는 18:30
   INTERVAL_MIN: 30,
 
   // 행사 연도 — 지난 시간대 판정에 사용
@@ -96,6 +99,21 @@ function ss_() {
 function capacityOf_(program) {
   const p = CONFIG.PROGRAMS.filter(x => x.key === program)[0];
   return p ? p.capacity : CONFIG.PROGRAMS[0].capacity;
+}
+
+/** 하루 최대 인원(재료 수량). 설정이 없으면 0 = 제한 없음 */
+function dayLimitOf_(program) {
+  const p = CONFIG.PROGRAMS.filter(x => x.key === program)[0];
+  return (p && p.dayLimit) ? p.dayLimit : 0;
+}
+
+/** 이 프로그램으로 오늘 받은 총 접수 건수 */
+function dayUsed_(counts, program) {
+  let used = 0;
+  Object.keys(counts).forEach(function (k) {
+    if (k.indexOf(program + '|') === 0) used += counts[k];
+  });
+  return used;
 }
 
 /* ──────────────────────────────────────────────
@@ -218,14 +236,20 @@ function getSlotAvailability() {
 
   const slots = [];
   CONFIG.PROGRAMS.forEach(p => {
+    // 재료가 남은 만큼만 더 받을 수 있다. 회차 잔여가 있어도 이 값을 넘지 못한다.
+    const dayLeft = p.dayLimit ? Math.max(0, p.dayLimit - dayUsed_(counts, p.key)) : null;
+
     times.forEach(time => {
       const used = counts[slotKey_(p.key, time)] || 0;
+      let remain = Math.max(0, p.capacity - used);
+      if (dayLeft !== null) remain = Math.min(remain, dayLeft);
+
       slots.push({
         program:  p.key,
         date:     CONFIG.EVENT_DATE,
         time:     time,
         capacity: p.capacity,
-        remain:   Math.max(0, p.capacity - used),
+        remain:   remain,
         past:     isSlotPast_(time),
       });
     });

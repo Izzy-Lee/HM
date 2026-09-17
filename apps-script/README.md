@@ -153,6 +153,38 @@ function doGet() {
 - 지난 행사 응답이 같은 시트에 남아 있으면 그대로 마감으로 잡히므로, 옛 행을 다른 탭으로
   옮기거나 `처리상태`에 `취소`를 넣어 제외하세요. 새 시트를 쓴다면 `CONFIG.SHEET_NAME` 지정.
 
+## 붙여넣기 없이 배포하기 (clasp)
+
+편집기에 복사·붙여넣기 하는 대신, 대표님 PC에서 명령 한 줄로 배포할 수 있습니다.
+`update.sh` 가 최신 코드를 내려받아 올리고 새 버전으로 배포까지 합니다.
+
+**최초 1회 설정**
+
+```bash
+npm i -g @google/clasp            # 설치 (맥에서 권한 오류면 sudo 를 앞에)
+clasp login                       # 브라우저에서 구글 로그인 → 허용
+```
+
+그리고 **https://script.google.com/home/usersettings** 에서
+`Google Apps Script API` 를 **사용** 으로 켭니다. (이걸 안 켜면 clasp 이 동작하지 않습니다)
+
+```bash
+mkdir ~/hm-script && cd ~/hm-script
+clasp clone <스크립트 ID>          # ID: 편집기 → 프로젝트 설정(⚙️) → 스크립트 ID
+clasp deployments                 # 배포 ID(AKfycb...) 확인 → update.sh 의 DEPLOY_ID 에 기입
+curl -O https://raw.githubusercontent.com/Izzy-Lee/HM/main/apps-script/update.sh
+chmod +x update.sh
+```
+
+**그 뒤로는 매번 이 한 줄**
+
+```bash
+cd ~/hm-script && ./update.sh
+```
+
+> 첫 실행 뒤에는 반드시 `/exec` 주소를 열어 응답을 확인하세요.
+> 행사 당일에는 손대지 않는 것이 안전합니다.
+
 ## 점검
 
 - `debugAvailability` — 마감 회차 / 액자 잔여 / 설문 미작성 회차를 로그로 출력

@@ -25,17 +25,21 @@ var FIELD = {
   TAB_CHECKIN: '체크인',
   TAB_MEMO:    '관찰메모',
   TAB_STOCK:   '재고',
+  TAB_VISIT:   '방문',
 
   /* 헤더 순서 = appendRow 순서. 둘 중 하나만 고치면 데이터가 옆 칸으로 밀립니다. */
   HEAD_SALE:    ['시각', '상품', '단가', '수량', '금액', '결제수단', '회차', '담당자', '취소여부'],
   HEAD_CHECKIN: ['시각', '회차', '프로그램', '예약자', '상태', '도안', '완성여부'],
   HEAD_MEMO:    ['시각', '태그', '회차', '내용'],
   HEAD_STOCK:   ['품목', '초기수량', '차감', '보정', '잔여'],
+  /* 부스에 들른 사람 수 — 체험·구매와 별개로 세는 결과보고서 '방문 인원' 항목.
+     누를 때마다 한 줄씩 쌓아 시간대별 추이까지 남긴다. */
+  HEAD_VISIT:   ['시각', '인원', '담당자'],
 
   /* 판매 상품 — key 는 재고 탭 품목명과 동일해야 합니다 */
   PRODUCTS: [
     { key: '바인더 체험',   price: 30000 },
-    { key: '바인더 완성품', price: 30000 },
+    { key: '바인더 완성품', price: 20000 },
     { key: '스티커',       price: 2000  },
     { key: '액자',         price: 0     },  // SNS 후기 증정 (매출 0, 재고만 차감)
     /* 유료 구매 후 설문을 쓰면 드리는 스티커.
@@ -122,6 +126,7 @@ function doGet(e) {
       case 'survey':  out = actSurvey_(p);              break;
       case 'gift':    out = actGift_(p);                break;
       case 'book':    out = actBook_(p);                break;
+      case 'visit':   out = actVisit_(p);               break;
       case 'img':     out = actImage_(p);               break;
       case 'snapshot':out = actSnapshot_(p);            break;
       default:        out = { ok: false, error: '알 수 없는 action: ' + action };
@@ -188,7 +193,7 @@ function setupEvent() {
   Logger.log('■ 예약 탭 "%s" %s', name, made ? '새로 만들었습니다' : '이미 있어 그대로 씁니다');
 
   setupFieldSheets();
-  Logger.log('■ 현장 데이터 탭 4종(판매·체크인·관찰메모·재고) 준비 완료');
+  Logger.log('■ 현장 데이터 탭 5종(판매·체크인·관찰메모·재고·방문) 준비 완료');
 
   // 시트를 손으로 고쳤을 때도 사이트에 바로 반영되도록 감지 트리거를 둔다
   try {
@@ -234,8 +239,9 @@ function setupFieldSheets() {
   ensureSheet_(FIELD.TAB_SALE,    FIELD.HEAD_SALE);
   ensureSheet_(FIELD.TAB_CHECKIN, FIELD.HEAD_CHECKIN);
   ensureSheet_(FIELD.TAB_MEMO,    FIELD.HEAD_MEMO);
+  ensureSheet_(FIELD.TAB_VISIT,   FIELD.HEAD_VISIT);
   ensureStockSheet_();
-  ss_().toast('현장 데이터 탭 4종 준비 완료', '헬로미추', 5);
+  ss_().toast('현장 데이터 탭 5종 준비 완료', '헬로미추', 5);
 }
 
 function ensureSheet_(name, header) {
@@ -637,6 +643,43 @@ function actBook_(p) {
   } finally {
     lock.releaseLock();
   }
+}
+
+/**
+ * 방문 인원 기록 — action=visit&co=1&k=키   (직전 취소: action=visit&undo=1&k=키)
+ *
+ * 부스 앞에 들른 사람 수는 예약·판매 어디에도 남지 않는다. 결과보고서의
+ * '방문 인원'은 행사가 끝나면 복구할 방법이 없어 현장에서 눌러 세는 수밖에 없다.
+ */
+function actVisit_(p) {
+  requireKey_(p);
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sh = ensureSheet_(FIELD.TAB_VISIT, FIELD.HEAD_VISIT);
+
+    if (String(p.undo || '') === '1') {
+      var last = sh.getLastRow();
+      if (last < 2) return { ok: true, removed: 0, total: 0 };
+      var n = Number(sh.getRange(last, 2).getValue()) || 0;
+      sh.deleteRow(last);
+      return { ok: true, removed: n, total: visitTotal_(sh) };
+    }
+
+    var co = Math.max(1, Math.min(20, Number(p.co || 1)));   // 한 번에 20명까지
+    sh.appendRow([nowStamp_(), co, String(p.staff || '')]);
+    return { ok: true, added: co, total: visitTotal_(sh) };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** 누적 방문 인원 */
+function visitTotal_(sh) {
+  sh = sh || ensureSheet_(FIELD.TAB_VISIT, FIELD.HEAD_VISIT);
+  if (sh.getLastRow() < 2) return 0;
+  return sh.getRange(2, 2, sh.getLastRow() - 1, 1).getValues()
+           .reduce(function (a, r) { return a + (Number(r[0]) || 0); }, 0);
 }
 
 /** 같은 사람이 같은 회차를 이미 잡아뒀는지 */
@@ -1232,6 +1275,7 @@ function buildReport_() {
     generatedAt: nowStamp_(),
     lastSale: lastSale,
     targets: T,
+    visitors: visitTotal_(),
     attendance: {
       coloring:      attend['컬러링'] || 0,
       binder:        attend['바인더'] || 0,

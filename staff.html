@@ -42,6 +42,20 @@
   .tabs button[aria-selected="true"] { color: var(--teal); border-bottom-color: var(--teal); }
 
   .pane { padding: 0.9rem; display: none; }
+
+  /* 방문 카운터 — 장갑 낀 손으로도 눌리게 크게 */
+  .visit-num { font-family:'Nanum Myeongjo',serif; font-size:3.4rem; font-weight:800; line-height:1.1;
+               text-align:center; color:var(--teal); font-variant-numeric:tabular-nums; }
+  .visit-cap { text-align:center; font-size:.78rem; color:var(--soft); margin-bottom:1rem; }
+  .visit-btn { display:block; width:100%; padding:1.5rem; border:0; border-radius:16px;
+               background:var(--teal); color:#fff; font-family:inherit; font-size:1.35rem; font-weight:700;
+               cursor:pointer; box-shadow:0 4px 14px rgba(20,121,106,.28); }
+  .visit-btn:active { transform:translateY(1px); }
+  .visit-row { display:flex; gap:.5rem; margin-top:.6rem; }
+  .visit-row button { flex:1; padding:.8rem .2rem; border:1px solid var(--rule); border-radius:12px;
+                      background:var(--surface); font-family:inherit; font-size:.9rem; font-weight:700;
+                      color:var(--ink); cursor:pointer; }
+  .visit-row button.undo { color:var(--red); border-color:#e8c4c4; flex:1.6; font-size:.82rem; }
   .pane.on { display: block; }
   h2 { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; color: var(--soft); margin: 1.3rem 0 0.55rem; }
   h2:first-child { margin-top: 0.2rem; }
@@ -202,6 +216,7 @@
   <button role="tab" aria-selected="false" data-p="check">체크인</button>
   <button role="tab" aria-selected="false" data-p="memo">관찰</button>
   <button role="tab" aria-selected="false" data-p="stock">재고</button>
+  <button role="tab" aria-selected="false" data-p="visit">방문</button>
 </div>
 
 <div class="queue" id="queue"></div>
@@ -236,6 +251,27 @@
   <div id="roster"><p class="note">회차를 선택하세요.</p></div>
 </section>
 
+<!-- ── 방문 ── -->
+<section class="pane" id="p-visit">
+  <div class="visit-num" id="visitNum">0</div>
+  <div class="visit-cap">누적 방문 인원</div>
+
+  <button type="button" class="visit-btn" id="visitBtn">방문 +1</button>
+  <div class="visit-row">
+    <button type="button" data-co="2">+2</button>
+    <button type="button" data-co="3">+3</button>
+    <button type="button" data-co="5">+5</button>
+    <button type="button" class="undo" id="visitUndo">방금 누른 것 취소</button>
+  </div>
+
+  <p class="note">부스에 들러 <b>구경만 하고 가신 분까지</b> 포함해 세면 됩니다.
+  가족이 함께 오시면 인원수만큼 <b>+2·+3·+5</b>를 눌러주세요.<br>
+  체험·구매하신 분도 방문 인원에 포함합니다.</p>
+
+  <p class="note" style="color:var(--amber);">결과보고서의 <b>'방문 인원'</b> 항목입니다.
+  행사가 끝나면 복구할 방법이 없으니, 한가할 때 몰아서라도 눌러두세요.</p>
+</section>
+
 <!-- ── 관찰 ── -->
 <section class="pane" id="p-memo">
   <div class="slotbar"><select id="memoSlot" aria-label="관찰 회차"></select></div>
@@ -254,7 +290,7 @@
   <p class="note">실물과 어긋날 때만 쓰세요. 입력한 숫자가 <b>잔여</b>가 되도록 보정값이 자동 계산됩니다.</p>
 </section>
 
-<div class="undobar">
+<div class="undobar" id="undobar">
   <span class="last" id="lastLine">아직 기록 없음</span>
   <button type="button" id="undoBtn" disabled>직전 취소</button>
 </div>
@@ -299,7 +335,7 @@ const REVENUE_GOAL = 2700000;
 // '스티커 증정'은 여기 없다 — 설문 코드 확인을 거쳐야만 나가도록 해서 중복 증정을 막는다.
 const PRODUCTS = [
   { key: '바인더 체험',   price: 30000 },
-  { key: '바인더 완성품', price: 30000 },
+  { key: '바인더 완성품', price: 20000 },
   { key: '스티커',       price: 2000, label: '데코 스티커' },
   { key: '액자',         price: 0,    label: 'SNS 후기 액자 증정' }
 ];
@@ -712,14 +748,45 @@ async function refresh() {
     paintProducts();
     paintStocks(r.stock || []);
     paintLast(r.lastSale);
+    if (typeof r.visitors === 'number') paintVisit(r.visitors);
   } catch (e) { /* 조용히 넘어간다 — 기록은 계속 가능해야 한다 */ }
   refreshing = false;
 }
+
+/* ══ 방문 인원 ══ */
+let visitCount = 0;
+
+function paintVisit(n) {
+  if (typeof n === 'number') visitCount = n;
+  const el = document.getElementById('visitNum');
+  if (el) el.textContent = visitCount.toLocaleString('ko-KR');
+}
+
+/* 먼저 화면에 더하고 서버에 보낸다. 네트워크가 끊겨도 계속 누를 수 있어야 한다
+   (실패분은 대기열에 쌓였다가 복구되면 자동 전송된다) */
+async function addVisit(co) {
+  visitCount += co;
+  paintVisit();
+  try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) {}
+  const r = await send({ action: 'visit', co: co });
+  if (r && typeof r.total === 'number') paintVisit(r.total);
+}
+
+document.getElementById('visitBtn').addEventListener('click', () => addVisit(1));
+document.querySelectorAll('#p-visit .visit-row button[data-co]').forEach(b =>
+  b.addEventListener('click', () => addVisit(Number(b.dataset.co))));
+
+document.getElementById('visitUndo').addEventListener('click', async () => {
+  if (visitCount > 0) { visitCount--; paintVisit(); }
+  const r = await send({ action: 'visit', undo: 1 }, '직전 방문 기록을 취소했습니다');
+  if (r && typeof r.total === 'number') paintVisit(r.total);
+});
 
 /* ══ 탭 ══ */
 document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
   document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === 'p-' + b.dataset.p));
+  document.getElementById('undobar').style.display = (b.dataset.p === 'visit') ? 'none' : '';
   if (b.dataset.p === 'check') loadRoster();
 }));
 

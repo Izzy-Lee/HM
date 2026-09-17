@@ -100,6 +100,7 @@
 <div class="head">
   <div class="box rev"><div class="n" id="hRev">–</div><div class="l">총 매출</div></div>
   <div class="box"><div class="n" id="hPeople">–</div><div class="l">체험 인원</div></div>
+  <div class="box"><div class="n" id="hVisit">–</div><div class="l">방문 인원</div></div>
   <div class="box"><div class="n" id="hConv">–</div><div class="l">유료 전환율</div></div>
 </div>
 
@@ -190,6 +191,7 @@ function render(d) {
   /* 헤드라인 */
   document.getElementById('hRev').textContent    = won(S.revenue);
   document.getElementById('hPeople').textContent = num(A.total) + '명';
+  document.getElementById('hVisit').textContent  = num(d.visitors || 0) + '명';
   document.getElementById('hConv').textContent   = d.conversion.rate + '%';
 
   /* 1. 체험 실적 */
@@ -198,7 +200,8 @@ function render(d) {
     [
       ['컬러링 체험 (무료)', num(A.coloring) + '명', num(T.coloring) + '명', { rate: R.coloring }],
       ['바인더 체험 (30,000원)', num(A.binder) + '명', num(T.binder) + '명', { rate: R.binder }],
-      ['노쇼 (컬러링 / 바인더)', num(A.noshowColoring) + ' / ' + num(A.noshowBinder) + '명', '–', '–']
+      ['노쇼 (컬러링 / 바인더)', num(A.noshowColoring) + ' / ' + num(A.noshowBinder) + '명', '–', '–'],
+      ['방문 인원 (부스 방문자)', num(d.visitors || 0) + '명', '–', '–']
     ],
     ['합계 참석', num(A.total) + '명', num(T.coloring + T.binder) + '명',
      Math.round(A.total / (T.coloring + T.binder) * 1000) / 10 + '%']);
@@ -210,7 +213,7 @@ function render(d) {
       ['바인더 체험 (30,000원)', num(item('바인더 체험').qty) + '개', num(T.binder) + '개',
         { rate: R.binder !== undefined ? Math.round(item('바인더 체험').qty / T.binder * 1000) / 10 : 0 },
         won(item('바인더 체험').amount)],
-      ['바인더 완성품 (30,000원)', num(item('바인더 완성품').qty) + '개', num(T.binderProduct) + '개',
+      ['바인더 완성품 (20,000원)', num(item('바인더 완성품').qty) + '개', num(T.binderProduct) + '개',
         { rate: R.binderProduct }, won(item('바인더 완성품').amount)],
       ['데코 스티커 (2,000원)', num(item('스티커').qty) + '개', num(T.sticker) + '개',
         { rate: R.sticker }, won(item('스티커').amount)],
@@ -304,9 +307,10 @@ function pasteBlock(d) {
   L.push('· 컬러링 체험(무료): ' + A.coloring + '명 (목표 ' + T.coloring + '명, 달성률 ' + d.rate.coloring + '%)');
   L.push('· 바인더 체험(30,000원): ' + A.binder + '명 (목표 ' + T.binder + '명, 달성률 ' + d.rate.binder + '%)');
   L.push('· 총 체험 인원: ' + A.total + '명 / 노쇼 ' + (A.noshowColoring + A.noshowBinder) + '명');
+  L.push('· 방문 인원(부스 방문자): ' + (d.visitors || 0) + '명');
   L.push('');
   L.push('[판매 실적]');
-  L.push('· 바인더 완성품(30,000원): ' + item('바인더 완성품').qty + '개 · ' + won(item('바인더 완성품').amount));
+  L.push('· 바인더 완성품(20,000원): ' + item('바인더 완성품').qty + '개 · ' + won(item('바인더 완성품').amount));
   L.push('· 데코 스티커(2,000원): ' + item('스티커').qty + '개 · ' + won(item('스티커').amount));
   L.push('· 바인더 체험료(30,000원): ' + item('바인더 체험').qty + '건 · ' + won(item('바인더 체험').amount));
   L.push('· 총 매출: ' + won(S.revenue) + ' (목표 ' + won(T.revenue) + ', 달성률 ' + d.rate.revenue + '%)');

@@ -9,6 +9,7 @@ class Sheet {
   getLastRow(){ return this.data.length; }
   getLastColumn(){ return this.data.reduce((a,r)=>Math.max(a,r.length),0); }
   appendRow(r){ this.data.push(r.slice()); }
+  deleteRow(r){ this.data.splice(r-1, 1); return this; }
   setFrozenRows(){ return this; }
   clear(){ this.data=[]; return this; }
   autoResizeColumns(){ return this; }

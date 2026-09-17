@@ -31,6 +31,8 @@ class SS {
   getSheetByName(n){ return this.sheets[n]||null; }
   insertSheet(n){ return this.sheets[n]=new Sheet(n); }
   getSheets(){ return Object.values(this.sheets); }
+  getName(){ return '테스트 스프레드시트'; }
+  getUrl(){ return 'https://docs.google.com/spreadsheets/d/TEST/edit'; }
   toast(){}
 }
 const ss = new SS();

@@ -159,6 +159,49 @@ function requireKey_(p) {
 /* ══════════════════════════════════════════════════════════════
    2. 시트 준비 — 헤더 생성은 이 함수 하나로만
    ══════════════════════════════════════════════════════════════ */
+/**
+ * 행사 준비 — 이 함수 하나만 실행하면 됩니다. (편집기에서 실행 → 로그 확인)
+ *
+ * 1) 지금 어느 스프레드시트에 붙어 있는지 로그로 알려줍니다. 지난 행사 시트에
+ *    잘못 연결돼 있으면 여기서 바로 드러납니다.
+ * 2) 예약 탭(CONFIG.SHEET_NAME)을 헤더까지 만들어 둡니다. 기존 탭은 건드리지 않으므로
+ *    지난 행사 데이터는 그대로 남습니다.
+ * 3) 현장 데이터 탭 4종(판매·체크인·관찰메모·재고)을 만듭니다.
+ * 4) 회차·정원이 제대로 잡히는지 점검 결과를 로그로 찍습니다.
+ */
+function setupEvent() {
+  if (typeof CONFIG === 'undefined') {
+    throw new Error('slot-capacity.gs 파일이 이 프로젝트에 없습니다. 먼저 추가해 주세요.');
+  }
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  Logger.log('■ 연결된 스프레드시트: %s', ss.getName());
+  Logger.log('■ 주소: %s', ss.getUrl());
+
+  var name = CONFIG.SHEET_NAME || '예약';
+  var made = !ss.getSheetByName(name);
+  ensureSheet_(name, ['타임스탬프', CONFIG.COL_PROGRAM, CONFIG.COL_TIME,
+                      '이름', '연락처', '도안', '접수경로', CONFIG.COL_STATUS]);
+  Logger.log('■ 예약 탭 "%s" %s', name, made ? '새로 만들었습니다' : '이미 있어 그대로 씁니다');
+
+  setupFieldSheets();
+  Logger.log('■ 현장 데이터 탭 4종(판매·체크인·관찰메모·재고) 준비 완료');
+
+  var slots = getSlotAvailability();
+  var full  = slots.filter(function (x) { return x.remain === 0 && !x.past; });
+  Logger.log('■ 회차 %s개 (프로그램별 %s개씩) / 지금 마감된 회차 %s개',
+             slots.length, slots.length / CONFIG.PROGRAMS.length, full.length);
+  CONFIG.PROGRAMS.forEach(function (p) {
+    Logger.log('   · %s 정원 %s명 × %s타임', p.key, p.capacity,
+               slots.filter(function (x) { return x.program === p.key; }).length);
+  });
+  Logger.log(full.length ? '■ 마감된 회차: ' + full.map(function (x) {
+    return x.program + ' ' + x.time; }).join(', ')
+    : '■ 마감된 회차 없음 — 정상입니다');
+
+  return { sheet: ss.getName(), tab: name, slots: slots.length, full: full.length };
+}
+
 function setupFieldSheets() {
   ensureSheet_(FIELD.TAB_SALE,    FIELD.HEAD_SALE);
   ensureSheet_(FIELD.TAB_CHECKIN, FIELD.HEAD_CHECKIN);
@@ -955,7 +998,8 @@ function snapshotRows_(r) {
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('헬로미추')
-    .addItem('현장 데이터 탭 만들기', 'setupFieldSheets')
+    .addItem('행사 준비 (예약·현장 탭 만들기)', 'setupEvent')
+    .addItem('현장 데이터 탭만 만들기', 'setupFieldSheets')
     .addItem('집계 스냅샷 저장 (시트 + 드라이브)', 'snapshotFromMenu')
     .addToUi();
 }

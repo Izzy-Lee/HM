@@ -190,6 +190,22 @@ function setupEvent() {
   setupFieldSheets();
   Logger.log('■ 현장 데이터 탭 4종(판매·체크인·관찰메모·재고) 준비 완료');
 
+  // 시트를 손으로 고쳤을 때도 사이트에 바로 반영되도록 감지 트리거를 둔다
+  try {
+    var has = false;
+    ScriptApp.getProjectTriggers().forEach(function (t) {
+      if (t.getHandlerFunction() === 'onSheetEdit') has = true;
+    });
+    if (!has) {
+      ScriptApp.newTrigger('onSheetEdit').forSpreadsheet(ss).onEdit().create();
+      Logger.log('■ 시트 수정 감지 설치 완료 — 처리상태를 고치면 바로 반영됩니다');
+    } else {
+      Logger.log('■ 시트 수정 감지 이미 설치됨');
+    }
+  } catch (err) {
+    Logger.log('■ 시트 수정 감지를 설치하지 못했습니다(%s). 반영이 최대 8초 늦어질 뿐 동작에는 문제 없습니다.', err);
+  }
+
   var slots = getSlotAvailability();
   var full  = slots.filter(function (x) { return x.remain === 0 && !x.past; });
   Logger.log('■ 회차 %s개 (프로그램별 %s개씩) / 지금 마감된 회차 %s개',
@@ -203,6 +219,15 @@ function setupEvent() {
     : '■ 마감된 회차 없음 — 정상입니다');
 
   return { sheet: ss.getName(), tab: name, slots: slots.length, full: full.length };
+}
+
+/**
+ * 시트를 사람이 직접 고쳤을 때 현황 캐시를 비운다.
+ * (예: 예약 행의 처리상태에 '취소'를 적으면 그 자리가 바로 다시 열린다)
+ * setupEvent() 가 이 트리거를 설치한다.
+ */
+function onSheetEdit(e) {
+  bustSlotsCache_();
 }
 
 function setupFieldSheets() {
@@ -318,7 +343,7 @@ function getStockPayload_() {
    읽으면 응답이 몇 초씩 걸리는데, 20초 캐시만으로 대부분의 요청이 즉시 나간다.
    예약·판매 같은 쓰기가 들어오면 doGet 이 이 캐시를 바로 지운다. */
 var SLOTS_CACHE_KEY = 'slots_v2';
-var SLOTS_CACHE_SEC = 20;
+var SLOTS_CACHE_SEC = 8;    // 사람이 시트를 직접 고쳤을 때 늦어도 이만큼 뒤에는 반영된다
 
 function slotsCache_() {
   try { return CacheService.getScriptCache(); } catch (e) { return null; }

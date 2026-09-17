@@ -826,7 +826,10 @@ function fetchData(force) {
     return Promise.resolve({ slots: window._cachedSlots, sheetStock: window._cachedStockArr });
   }
   if (_inflight) return _inflight;
-  _inflight = fetch(API_URL)
+  /* 주소에 매번 다른 값을 붙이고 캐시를 끈다.
+     안 그러면 브라우저가 예전 응답을 그대로 내주어, 시트를 고쳐도
+     새로고침을 여러 번 해야 반영되는 것처럼 보인다. */
+  _inflight = fetch(API_URL + '?t=' + Date.now(), { cache: 'no-store' })
     .then(r => r.json())
     .then(data => {
       window._cachedSlots    = normalizeSlots(data.slots);

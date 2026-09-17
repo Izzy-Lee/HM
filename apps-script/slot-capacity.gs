@@ -71,6 +71,28 @@ const CONFIG = {
   NOTIFY_EMAIL: '',
 };
 
+/**
+ * 이 프로젝트가 읽고 쓸 스프레드시트.
+ *
+ * 스크립트 속성에 SHEET_ID 가 있으면 그 시트를, 없으면 이 스크립트가 붙어 있는 시트를 씁니다.
+ * 독립형(스프레드시트에 붙어 있지 않은) 프로젝트에서도 동작하게 하기 위한 것으로,
+ * 지난 행사 스크립트가 쓰던 SHEET_ID 속성을 그대로 재사용합니다.
+ */
+function ss_() {
+  var id = null;
+  try {
+    id = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
+  } catch (e) {}
+  if (id) return SpreadsheetApp.openById(id);
+
+  var active = SpreadsheetApp.getActiveSpreadsheet();
+  if (!active) {
+    throw new Error('연결된 스프레드시트를 찾지 못했습니다. ' +
+      '프로젝트 설정 → 스크립트 속성에 SHEET_ID(예약 시트 주소의 /d/ 와 /edit 사이 문자열)를 넣어주세요.');
+  }
+  return active;
+}
+
 function capacityOf_(program) {
   const p = CONFIG.PROGRAMS.filter(x => x.key === program)[0];
   return p ? p.capacity : CONFIG.PROGRAMS[0].capacity;
@@ -80,7 +102,7 @@ function capacityOf_(program) {
    1. 최초 1회 실행 — 트리거 설치
    ────────────────────────────────────────────── */
 function setupTriggers() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = ss_();
 
   // 중복 설치 방지
   ScriptApp.getProjectTriggers().forEach(t => {
@@ -219,7 +241,7 @@ function getFrameRemain() {
   const total = CONFIG.FRAME_TOTAL;
   if (!CONFIG.SNS_SHEET_NAME) return total;
 
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SNS_SHEET_NAME);
+  const sheet = ss_().getSheetByName(CONFIG.SNS_SHEET_NAME);
   if (!sheet || sheet.getLastRow() < 2) return total;
 
   const lastCol = sheet.getLastColumn();
@@ -277,7 +299,7 @@ function countSurveyBySlot_() {
   const counts = {};
   if (!CONFIG.SURVEY_SHEET_NAME) return counts;
 
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SURVEY_SHEET_NAME);
+  const sheet = ss_().getSheetByName(CONFIG.SURVEY_SHEET_NAME);
   if (!sheet || sheet.getLastRow() < 2) return counts;
 
   const lastCol = sheet.getLastColumn();
@@ -330,7 +352,7 @@ function getGoodsStock() {
    내부 유틸
    ────────────────────────────────────────────── */
 function getSheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = ss_();
   if (CONFIG.SHEET_NAME) {
     const s = ss.getSheetByName(CONFIG.SHEET_NAME);
     if (s) return s;

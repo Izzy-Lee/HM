@@ -174,7 +174,7 @@ function setupEvent() {
     throw new Error('slot-capacity.gs 파일이 이 프로젝트에 없습니다. 먼저 추가해 주세요.');
   }
 
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = ss_();
   Logger.log('■ 연결된 스프레드시트: %s', ss.getName());
   Logger.log('■ 주소: %s', ss.getUrl());
 
@@ -207,11 +207,11 @@ function setupFieldSheets() {
   ensureSheet_(FIELD.TAB_CHECKIN, FIELD.HEAD_CHECKIN);
   ensureSheet_(FIELD.TAB_MEMO,    FIELD.HEAD_MEMO);
   ensureStockSheet_();
-  SpreadsheetApp.getActiveSpreadsheet().toast('현장 데이터 탭 4종 준비 완료', '헬로미추', 5);
+  ss_().toast('현장 데이터 탭 4종 준비 완료', '헬로미추', 5);
 }
 
 function ensureSheet_(name, header) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = ss_();
   var sh = ss.getSheetByName(name);
   if (!sh) sh = ss.insertSheet(name);
 
@@ -731,7 +731,7 @@ function giftCode_() {
 function giftCodeTaken_(code) {
   var types = Object.keys(FIELD.SURVEYS);
   for (var t = 0; t < types.length; t++) {
-    var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FIELD.SURVEYS[types[t]].tab);
+    var sh = ss_().getSheetByName(FIELD.SURVEYS[types[t]].tab);
     if (!sh || sh.getLastRow() < 2) continue;
     var header = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(function (v) { return String(v).trim(); });
     var c = header.indexOf('증정코드') + 1;
@@ -778,7 +778,7 @@ function actGift_(p) {
     for (var t = 0; t < types.length; t++) {
       var meta = FIELD.SURVEYS[types[t]];
       var item = giftItemFor_(types[t]);
-      var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(meta.tab);
+      var sh = ss_().getSheetByName(meta.tab);
       if (!sh || sh.getLastRow() < 2) continue;
 
       var header = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(function (v) { return String(v).trim(); });
@@ -827,7 +827,7 @@ function surveyCounts_() {
   var out = { byType: {}, experience: 0, purchase: 0, sns: 0, total: 0, gifted: 0 };
   Object.keys(FIELD.SURVEYS).forEach(function (t) {
     var meta = FIELD.SURVEYS[t];
-    var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(meta.tab);
+    var sh = ss_().getSheetByName(meta.tab);
     var n = 0, g = 0;
     if (sh && sh.getLastRow() > 1) {
       var header = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(function (v) { return String(v).trim(); });
@@ -917,7 +917,7 @@ function actSnapshot_(p) {
   var r = buildReport_();
   var rows = snapshotRows_(r);
 
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = ss_();
   var sh = ss.getSheetByName('집계');
   if (!sh) sh = ss.insertSheet('집계');
   sh.clear();
@@ -1006,7 +1006,7 @@ function onOpen() {
 
 function snapshotFromMenu() {
   var r = actSnapshot_({ k: FIELD.STAFF_KEY });
-  SpreadsheetApp.getActiveSpreadsheet().toast(
+  ss_().toast(
     '집계 탭과 드라이브에 저장했습니다.\n' + r.at, '헬로미추', 8);
 }
 
@@ -1250,7 +1250,7 @@ function readMemo_() {
 /** 폼 응답 시트의 데이터 행 수 */
 function countFormRows_(name) {
   if (!name) return 0;
-  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
+  var sh = ss_().getSheetByName(name);
   if (!sh || sh.getLastRow() < 2) return 0;
   return sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues()
            .filter(function (r) { return String(r[0]).trim() !== ''; }).length;

@@ -522,8 +522,9 @@ const EVENT_LABEL = 'Saturday, September 19';
 
 // ── Bookable programs (same ten sessions, separate capacity) ──
 const PROGRAMS = [
-  /* dayLimit = seats available for the whole day, capped by materials on hand */
-  { key: '컬러링', name: 'Coloring',       meta: 'Free · 30 min · 6 seats',     capacity: 6, dayLimit: 60, paid: false },
+  /* dayLimit = seats available for the whole day.
+     Coloring 66 = 11 slots x 6 seats (100 sheets on hand, so seats are the cap, not paper) */
+  { key: '컬러링', name: 'Coloring',       meta: 'Free · 30 min · 6 seats',     capacity: 6, dayLimit: 66, paid: false },
   { key: '바인더', name: 'Binder',         meta: '\u20A930,000 · 30 min · 5 seats', capacity: 5, dayLimit: 50, paid: true  },
 ];
 let activeProgram = PROGRAMS[0].key;

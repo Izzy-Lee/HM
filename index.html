@@ -612,9 +612,10 @@ const EVENT_DATE = '9월 19일 (토)';
 
 // ── 예약 프로그램 (같은 타임을 공유하되 정원은 별개) ──
 const PROGRAMS = [
-  /* dayLimit = 하루에 받을 수 있는 최대 인원. 재료 수량이 상한이다.
-     컬러링 60 = 체험용 수채화지 60장 / 바인더 50 = 종이바인더 100개 중 체험분 50개 */
-  { key: '컬러링',      name: '컬러링 체험',  meta: '무료 · 30분 · 6명',      capacity: 6, dayLimit: 60, paid: false },
+  /* dayLimit = 하루에 받을 수 있는 최대 인원.
+     컬러링 66 = 11회차 × 6명 (수채화지 100장을 준비해 재료가 아니라 좌석이 상한)
+     바인더 50 = 종이바인더 100개 중 체험분 50개 */
+  { key: '컬러링',      name: '컬러링 체험',  meta: '무료 · 30분 · 6명',      capacity: 6, dayLimit: 66, paid: false },
   { key: '바인더',      name: '바인더 체험',  meta: '30,000원 · 30분 · 5명',  capacity: 5, dayLimit: 50, paid: true  },
 ];
 let activeProgram = PROGRAMS[0].key;

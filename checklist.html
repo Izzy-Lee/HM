@@ -1,219 +1,230 @@
-
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>헬로미추 준비물 체크리스트 — 2026.9.19 학산마당극 놀래</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap"></noscript>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-.wrap{padding:1rem 0 2rem}
-.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:12px;flex-wrap:wrap}
-.title-block{display:flex;flex-direction:column;gap:3px}
-.title{font-size:18px;font-weight:500;color:var(--color-text-primary)}
-.subtitle{font-size:13px;color:var(--color-text-secondary)}
-.stats{display:flex;gap:8px;align-items:center}
-.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:6px 14px;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:58px}
-.stat-num{font-size:20px;font-weight:500;color:var(--color-text-primary)}
-.stat-label{font-size:11px;color:var(--color-text-secondary)}
-.stat-num.done{color:var(--color-text-success)}
-.progress-bar{width:100%;height:5px;background:var(--color-border-tertiary);border-radius:99px;margin-bottom:1.25rem;overflow:hidden}
-.progress-fill{height:100%;background:#1D9E75;border-radius:99px;transition:width .3s}
-.section{margin-bottom:1.25rem}
-.section-header{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);margin-bottom:4px;cursor:pointer;user-select:none}
-.section-icon{font-size:16px;color:var(--color-text-secondary)}
-.section-title{font-size:13px;font-weight:500;color:var(--color-text-primary);flex:1}
-.section-count{font-size:12px;color:var(--color-text-secondary)}
-.section-chevron{font-size:14px;color:var(--color-text-tertiary);transition:transform .2s}
-.section-chevron.open{transform:rotate(180deg)}
-.items{display:flex;flex-direction:column;gap:2px}
-.item{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-radius:var(--border-radius-md);cursor:pointer;border:0.5px solid transparent;transition:background .12s}
-.item:hover{background:var(--color-background-secondary)}
-.item.checked{opacity:.55}
-.item.urgent{border-color:var(--color-border-warning)}
-.check-box{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:background .12s,border-color .12s}
-.check-box.on{background:#1D9E75;border-color:#1D9E75}
-.item-body{display:flex;flex-direction:column;gap:2px;flex:1}
-.item-label{font-size:14px;color:var(--color-text-primary);line-height:1.4}
-.item.checked .item-label{text-decoration:line-through;color:var(--color-text-tertiary)}
-.item-note{font-size:12px;color:var(--color-text-secondary);line-height:1.4}
-.item.checked .item-note{color:var(--color-text-tertiary)}
-.badge{display:inline-block;font-size:10px;font-weight:500;padding:1px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
-.badge-urgent{background:var(--color-background-warning);color:var(--color-text-warning)}
-.badge-photo{background:var(--color-background-info);color:var(--color-text-info)}
-.badge-check{background:var(--color-background-success);color:var(--color-text-success)}
-.reset-btn{font-size:13px;color:var(--color-text-secondary);cursor:pointer;background:none;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:5px 12px}
-.reset-btn:hover{background:var(--color-background-secondary)}
-.day-tabs{display:flex;gap:6px;margin-bottom:1rem}
-.day-tab{flex:1;padding:7px;text-align:center;font-size:13px;font-weight:500;border-radius:var(--border-radius-md);cursor:pointer;border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);background:var(--color-background-primary)}
-.day-tab.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
+  *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  :root{
+    --ink:#14100b; --soft:#5f5346; --faint:#8b7f70;
+    --paper:#f6f2ea; --surface:#fff; --sunk:#efe9de;
+    --teal:#14796a; --teal-bg:#e4f0ec; --amber:#b8620f; --red:#b23838; --rule:#ddd4c6;
+  }
+  body{ background:var(--paper); color:var(--ink); font-size:15px; line-height:1.7;
+        font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;
+        max-width:560px; margin:0 auto; padding:0 0 4rem; -webkit-text-size-adjust:100%; }
+  header{ padding:1.4rem .95rem .6rem; }
+  h1{ font-family:'Nanum Myeongjo',serif; font-size:1.45rem; font-weight:800; line-height:1.35; }
+  .when{ font-size:.82rem; color:var(--soft); margin-top:.3rem; }
+  .pane{ padding:0 .95rem; }
+
+  .brief{ background:var(--surface); border:1px solid var(--rule); border-radius:12px;
+          padding:.85rem 1rem; margin-bottom:.9rem; font-size:.78rem; color:var(--soft); line-height:1.8; }
+  .brief b{ color:var(--ink); }
+  .brief .row{ display:flex; gap:.5rem; }
+  .brief .k{ color:var(--teal); font-weight:700; min-width:52px; flex-shrink:0; }
+
+  .bar-wrap{ position:sticky; top:0; background:var(--paper); padding:.5rem 0 .7rem; z-index:5; }
+  .counts{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:.4rem; }
+  .counts .n{ font-size:.82rem; font-weight:700; color:var(--teal); }
+  .counts .reset{ font-size:.72rem; color:var(--faint); background:none; border:1px solid var(--rule);
+                  border-radius:99px; padding:.2rem .7rem; cursor:pointer; font-family:inherit; }
+  .bar{ height:6px; background:var(--sunk); border-radius:99px; overflow:hidden; }
+  .bar span{ display:block; height:100%; background:var(--teal); border-radius:99px; transition:width .3s; }
+
+  .sec{ margin-bottom:.9rem; }
+  .sec-head{ display:flex; align-items:center; gap:.5rem; padding:.5rem .2rem; }
+  .sec-title{ font-size:.82rem; font-weight:700; flex:1; }
+  .sec-count{ font-size:.72rem; color:var(--faint); font-variant-numeric:tabular-nums; }
+  .items{ background:var(--surface); border:1px solid var(--rule); border-radius:12px; overflow:hidden; }
+  .item{ display:flex; gap:.6rem; padding:.7rem .85rem; width:100%; border:0; border-bottom:1px solid var(--rule);
+         background:none; text-align:left; font-family:inherit; cursor:pointer; align-items:flex-start; }
+  .item:last-child{ border-bottom:0; }
+  .item .box{ width:19px; height:19px; border-radius:5px; border:1.5px solid var(--rule);
+              flex-shrink:0; margin-top:.15rem; position:relative; background:#fff; }
+  .item.on .box{ background:var(--teal); border-color:var(--teal); }
+  .item.on .box::after{ content:''; position:absolute; left:6px; top:2px; width:4px; height:10px;
+                        border:solid #fff; border-width:0 2px 2px 0; transform:rotate(45deg); }
+  .item .t{ font-size:.85rem; line-height:1.5; }
+  .item .n{ font-size:.72rem; color:var(--soft); line-height:1.55; margin-top:.15rem; }
+  .item.on .t{ color:var(--faint); text-decoration:line-through; }
+  .item.on .n{ color:var(--faint); }
+  .tag{ display:inline-block; font-size:.62rem; font-weight:700; padding:.05rem .4rem;
+        border-radius:99px; margin-left:.3rem; vertical-align:2px; }
+  .tag.must{ background:#fdecea; color:var(--red); }
+  .tag.photo{ background:var(--teal-bg); color:var(--teal); }
+  .foot{ text-align:center; font-size:.72rem; color:var(--faint); margin-top:1.4rem; line-height:1.8; }
 </style>
+</head>
+<body>
 
-<div class="wrap">
-  <h2 class="sr-only">두레미마켓 준비물 체크리스트 — 항목을 클릭해서 완료 표시</h2>
+<header>
+  <h1>준비물 체크리스트</h1>
+  <div class="when">2026. 9. 19.(토) · 수봉산 폭포 앞 · 학산마당극 놀래</div>
+</header>
 
-  <div class="top-bar">
-    <div class="title-block">
-      <div class="title">두레미마켓 준비물 체크리스트</div>
-      <div class="subtitle">2026.5.30(토) ~ 31(일) · 안녕 인사동 1층 잔디광장</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <div class="stats">
-        <div class="stat"><span class="stat-num done" id="cnt-done">0</span><span class="stat-label">완료</span></div>
-        <div class="stat"><span class="stat-num" id="cnt-total">0</span><span class="stat-label">전체</span></div>
-      </div>
-      <button class="reset-btn" onclick="resetAll()">초기화</button>
-    </div>
+<div class="pane">
+  <div class="brief">
+    <div class="row"><span class="k">운영</span><span><b>13:00 ~ 18:30</b> · 30분 11타임 (쉬는 시간 없음) · 세팅 12:30 완료</span></div>
+    <div class="row"><span class="k">정원</span><span>컬러링 6명 · 바인더 5명 / 하루 <b>60명 · 50명</b></span></div>
+    <div class="row"><span class="k">목표</span><span>체험 60·50명 / 바인더 50개 · 스티커 100개 / 설문 60건 / 후기 28건</span></div>
+    <div class="row"><span class="k">주차</span><span>도화초 공사로 주차 불가 — <b>수봉도서관 쪽 하차</b> 후 인근 주차<br>(인공폭포 공영주차장 협소 · 인천IT타워 유료)</span></div>
   </div>
 
-  <div class="progress-bar"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+  <div class="bar-wrap">
+    <div class="counts">
+      <span class="n" id="cnt">0 / 0 완료</span>
+      <button class="reset" onclick="resetAll()">전체 해제</button>
+    </div>
+    <div class="bar"><span id="fill" style="width:0"></span></div>
+  </div>
 
   <div id="list"></div>
+
+  <p class="foot">
+    체크는 이 기기에 저장됩니다. 운영진이 각자 열어 쓰셔도 됩니다.<br>
+    <span style="color:var(--red);font-weight:700;">필수</span> = 없으면 운영·정산이 막히는 것 ·
+    <span style="color:var(--teal);font-weight:700;">사진</span> = 결과보고서 증빙
+  </p>
 </div>
 
 <script>
+'use strict';
+
 const DATA = [
-  {
-    id:'doc', icon:'ti-file-description', title:'서류·증빙', color:'',
-    items:[
-      {id:'d1', label:'파일럿사업 신청서 출력본', note:'승인번호 확인 후 지참', urgent:true},
-      {id:'d2', label:'참석자 명단 양식', note:'현장 서명 받을 용지 여러 장'},
-      {id:'d3', label:'설문조사지 (백업용 인쇄본)', note:'QR 안 될 경우 대비'},
-      {id:'d4', label:'오마인스튜디오 사업자등록증 사본', note:'혹시 현장 제출 요청 대비', urgent:true},
-      {id:'d5', label:'법인카드 (관광두레)', note:'유류비·식비·소모품 결제용'},
-      {id:'d6', label:'톨게이트 영수증 보관봉투', note:'고속도로 통행료 필수 수거'},
-      {id:'d7', label:'개인정보 수집·활용 동의서', note:'교통비 원천징수 청구용'},
-      {id:'d8', label:'청구 및 계좌입금 의뢰서', note:''},
-    ]
-  },
-  {
-    id:'material', icon:'ti-palette', title:'체험 재료', color:'',
-    items:[
-      {id:'m1', label:'수채화물감 44색 × 5세트', note:'튜브 1개로 팔레트 2개 — 출발 전 세팅 확인', urgent:true},
-      {id:'m2', label:'체험용 수채화지 (콩기름잉크 인쇄) × 156장+여유분', note:'앞면 도안 / 뒷면 엽서+두레로고 인쇄 확인'},
-      {id:'m3', label:'세필붓 세트 × 3세트', note:'체험 1인당 1세트'},
-      {id:'m4', label:'접이식물통 × 6개', note:'1인당 2개 사용'},
-      {id:'m5', label:'마스킹테이프 × 3개', note:'수채화지 고정용'},
-      {id:'m6', label:'키친타올 (코스트코 12롤)', note:'물 조절·세척용'},
-      {id:'m7', label:'물티슈 (100매 10팩)', note:'세척·정리용'},
-      {id:'m8', label:'바인더형팔레트 (전시용·체험시연용)', note:'사업비 아님 — 대표 자체 지참', photo:true},
-      {id:'m9', label:'종이바인더 (전시용)', note:'사업비 아님 — 대표 자체 지참', photo:true},
-    ]
-  },
-  {
-    id:'event', icon:'ti-gift', title:'이벤트 경품', color:'',
-    items:[
-      {id:'e1', label:'액자 × 40개', note:'SNS 후기 조건 증정용 — 사이즈·수량 사전 확인', urgent:true},
-      {id:'e2', label:'뽑기통 + 뽑기 제비 세트', note:'설문 참여자 전원 1회 — 1등 수채화 다이어리'},
-      {id:'e3', label:'수채화 다이어리 1등 경품', note:'뽑기 당첨 1명 — 포장 완료 상태로 지참'},
-    ]
-  },
-  {
-    id:'display', icon:'ti-layout-board', title:'홍보·부스 설치', color:'',
-    items:[
-      {id:'b1', label:'이벤트 풍선 (무료체험 문구)', note:'부스 인근 설치 — 관광두레 로고 포함 확인', photo:true, urgent:true},
-      {id:'b2', label:'부스 가로배너 × 1개', note:'관광두레 로고 삽입 확인 — 설치 현장사진 필수', photo:true},
-      {id:'b3', label:'미니배너 × 2개', note:'QR코드 인쇄 확인 (예약 QR·설문 QR)'},
-      {id:'b4', label:'QR코드 출력본 (예비용)', note:'배너 파손·분실 대비 A4 출력'},
-      {id:'b5', label:'테이블 클램프 or 배너 스탠드', note:'매대 높이 조절 불가 시 보조 고정 도구'},
-    ]
-  },
-  {
-    id:'ops', icon:'ti-settings', title:'운영·기록', color:'',
-    items:[
-      {id:'o1', label:'구글폼 QR 최종 작동 확인', note:'예약폼 + 설문폼 각각 스캔 테스트', urgent:true},
-      {id:'o2', label:'스마트폰 보조배터리 × 2개', note:'QR 스캔·사진 촬영 종일 사용'},
-      {id:'o3', label:'핸드폰 거치대 or 미니 삼각대', note:'설문 QR 고정 + 단체사진 타이머용'},
-      {id:'o4', label:'운영 타임테이블 출력본', note:'11:00~19:40 26타임 회차표 — 예약 현황 수기 백업'},
-      {id:'o5', label:'다과 (음료·간식)', note:'1인 5,000원 기준 — 회의록 작성 필수 (운영비 청구)', urgent:true},
-      {id:'o6', label:'현금 소액 (잔돈)', note:'현장 돌발 상황 대비'},
-    ]
-  },
-  {
-    id:'photo', icon:'ti-camera', title:'사진 촬영 체크', color:'',
-    items:[
-      {id:'p1', label:'출발 전 — 재료별 구매사진', note:'물감·붓·물통·테이프·키친타올·물티슈 각각 개별 촬영', photo:true, urgent:true},
-      {id:'p2', label:'설치 후 — 풍선·배너 현장설치 사진', note:'관광두레 로고 식별 가능한 크기로', photo:true, urgent:true},
-      {id:'p3', label:'세팅 후 — 테이블 전체 세팅 실물사진 5장 이상', note:'물감·붓·물통·수채화지 펼쳐놓은 상태', photo:true},
-      {id:'p4', label:'회차별 — 운영진 전원 단체사진 1장 이상/일', note:'이영지+김정숙+PD 얼굴 식별 가능하게', photo:true, urgent:true},
-      {id:'p5', label:'회차별 — 체험 진행 장면', note:'붓 들고 채색하는 모습, 물감 팔레트 포함'},
-      {id:'p6', label:'회차별 — QR 설문 작성 장면', note:'참여자 스마트폰 화면 보이도록'},
-      {id:'p7', label:'SNS 후기 확인 + 액자 증정 장면', note:'현장 확인 후 즉석 증정 사진'},
-      {id:'p8', label:'완성 작품 사진', note:'액자에 넣은 상태 포함'},
-    ]
-  },
-  {
-    id:'move', icon:'ti-car', title:'이동·숙박', color:'',
-    items:[
-      {id:'v1', label:'출발 전 네이버 길찾기 캡처', note:'미추홀 사업장 → 안녕인사동 → 숙박지 경로 — 유류비 산출근거', urgent:true},
-      {id:'v2', label:'톨게이트 영수증 수거 (편도 1,800원)', note:'고속도로 사용 시 왕복 전부 수거'},
-      {id:'v3', label:'숙박 예약 확인 (1인 80,000원 한도)', note:'두레미마켓 10만원 지원 여부 확인 후 이중지원 방지', urgent:true},
-      {id:'v4', label:'식비 영수증 수거', note:'1식 10,000원 한도 / 주류·주점 포함 영수증 사용 불가'},
-    ]
-  },
-  {
-    id:'after', icon:'ti-clipboard-check', title:'행사 후 결과보고 준비', color:'',
-    items:[
-      {id:'a1', label:'설문 응답 데이터 저장 (구글폼)', note:'결과보고서 첨부용 — 156건 이상 목표'},
-      {id:'a2', label:'참석자 명단 서명 완료본 수거', note:'참여 구성원 + PD 전원'},
-      {id:'a3', label:'영수증 항목별 정리', note:'법인카드 전표 / 세금계산서 / 톨게이트 / 식비'},
-      {id:'a4', label:'현장사진 원본 백업', note:'구글포토 or 드라이브 업로드 — 원본 삭제 금지'},
-      {id:'a5', label:'결과보고서 제출 기한 확인', note:'행사 종료 후 2주 이내 (6.13 제출예정일)', urgent:true},
-    ]
-  },
+  { t:'출발 전 서류', items:[
+    { id:'d1', l:'참석자 명단 양식', n:'이영지·김정숙 + 관광두레PD 서명 — 결과보고서 필수 제출물', must:true },
+    { id:'d2', l:'사업자등록증 사본 · 통장 사본', n:'현장 제출 요청 대비' },
+    { id:'d3', l:'법인카드 / 결제 수단', n:'다과·소모품 결제 및 영수증 수거용' },
+    { id:'d4', l:'개인정보 수집·이용 동의서 (현장 접수용)', n:'사이트 예약자는 온라인 동의 완료 — 현장 접수분만 서면', },
+    { id:'d5', l:'회차표 출력본', n:'13:00~18:30 11타임 — 통신 끊길 때 수기 백업', must:true },
+  ]},
+
+  { t:'컬러링 체험 재료', items:[
+    { id:'c1', l:'수채화 물감 44색 × 5세트', n:'팔레트 10개 분 — 출발 전 세팅 상태 확인', must:true },
+    { id:'c2', l:'체험용 수채화지 60장', n:'도안 5종 × 12장 (소서노·문학산성·갯벌·수봉폭포·수봉도서관) + 여유분', must:true },
+    { id:'c3', l:'세필붓 세트 × 3', n:'체험용' },
+    { id:'c4', l:'접이식 물통 × 6개 이상', n:'회차당 6명 동시 진행' },
+    { id:'c5', l:'생수 (대용량) 2통 이상', n:'야외라 급수 어려움 — 붓 세척용까지 계산', must:true },
+    { id:'c6', l:'마스킹테이프 × 3', n:'수채화지 고정 · 야외 바람 대비' },
+    { id:'c7', l:'키친타올 · 물티슈', n:'물 조절 · 세척' },
+    { id:'c8', l:'작품 건조 공간', n:'건조대 또는 집게+줄 — 마르는 동안 설문 작성 유도', must:true },
+    { id:'c9', l:'엽서 봉투', n:'설문 완료 확인 후 작품을 담아 전달' },
+  ]},
+
+  { t:'바인더 체험 재료', items:[
+    { id:'b1', l:'종이바인더 100개', n:'체험 50 + 완성품 판매 50 — 분리해서 담기', must:true },
+    { id:'b2', l:'자개 (29종)', n:'종류별로 트레이에 나눠 담아두면 회차 진행이 빨라집니다' },
+    { id:'b3', l:'홀로그램 스티커 (11종)', n:'' },
+    { id:'b4', l:'레진 1kg + 경화 도구', n:'UV 램프 사용 시 야외 전기 가능 여부 확인', must:true },
+    { id:'b5', l:'핀셋 · 이쑤시개 · 일회용 장갑', n:'레진·자개 작업용' },
+    { id:'b6', l:'완성품 전시용 샘플', n:'판매 유도 — 대표 자체 지참' },
+  ]},
+
+  { t:'판매 굿즈 · 증정품', items:[
+    { id:'g1', l:'데코 스티커 100개 (포장 완료)', n:'조각스티커 30장 · 후지 400 · OPP 200 · 투명스티커 1,000 사용분', must:true },
+    { id:'g2', l:'SNS 후기 액자 28개', n:'1차 파일럿 잔여분 — 선착순 28명 한정', must:true },
+    { id:'g3', l:'가격표 · 안내 POP', n:'컬러링 무료 / 바인더 체험 30,000 / 완성품 30,000 / 스티커 2,000' },
+    { id:'g4', l:'현금 잔돈', n:'1,000원·5,000원권 넉넉히' },
+    { id:'g5', l:'계좌이체 QR 또는 카드 결제 수단', n:'현금 없는 손님 대비 — 결제수단별 집계는 운영 화면에서', must:true },
+  ]},
+
+  { t:'홍보 · 부스 설치', items:[
+    { id:'p1', l:'실외 배너 × 2', n:'관광두레 로고 삽입 확인 — 설치 후 사진 필수', photo:true, must:true },
+    { id:'p2', l:'홍보용 풍선 × 2', n:'부스 인근 설치 — 관광두레 로고 포함', photo:true },
+    { id:'p3', l:'QR 스탠드 (테이블마다)', n:'예약 QR · 설문 QR — 부스 입구가 아니라 앉은 자리에 두기', must:true },
+    { id:'p4', l:'QR A4 예비 출력본', n:'스탠드 파손·분실 대비' },
+    { id:'p5', l:'그늘막 · 우천 대비', n:'야외 1일 행사 — 기상 확인 후 판단' },
+    { id:'p6', l:'테이블·의자 확보 여부 확인', n:'주최 제공인지 자체 지참인지 사전 확인', must:true },
+    { id:'p7', l:'멀티탭 · 연장선', n:'전기 사용 가능 여부 확인 후' },
+  ]},
+
+  { t:'운영 · 전자기기', items:[
+    { id:'o1', l:'운영 화면 접속 확인', n:'staff.html — 체크인·판매·재고·설문 진행률. 접근키 확인', must:true },
+    { id:'o2', l:'예약 QR · 설문 QR 스캔 테스트', n:'행사 전날 실제 휴대폰으로 한 번씩', must:true },
+    { id:'o3', l:'태블릿 또는 예비 휴대폰 1대', n:'QR이 어려운 어르신·어린이 동반 참가자용 설문 대행' },
+    { id:'o4', l:'보조배터리 × 2', n:'종일 QR·사진·운영 화면 사용' },
+    { id:'o5', l:'휴대폰 거치대 · 미니 삼각대', n:'단체사진 타이머용' },
+    { id:'o6', l:'다과 (음료·간식)', n:'2인 1일 — 운영비 청구 시 영수증 보관' },
+  ]},
+
+  { t:'사진 촬영 (결과보고 증빙)', items:[
+    { id:'f1', l:'재료별 구매사진', n:'물감·수채화지·바인더·자개·레진·스티커 각각 개별 촬영', photo:true, must:true },
+    { id:'f2', l:'제작 제품 전체 실물사진 5장', n:'도안 5종 · 바인더 · 스티커 펼쳐놓은 상태', photo:true, must:true },
+    { id:'f3', l:'배너·풍선 설치 사진', n:'관광두레 로고 식별 가능한 크기로', photo:true, must:true },
+    { id:'f4', l:'운영진 전원 단체사진 1장 이상', n:'이영지 + 김정숙 + 관광두레PD 얼굴 식별 — 미제출 시 반려 사유', photo:true, must:true },
+    { id:'f5', l:'행사사진 원본 5장', n:'체험 진행 장면 중심 — 붓·팔레트·도안이 보이게', photo:true, must:true },
+    { id:'f6', l:'설문 작성 장면', n:'참여자 휴대폰 화면이 보이도록', photo:true },
+    { id:'f7', l:'SNS 후기 확인 → 액자 증정 장면', n:'현장 즉석 증정 순간', photo:true },
+    { id:'f8', l:'완성 작품 사진', n:'액자에 넣은 상태 포함', photo:true },
+  ]},
+
+  { t:'당일 현장', items:[
+    { id:'s1', l:'수봉도서관 쪽 하차 → 인근 주차', n:'도화초 공사로 주차장 사용 불가 · IT타워 유료주차 가능', must:true },
+    { id:'s2', l:'종합안내소 출석 체크', n:'도착 즉시 — 부스 이동 전' },
+    { id:'s3', l:'12:30 세팅 완료', n:'13:00 첫 회차 시작 (주최 안내는 15:00이나 목표 인원 위해 조기 운영)', must:true },
+    { id:'s4', l:'역할 분담 확인', n:'체험 진행 / 판매·응대 분리 — 2인 체제라 회차 사이 교대 시점 미리 합의', must:true },
+    { id:'s5', l:'예약 현황 확인', n:'사이트 예약 현황 탭 — 당일 아침 잔여 인원 파악' },
+  ]},
+
+  { t:'행사 후 (결과보고)', items:[
+    { id:'a1', l:'집계 스냅샷 저장', n:'운영 화면에서 저장 — 시트와 드라이브에 함께 남습니다', must:true },
+    { id:'a2', l:'참석자 명단 서명본 수거', n:'참여 구성원 + PD 전원' },
+    { id:'a3', l:'영수증·증빙 정리', n:'자부담 증빙 · 세금계산서 · 카드 전표 항목별로' },
+    { id:'a4', l:'현장사진 원본 백업', n:'구글 드라이브 업로드 — 원본 삭제 금지', must:true },
+    { id:'a5', l:'재고 수량 확인', n:'바인더·스티커·수채화지·액자 잔여 — 결과보고서 활용계획 항목', must:true },
+    { id:'a6', l:'운영 리뷰 회의 + 회의록', n:'행사 종료 후 운영진 전원 참석 — 결과보고서 별첨', must:true },
+  ]},
 ];
 
-const KEY = 'dureumi_checklist_v1';
+const KEY = 'hm_0919_checklist_v1';
 let state = {};
-try { state = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) { state = {}; }
+try { state = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { state = {}; }
 
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+function toggle(id){ state[id] = !state[id]; save(); render(); }
+function resetAll(){ if (!confirm('체크를 모두 해제할까요?')) return; state = {}; save(); render(); }
 
-function toggle(id){
-  state[id] = !state[id];
-  save();
-  render();
-}
-
-function resetAll(){
-  state = {};
-  save();
-  render();
-}
+const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function render(){
-  const list = document.getElementById('list');
-  let totalItems = 0, doneItems = 0;
+  let total = 0, done = 0;
 
-  list.innerHTML = DATA.map(sec => {
-    const secDone = sec.items.filter(i => state[i.id]).length;
-    const secTotal = sec.items.length;
-    totalItems += secTotal;
-    doneItems += secDone;
+  document.getElementById('list').innerHTML = DATA.map(sec => {
+    const n = sec.items.filter(i => state[i.id]).length;
+    total += sec.items.length; done += n;
 
-    const itemsHtml = sec.items.map(item => {
-      const on = !!state[item.id];
-      return `<div class="item${on?' checked':''}${item.urgent?' urgent':''}" onclick="toggle('${item.id}')">
-        <div class="check-box${on?' on':''}">
-          ${on ? '<i class="ti ti-check" style="font-size:12px;color:#fff" aria-hidden="true"></i>' : ''}
-        </div>
-        <div class="item-body">
-          <div class="item-label">${item.label}${item.urgent ? '<span class="badge badge-urgent">필수</span>' : ''}${item.photo ? '<span class="badge badge-photo">사진</span>' : ''}</div>
-          ${item.note ? `<div class="item-note">${item.note}</div>` : ''}
-        </div>
-      </div>`;
+    const rows = sec.items.map(i => {
+      const on = !!state[i.id];
+      return '<button type="button" class="item' + (on ? ' on' : '') + '" onclick="toggle(\'' + i.id + '\')">' +
+               '<span class="box"></span>' +
+               '<span><span class="t">' + esc(i.l) +
+                 (i.must  ? '<span class="tag must">필수</span>'  : '') +
+                 (i.photo ? '<span class="tag photo">사진</span>' : '') +
+               '</span>' +
+               (i.n ? '<span class="n">' + i.n + '</span>' : '') +
+               '</span>' +
+             '</button>';
     }).join('');
 
-    return `<div class="section">
-      <div class="section-header">
-        <i class="ti ${sec.icon} section-icon" aria-hidden="true"></i>
-        <span class="section-title">${sec.title}</span>
-        <span class="section-count">${secDone}/${secTotal}</span>
-        <i class="ti ti-chevron-down section-chevron open" aria-hidden="true"></i>
-      </div>
-      <div class="items">${itemsHtml}</div>
-    </div>`;
+    return '<div class="sec">' +
+             '<div class="sec-head"><span class="sec-title">' + esc(sec.t) + '</span>' +
+             '<span class="sec-count">' + n + ' / ' + sec.items.length + '</span></div>' +
+             '<div class="items">' + rows + '</div>' +
+           '</div>';
   }).join('');
 
-  document.getElementById('cnt-done').textContent = doneItems;
-  document.getElementById('cnt-total').textContent = totalItems;
-  const pct = totalItems ? Math.round(doneItems / totalItems * 100) : 0;
-  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('cnt').textContent = done + ' / ' + total + ' 완료';
+  document.getElementById('fill').style.width = total ? Math.round(done / total * 100) + '%' : '0';
 }
 
 render();
 </script>
+
+</body>
+</html>

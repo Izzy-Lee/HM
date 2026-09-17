@@ -1,6 +1,6 @@
 const { chromium } = require('playwright');
 const BASE = 'http://127.0.0.1:8790';
-const KEY = 'michu919';
+const KEY = '0919';
 const errors = [], warns = [];
 
 function hook(page, tag){

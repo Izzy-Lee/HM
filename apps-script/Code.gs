@@ -19,7 +19,7 @@
 var FIELD = {
   /* staff.html 접근키. staff.html?k=<이 값> 으로 열어야 쓰기가 허용됩니다.
      행사 전에 반드시 바꾸세요. */
-  STAFF_KEY: 'michu919',
+  STAFF_KEY: '0919',
 
   TAB_SALE:    '판매',
   TAB_CHECKIN: '체크인',

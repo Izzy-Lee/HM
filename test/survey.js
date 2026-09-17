@@ -1,5 +1,5 @@
 const { chromium } = require('playwright');
-const BASE='http://127.0.0.1:8790', KEY='michu919';
+const BASE='http://127.0.0.1:8790', KEY='0919';
 const ok=(c,m)=>{ console.log((c?'  ✅':'  ❌')+' '+m); if(!c) process.exitCode=1; };
 const errs=[];
 

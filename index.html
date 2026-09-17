@@ -251,6 +251,16 @@
   .contact-row:last-child { margin-bottom: 0; }
   .contact-key { min-width: 52px; font-weight: 500; color: var(--brush-teal); }
 
+  /* 예약을 마친 사람에게 보여주는 확인 배너 */
+  .my-booking { display: none; background: rgba(74,156,140,0.1); border: 1px solid rgba(74,156,140,0.35);
+                border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1rem; }
+  .my-booking.on { display: block; }
+  .my-booking .mb-head { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 700; color: var(--brush-teal); }
+  .my-booking .mb-check { width: 16px; height: 16px; border-radius: 50%; background: var(--brush-teal); position: relative; flex-shrink: 0; }
+  .my-booking .mb-check::after { content: ''; position: absolute; left: 5px; top: 3px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .my-booking .mb-slot { font-size: 1.05rem; font-weight: 700; margin: 0.35rem 0 0.15rem; }
+  .my-booking .mb-sub { font-size: 0.74rem; color: var(--ink-soft); line-height: 1.6; }
+
   /* 예약 서버가 아직 새 일정으로 갱신되지 않았을 때의 안내 */
   .slot-notice { background: rgba(212,132,58,0.09); border: 1px solid rgba(212,132,58,0.28);
                  border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 0.8rem;
@@ -306,9 +316,11 @@
       </div>
       <div class="event-row">
         <span class="event-label">참가</span>
-        <span class="event-value">컬러링 무료 · 바인더 20,000원</span>
+        <span class="event-value">컬러링 무료 · 바인더 30,000원</span>
       </div>
     </div>
+
+    <div class="my-booking" id="myBooking"><!-- JS 렌더 --></div>
 
     <div class="reserve-slot-section">
       <div class="reserve-slot-head">
@@ -491,7 +503,7 @@
           <div class="exp-icon-wrap">🛍️</div>
           <div>
             <div class="exp-item-title">전통문화 바인더 체험</div>
-            <div class="exp-item-desc">블랙 바인더에 자개·레진 공예 장식<br><span style="color:var(--brush-blue);font-weight:500;">30분 · 20,000원 (현장 결제)</span></div>
+            <div class="exp-item-desc">블랙 바인더에 자개·레진 공예 장식<br><span style="color:var(--brush-blue);font-weight:500;">30분 · 30,000원 (현장 결제)</span></div>
           </div>
         </div>
         <div class="exp-item">
@@ -597,7 +609,7 @@ const PROGRAMS = [
   /* dayLimit = 하루에 받을 수 있는 최대 인원. 재료 수량이 상한이다.
      컬러링 60 = 체험용 수채화지 60장 / 바인더 50 = 종이바인더 100개 중 체험분 50개 */
   { key: '컬러링',      name: '컬러링 체험',  meta: '무료 · 30분 · 6명',      capacity: 6, dayLimit: 60, paid: false },
-  { key: '바인더',      name: '바인더 체험',  meta: '20,000원 · 30분 · 5명',  capacity: 5, dayLimit: 50, paid: true  },
+  { key: '바인더',      name: '바인더 체험',  meta: '30,000원 · 30분 · 5명',  capacity: 5, dayLimit: 50, paid: true  },
 ];
 let activeProgram = PROGRAMS[0].key;
 
@@ -630,7 +642,7 @@ const STOCK_FALLBACK = {
 
 // ── 굿즈 · 액자 (예약 대상 아님, 재고 표시만) ──
 const GOODS_META = [
-  { key:'바인더 체험',   name:'바인더 체험',       note:'20,000원' },
+  { key:'바인더 체험',   name:'바인더 체험',       note:'30,000원' },
   { key:'바인더 완성품', name:'바인더 완성품 판매', note:'30,000원' },
   { key:'스티커',       name:'데코 스티커',       note:'2,000원' },
   { key:'액자',         name:'SNS 후기 액자',     note:'선착순 증정' },
@@ -1163,6 +1175,24 @@ function renderFramePill(goodsMap) {
   }
 }
 
+/* 예약을 마치고 돌아온 사람에게 "예약 완료"를 다시 보여준다.
+   접수 화면을 닫고 나면 잘 된 건지 알 수 없다는 점을 보완한다. */
+function renderMyBooking() {
+  const el = document.getElementById('myBooking');
+  if (!el) return;
+
+  let b = null;
+  try { b = JSON.parse(localStorage.getItem('hm_booking') || 'null'); } catch (e) {}
+  if (!b || !b.time) { el.classList.remove('on'); return; }
+
+  el.innerHTML =
+    '<div class="mb-head"><span class="mb-check"></span>예약 완료</div>' +
+    '<div class="mb-slot">' + (b.progName || b.program) + ' ' + b.time + '</div>' +
+    '<div class="mb-sub">' + EVENT_DATE + ' · 수봉산 폭포 앞 · ' + (b.name || '') + ' 님<br>' +
+    '시작 5분 전까지 부스로 오셔서 이름을 말씀해 주세요.</div>';
+  el.classList.add('on');
+}
+
 function loadAllData() {
   fetchData(true)
     .then(data => {
@@ -1192,6 +1222,7 @@ function loadStatus() {
 }
 
 window.addEventListener('load', () => {
+  renderMyBooking();
   renderStockList(null);
   renderGoodsList(null);
   renderAboutSheets(null);

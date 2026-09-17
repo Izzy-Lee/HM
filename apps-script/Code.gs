@@ -34,7 +34,7 @@ var FIELD = {
 
   /* 판매 상품 — key 는 재고 탭 품목명과 동일해야 합니다 */
   PRODUCTS: [
-    { key: '바인더 체험',   price: 20000 },
+    { key: '바인더 체험',   price: 30000 },
     { key: '바인더 완성품', price: 30000 },
     { key: '스티커',       price: 2000  },
     { key: '액자',         price: 0     },  // SNS 후기 증정 (매출 0, 재고만 차감)

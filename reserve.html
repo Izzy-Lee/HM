@@ -109,10 +109,26 @@
         padding:.7rem .85rem; font-size:.82rem; margin:0 .95rem .8rem; line-height:1.6; display:none; }
   .err.on{ display:block; }
 
-  .done{ padding:2.6rem 1.2rem; text-align:center; }
-  .done .mark{ font-size:2.6rem; margin-bottom:.7rem; }
-  .done h1{ margin-bottom:.5rem; }
+  .done{ padding:2.4rem 1.2rem; text-align:center; }
+  .done .mark{ width:76px; height:76px; margin:0 auto .9rem; border-radius:50%; background:var(--teal);
+               position:relative; box-shadow:0 6px 18px rgba(20,121,106,.28); }
+  .done .mark::after{ content:''; position:absolute; left:27px; top:16px; width:16px; height:34px;
+                      border:solid #fff; border-width:0 5px 5px 0; transform:rotate(45deg); border-radius:2px; }
+  .done h1{ margin-bottom:.5rem; color:var(--teal); }
   .done p{ font-size:.88rem; color:var(--soft); line-height:1.8; }
+  .done .keep{ margin-top:.9rem; display:inline-block; background:var(--teal-bg); color:var(--teal);
+               font-size:.76rem; font-weight:700; padding:.45rem .9rem; border-radius:999px; }
+  .guide{ max-width:340px; margin:1.3rem auto 0; text-align:left; background:var(--surface);
+          border:1px solid var(--rule); border-radius:12px; padding:.9rem 1rem; }
+  .guide li{ list-style:none; font-size:.8rem; color:var(--soft); line-height:1.65; padding-left:1.1rem;
+             position:relative; margin-bottom:.45rem; }
+  .guide li:last-child{ margin-bottom:0; }
+  .guide li::before{ content:''; position:absolute; left:0; top:.52rem; width:5px; height:5px;
+                     border-radius:50%; background:var(--teal); }
+  .ticket .row{ display:flex; justify-content:space-between; gap:.6rem; font-size:.8rem;
+                border-top:1px dashed var(--rule); padding-top:.5rem; margin-top:.5rem; }
+  .ticket .row span:first-child{ color:var(--faint); }
+  .ticket .row span:last-child{ font-weight:700; }
   .ticket{ margin:1.4rem auto 0; max-width:340px; background:var(--surface); border:2px solid var(--teal); border-radius:14px; padding:1.1rem 1rem; }
   .ticket .l{ font-size:.7rem; font-weight:700; color:var(--teal); letter-spacing:.1em; }
   .ticket .v{ font-family:'Nanum Myeongjo',serif; font-size:1.5rem; font-weight:800; margin:.3rem 0; }
@@ -134,7 +150,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9
 const EVENT_DATE = '2026. 9. 19.(토)';
 const PROGRAMS = [
   { key:'컬러링', name:'컬러링 체험', meta:'무료 · 30분 · 회차당 6명', capacity:6 },
-  { key:'바인더', name:'자개바인더 체험', meta:'20,000원 · 30분 · 회차당 5명', capacity:5 }
+  { key:'바인더', name:'자개바인더 체험', meta:'30,000원 · 30분 · 회차당 5명', capacity:5 }
 ];
 
 /* 회차표 (확정) — 13:00~18:30 · 회당 30분 · 11타임, 쉬는 시간 없이 연속 운영.
@@ -361,17 +377,50 @@ async function submit(){
 
 function done(r){
   const prog = PROGRAMS.filter(p=>p.key===r.program)[0] || {name:r.program};
+  const fee  = (r.program === '바인더') ? '30,000원 (현장 결제)' : '무료';
+
+  saveBooking(r, prog);          // 사이트 첫 화면에서도 예약 내역을 보여주기 위해 저장
+
   root.innerHTML =
-    '<div class="done"><div class="mark">🎨</div>' +
-    '<h1>' + (r.duplicate ? '이미 예약되어 있습니다' : '예약이 접수되었습니다') + '</h1>' +
-    '<p>' + EVENT_DATE + ' 수봉산 폭포 앞에서 뵙겠습니다.</p>' +
+    '<div class="done"><div class="mark"></div>' +
+    '<h1>' + (r.duplicate ? '이미 예약되어 있습니다' : '예약이 완료되었습니다') + '</h1>' +
+    '<p>' + esc(F.name) + ' 님, 예약이 정상 접수되었습니다.<br>' +
+    EVENT_DATE + ' 수봉산 폭포 앞에서 뵙겠습니다.</p>' +
+    '<span class="keep">이 화면을 캡처해 두세요</span>' +
+
     '<div class="ticket"><div class="l">예약 회차</div>' +
-    '<div class="v">' + esc(prog.name) + ' ' + esc(r.time) + '</div>' +
-    '<div class="d">' + esc(F.name) + ' 님' + (F.design ? '<br>희망 도안 · ' + esc(F.design) : '') + '</div></div>' +
-    '<p style="margin-top:1.2rem;font-size:.8rem;">체험 후 <b>설문 작성</b>을 부탁드립니다.<br>' +
-    '작품은 설문 완료 화면을 보여주시면 봉투에 담아 드려요.</p>' +
+      '<div class="v">' + esc(r.time) + '</div>' +
+      '<div class="d">' + esc(prog.name) + '</div>' +
+      '<div class="row"><span>일시</span><span>' + EVENT_DATE + '</span></div>' +
+      '<div class="row"><span>장소</span><span>수봉산 폭포 앞</span></div>' +
+      '<div class="row"><span>예약자</span><span>' + esc(F.name) + '</span></div>' +
+      '<div class="row"><span>연락처</span><span>' + esc(F.tel) + '</span></div>' +
+      (F.design ? '<div class="row"><span>희망 도안</span><span>' + esc(F.design) + '</span></div>' : '') +
+      '<div class="row"><span>참가비</span><span>' + fee + '</span></div>' +
+    '</div>' +
+
+    '<ul class="guide">' +
+      '<li>시작 <b>5분 전</b>까지 부스로 와주세요. 늦으시면 다음 회차로 안내될 수 있습니다.</li>' +
+      '<li>현장에서 <b>이름</b>을 말씀해 주시면 예약 확인됩니다. 따로 문자는 보내지 않습니다.</li>' +
+      '<li>체험 후 <b>설문 작성</b>을 부탁드립니다. 작품은 설문 완료 화면을 보여주시면 봉투에 담아 드려요.</li>' +
+      '<li>예약 변경·취소는 현장 부스로 문의해 주세요.</li>' +
+    '</ul>' +
+
     '<a class="again" href="index.html">사이트로 돌아가기</a></div>';
   window.scrollTo(0,0);
+}
+
+/* 예약 내역을 브라우저에 남겨 둔다. 사이트 첫 화면 상단에 "예약 완료"로 뜬다. */
+function saveBooking(r, prog){
+  try{
+    localStorage.setItem('hm_booking', JSON.stringify({
+      program: r.program, progName: prog.name, time: r.time,
+      name: F.name, design: F.design, at: Date.now()
+    }));
+    localStorage.setItem('hm_last_program', r.program);
+    localStorage.setItem('hm_last_time', r.time);
+    localStorage.setItem('hm_last_ts', Date.now());
+  }catch(e){}
 }
 
 render();

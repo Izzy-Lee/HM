@@ -298,15 +298,16 @@ const STAFF = new URLSearchParams(location.search).get('staff') || '';
 const REVENUE_GOAL = 2700000;
 // '스티커 증정'은 여기 없다 — 설문 코드 확인을 거쳐야만 나가도록 해서 중복 증정을 막는다.
 const PRODUCTS = [
-  { key: '바인더 체험',   price: 20000 },
+  { key: '바인더 체험',   price: 30000 },
   { key: '바인더 완성품', price: 30000 },
   { key: '스티커',       price: 2000, label: '데코 스티커' },
   { key: '액자',         price: 0,    label: 'SNS 후기 액자 증정' }
 ];
 const PROGRAMS = ['컬러링', '바인더'];
+/* 회차표 — 13:00~18:30 · 30분 11타임 (index.html · slot-capacity.gs 와 같은 기준) */
 const TIMES = (function () {
   const out = [];
-  for (let m = 13 * 60 + 30; m <= 18 * 60; m += 30) {
+  for (let m = 13 * 60; m <= 18 * 60; m += 30) {
     out.push(String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'));
   }
   return out;

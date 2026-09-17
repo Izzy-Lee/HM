@@ -107,7 +107,7 @@ ctx.setupFieldSheets();
 
 /* 예약 명단 목업 — roster 가 예약 시트를 못 읽을 때의 동작도 함께 본다 */
 const RESERVATIONS = {};
-'13:30 14:00 14:30 15:00'.split(' ').forEach((t,ti)=>{
+'13:00 13:30 14:00 14:30 15:00 15:30 16:00 16:30 17:00 17:30 18:00'.split(' ').forEach((t,ti)=>{
   RESERVATIONS['컬러링 '+t] = [1,2,3,4,5,6].map(i=>'참가자'+(ti*6+i));
   RESERVATIONS['바인더 '+t] = [1,2,3,4].map(i=>'바인더'+(ti*4+i));
 });

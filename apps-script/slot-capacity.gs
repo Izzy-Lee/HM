@@ -13,7 +13,7 @@ const CONFIG = {
   // 예약 프로그램별 정원 — 같은 타임을 공유하되 정원은 따로 관리한다
   PROGRAMS: [
     { key: '컬러링', capacity: 6 },
-    { key: '바인더', capacity: 4 },
+    { key: '바인더', capacity: 5 },
   ],
 
   // 응답이 쌓이는 시트 이름. 빈 문자열이면 폼 연결 시트를 자동으로 찾습니다.
@@ -44,7 +44,7 @@ const CONFIG = {
 
   // ── 굿즈 재고 (예약 대상 아님, 사이트 표시용) ──
   GOODS: [
-    { key: '바인더 체험',   total: 40 },
+    { key: '바인더 체험',   total: 50 },
     { key: '바인더 완성품', total: 50 },
     { key: '스티커',       total: 100 },
   ],

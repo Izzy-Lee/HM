@@ -1,0 +1,8 @@
+# 브라우저 E2E 테스트용 로컬 설치물 (test/README.md 참고)
+node_modules/
+package.json
+package-lock.json
+
+# 테스트가 만들어 내는 산출물
+test/drive_mock/
+test/big.png

@@ -51,7 +51,7 @@ var FIELD = {
     { key: '03 갯벌',       total: 12,  group: 'sheet' },
     { key: '04 수봉폭포',   total: 12,  group: 'sheet' },
     { key: '05 수봉도서관', total: 12,  group: 'sheet' },
-    { key: '바인더 체험',   total: 40,  group: 'goods' },
+    { key: '바인더 체험',   total: 50,  group: 'goods' },
     { key: '바인더 완성품', total: 50,  group: 'goods' },
     { key: '스티커',       total: 100, group: 'goods' },
     { key: '액자',         total: 28,  group: 'goods' }

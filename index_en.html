@@ -95,6 +95,10 @@
   .slot-refresh-btn { padding: 0.22rem 0.6rem; background: transparent; border: 1px solid rgba(74,156,140,0.35); border-radius: 6px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.7rem; color: var(--brush-teal); cursor: pointer; }
   .reserve-slot-list { border: 1px solid rgba(74,156,140,0.15); border-radius: 10px; max-height: 300px; overflow-y: auto; }
   .reserve-slot-note { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; color: var(--ink-soft); line-height: 1.6; margin-top: 0.55rem; }
+  .slot-notice { background: rgba(212,132,58,0.09); border: 1px solid rgba(212,132,58,0.28);
+                 border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 0.8rem;
+                 font-size: 0.76rem; line-height: 1.55; color: var(--ink-soft); }
+  .slot-notice b { color: var(--brush-amber); }
   .slot-empty { text-align: center; padding: 1.4rem 1rem; font-size: 0.8rem; color: var(--brush-pink); font-weight: 500; line-height: 1.6; }
   .prog-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.7rem; }
   .prog-tab {
@@ -508,9 +512,16 @@ const EVENT_LABEL = 'Saturday, September 19';
 // ── Bookable programs (same ten sessions, separate capacity) ──
 const PROGRAMS = [
   { key: '컬러링', name: 'Coloring',       meta: 'Free · 30 min · 6 seats',     capacity: 6, paid: false },
-  { key: '바인더', name: 'Binder',         meta: '\u20A920,000 · 30 min · 4 seats', capacity: 4, paid: true  },
+  { key: '바인더', name: 'Binder',         meta: '\u20A920,000 · 30 min · 5 seats', capacity: 5, paid: true  },
 ];
 let activeProgram = PROGRAMS[0].key;
+
+/* Session grid fixed by the event plan: ten 30-minute sessions, 13:30–18:30.
+   Rendered from this list rather than from the API response, so a stale
+   deployment serving an older 20-minute grid cannot distort the page. */
+const SLOT_TIMES = ['13:30','14:00','14:30','15:00','15:30',
+                    '16:00','16:30','17:00','17:30','18:00'];
+const EVENT_YMD  = { y: 2026, m: 9, d: 19 };
 
 function programOf(key) {
   return PROGRAMS.find(p => p.key === key) || PROGRAMS[0];
@@ -536,7 +547,7 @@ const GOODS_META = [
   { key:'스티커',       name:'Deco stickers',     note:'\u20A92,000' },
   { key:'액자',         name:'Frames for posts',  note:'while they last' },
 ];
-const GOODS_FALLBACK = { '바인더 체험':40, '바인더 완성품':50, '스티커':100, '액자':28 };
+const GOODS_FALLBACK = { '바인더 체험':50, '바인더 완성품':50, '스티커':100, '액자':28 };
 
 function getStockInfo(remain) {
   if (remain === 0)  return { cls:'soldout',   label:'Sold Out',  countLabel:'0' };
@@ -675,12 +686,15 @@ function getActiveDateLabel() {
 }
 
 function isPast(timeStr) {
-  const kst = getKST();
+  const kst   = getKST();
+  const today = kst.getFullYear() * 10000 + (kst.getMonth() + 1) * 100 + kst.getDate();
+  const event = EVENT_YMD.y * 10000 + EVENT_YMD.m * 100 + EVENT_YMD.d;
+  if (today < event) return false;   // nothing has ended before the event day
+  if (today > event) return true;    // everything has ended after it
+
   const [h, m] = timeStr.split(':').map(Number);
-  const nowH = kst.getHours();
-  const nowM = kst.getMinutes();
   const endTotal = h * 60 + m + 30;
-  const nowTotal = nowH * 60 + nowM;
+  const nowTotal = kst.getHours() * 60 + kst.getMinutes();
   return nowTotal >= endTotal;
 }
 
@@ -698,7 +712,8 @@ function fetchData(force) {
   _inflight = fetch(API_URL)
     .then(r => r.json())
     .then(data => {
-      window._cachedSlots    = Array.isArray(data.slots) ? data.slots : [];
+      window._cachedSlots    = normalizeSlots(data.slots);
+      data.slots             = window._cachedSlots;
       window._cachedStockArr = data.sheetStock;
       window._cachedStock    = buildStockMap(data.sheetStock);
       window._cachedGoods    = buildGoodsMap(data.goods);
@@ -710,20 +725,59 @@ function fetchData(force) {
   return _inflight;
 }
 
+/* Keep only entries that name a program and a planned session time.
+   If none qualify the deployment is stale (window._slotsLive = false), so seats
+   are left unknown instead of showing another event's bookings as "Full". */
+function normalizeSlots(apiSlots) {
+  const byKey = {};
+  let live = false;
+
+  (Array.isArray(apiSlots) ? apiSlots : []).forEach(s => {
+    if (!s || !s.program) return;
+    const time = String(s.time || '').trim();
+    if (SLOT_TIMES.indexOf(time) === -1) return;
+    if (!PROGRAMS.some(p => p.key === s.program)) return;
+    byKey[s.program + '|' + time] = s;
+    live = true;
+  });
+
+  const out = [];
+  PROGRAMS.forEach(p => {
+    SLOT_TIMES.forEach(time => {
+      const s = byKey[p.key + '|' + time];
+      if (s) {
+        out.push({ program: p.key, time: time,
+                   capacity: Number(s.capacity || s.total || p.capacity),
+                   remain:   Math.max(0, Number(s.remain) || 0) });
+      } else {
+        out.push({ program: p.key, time: time, capacity: p.capacity,
+                   remain: live ? p.capacity : null });
+      }
+    });
+  });
+
+  window._slotsLive = live;
+  return out;
+}
+
 function slotState(s) {
   const capacity = Number(s.capacity || s.total || programOf(s.program).capacity || DEFAULT_CAPACITY);
-  const remain   = Math.max(0, Number(s.remain) || 0);
+  const pending  = (s.remain === null || s.remain === undefined);
+  const remain   = pending ? 0 : Math.max(0, Number(s.remain) || 0);
   const past     = isPast(s.time);
-  const full     = !past && remain <= 0;
-  const pct      = capacity > 0 ? Math.min(100, Math.round((capacity - remain) / capacity * 100)) : 0;
+  const full     = !past && !pending && remain <= 0;
+  const pct      = (pending || capacity <= 0) ? 0
+                 : Math.min(100, Math.round((capacity - remain) / capacity * 100));
 
   let label, cls;
-  if (past)              { label = 'Ended';  cls = 'full'; }
-  else if (full)         { label = 'Full';   cls = 'full'; }
-  else if (remain === 1) { label = '1 left'; cls = 'low'; }
+  if (past)              { label = 'Ended';   cls = 'full'; }
+  else if (pending)      { label = 'Checking'; cls = ''; }
+  else if (full)         { label = 'Full';    cls = 'full'; }
+  else if (remain === 1) { label = '1 left';  cls = 'low'; }
   else                   { label = remain + ' left'; cls = 'ok'; }
 
-  return { capacity, remain, past, full, pct, label, cls, bookable: !past && !full };
+  return { capacity, remain, past, full, pending, pct, label, cls,
+           bookable: !past && !pending && !full };
 }
 
 function slotProgram(s) {
@@ -760,8 +814,9 @@ function slotRowsHtml(slots, withBtn, hidePast) {
 
     let btn = '';
     if (withBtn) {
-      if (st.past)      btn = '<span class="slot-book-btn disabled">Ended</span>';
-      else if (st.full) btn = '<span class="slot-book-btn full">Full</span>';
+      if (st.past)         btn = '<span class="slot-book-btn disabled">Ended</span>';
+      else if (st.pending) btn = '<span class="slot-book-btn disabled">Soon</span>';
+      else if (st.full)    btn = '<span class="slot-book-btn full">Full</span>';
       else              btn = '<button type="button" class="slot-book-btn" onclick="bookSlot(\'' +
                               slotProgram(s) + '\',\'' + s.time + '\')">Book</button>';
     }
@@ -826,20 +881,33 @@ function renderReserveSlots(slots) {
     el.innerHTML = '<div class="slot-empty" style="color:var(--ink-soft);">No ' + prog.name + ' schedule available.</div>';
     return;
   }
-  if (!openSlots.length) {
+  const live = window._slotsLive !== false;
+
+  if (live && !openSlots.length) {
     el.innerHTML = '<div class="slot-empty">All ' + prog.name + ' sessions<br>are fully booked.</div>';
     return;
   }
 
-  el.innerHTML = '<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">' +
-                 getActiveDateLabel() + ' · ' + openSlots.reduce((a, s) => a + slotState(s).remain, 0) + ' seats left</p>' +
-                 '<div class="reserve-slot-list">' + slotRowsHtml(progSlots, true, true) + '</div>';
+  const head = live
+    ? '<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">' +
+      getActiveDateLabel() + ' · ' + openSlots.reduce((a, s) => a + slotState(s).remain, 0) + ' seats left</p>'
+    : '<div class="slot-notice"><b>The booking service is being updated.</b><br>' +
+      'Sessions run as planned on ' + getActiveDateLabel() + ', 13:30–18:30 (ten 30-minute sessions), ' +
+      'but live seat counts are unavailable right now. Please ask at the booth.</div>' +
+      '<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">' +
+      getActiveDateLabel() + ' · ' + prog.name + ' · ten 30-min sessions</p>';
+
+  el.innerHTML = head + '<div class="reserve-slot-list">' + slotRowsHtml(progSlots, true, true) + '</div>';
 }
 
 function bookSlot(program, time) {
   const cached = window._cachedSlots;
   const label  = programOf(program).name + ' ' + time;
 
+  if (window._slotsLive === false) {
+    showToast('The booking service is being updated.<br>Please try again shortly.');
+    return;
+  }
   if (cached && !isSlotBookable(cached, program, time)) {
     showToast('The <strong>' + label + '</strong> session is fully booked.<br>Please choose another time.');
     renderAllSlotViews();
@@ -891,6 +959,12 @@ function renderStatus(slots) {
                 'style="padding:0.3rem 0.7rem;background:var(--brush-teal);color:white;border:none;border-radius:6px;font-family:\'Noto Sans KR\',sans-serif;font-size:0.72rem;font-weight:500;cursor:pointer;white-space:nowrap;">' +
                 'Resume</button>' +
             '</div>';
+  }
+
+  if (window._slotsLive === false) {
+    html += '<div class="slot-notice"><b>The booking service is being updated.</b><br>' +
+            'The sessions below follow the event plan (ten 30-minute sessions); ' +
+            'live seat counts will appear shortly.</div>';
   }
 
   html += '<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">' +

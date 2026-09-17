@@ -102,6 +102,9 @@
   }
   .bar button:disabled{ opacity:.4; }
 
+  .notice{ background:#fdf3e6; border:1px solid var(--amber); color:var(--soft); border-radius:9px;
+           padding:.7rem .85rem; margin:0 .95rem .6rem; font-size:.76rem; line-height:1.6; }
+  .notice b{ color:var(--amber); }
   .err{ background:#fdecea; border:1px solid var(--red); color:var(--red); border-radius:9px;
         padding:.7rem .85rem; font-size:.82rem; margin:0 .95rem .8rem; line-height:1.6; display:none; }
   .err.on{ display:block; }
@@ -130,18 +133,25 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9
 
 const EVENT_DATE = '2026. 9. 19.(토)';
 const PROGRAMS = [
-  { key:'컬러링', name:'컬러링 체험', meta:'무료 · 30분 · 회차당 6명' },
-  { key:'바인더', name:'자개바인더 체험', meta:'20,000원 · 30분 · 회차당 4명' }
+  { key:'컬러링', name:'컬러링 체험', meta:'무료 · 30분 · 회차당 6명', capacity:6 },
+  { key:'바인더', name:'자개바인더 체험', meta:'20,000원 · 30분 · 회차당 5명', capacity:5 }
 ];
+
+/* 회차표 (계획 확정) — 회당 30분 · 1일 10타임 · 13:30~18:30.
+   API 응답이 아니라 이 표를 기준으로 그린다. 옛 배포본이 지난 행사의
+   20분 격자(12:20·13:20…)를 내려줘도 화면과 링크가 어긋나지 않게 하기 위해서다. */
+const SLOT_TIMES = ['13:30','14:00','14:30','15:00','15:30',
+                    '16:00','16:30','17:00','17:30','18:00'];
+const EVENT_YMD  = { y:2026, m:9, d:19 };
 const DESIGNS = ['01 소서노','02 문학산성','03 갯벌','04 수봉폭포','05 수봉도서관'];
 
-let slots = [], stock = {}, loaded = false;
+let slots = [], stock = {}, loaded = false, live = false;
 
 /* 사이트 예약 현황에서 회차를 눌러 넘어오면 그대로 선택해 둔다 */
 const QS = new URLSearchParams(location.search);
 const F = {
   program: PROGRAMS.some(p=>p.key===QS.get('program')) ? QS.get('program') : '',
-  time: /^\d{2}:\d{2}$/.test(QS.get('time')||'') ? QS.get('time') : '',
+  time: SLOT_TIMES.indexOf(QS.get('time')||'') !== -1 ? QS.get('time') : '',
   name:'', tel:'', design:'', agree:false
 };
 
@@ -149,7 +159,7 @@ const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>'
 const root = document.getElementById('root');
 
 let seq = 0;
-function call(params){
+function call(params, timeoutMs){
   return new Promise((resolve,reject)=>{
     const cb='__rv'+(++seq)+'_'+Date.now();
     const url=new URL(API_URL);
@@ -158,7 +168,7 @@ function call(params){
     const s=document.createElement('script');
     let done=false;
     const clean=()=>{ delete window[cb]; s.remove(); clearTimeout(t); };
-    const t=setTimeout(()=>{ if(!done){done=true;clean();reject(new Error('시간 초과. 네트워크를 확인해 주세요.'));} },20000);
+    const t=setTimeout(()=>{ if(!done){done=true;clean();reject(new Error('시간 초과. 네트워크를 확인해 주세요.'));} }, timeoutMs || 20000);
     window[cb]=d=>{ done=true; clean(); (d&&d.ok===false)?reject(new Error(d.error||'오류')):resolve(d); };
     s.onerror=()=>{ if(!done){done=true;clean();reject(new Error('네트워크 오류'));} };
     s.src=url.toString();
@@ -166,13 +176,51 @@ function call(params){
   });
 }
 
+/* 행사 당일 기준으로 지난 회차를 판정한다 (시작 + 30분이 지나면 종료) */
+function isPast(time){
+  const now = new Date(new Date().getTime() +
+              (new Date().getTimezoneOffset()*60000) + 9*3600000);   // KST
+  const today = now.getFullYear()*10000 + (now.getMonth()+1)*100 + now.getDate();
+  const event = EVENT_YMD.y*10000 + EVENT_YMD.m*100 + EVENT_YMD.d;
+  if (today < event) return false;
+  if (today > event) return true;
+  const p = time.split(':');
+  return now.getHours()*60 + now.getMinutes() >= Number(p[0])*60 + Number(p[1]) + 30;
+}
+
+/* 프로그램 구분이 있고 계획된 회차인 응답만 잔여로 인정한다.
+   하나도 없으면 구버전 배포본이 응답한 것이므로 잔여를 비워 두고(live=false)
+   접수를 막는다. 옛 예약 수가 이 행사 회차의 '마감'으로 둔갑하면 안 된다. */
+function normalize(apiSlots){
+  const byKey = {};
+  live = false;
+  (Array.isArray(apiSlots)?apiSlots:[]).forEach(s=>{
+    if (!s || !s.program) return;
+    const t = String(s.time||'').trim();
+    if (SLOT_TIMES.indexOf(t) === -1) return;
+    if (!PROGRAMS.some(p=>p.key===s.program)) return;
+    byKey[s.program+'|'+t] = s;
+    live = true;
+  });
+
+  const out = [];
+  PROGRAMS.forEach(p=>SLOT_TIMES.forEach(t=>{
+    const s = byKey[p.key+'|'+t];
+    out.push({
+      program: p.key, time: t, past: isPast(t),
+      remain: s ? Math.max(0, Number(s.remain)||0) : (live ? p.capacity : null)
+    });
+  }));
+  return out;
+}
+
 async function load(){
   try{
-    const d = await call({});
-    slots = Array.isArray(d.slots) ? d.slots : [];
+    const d = await call({}, 8000);       // 조회는 짧게 끊는다 (접수는 기본 20초 유지)
+    slots = normalize(d.slots);
     stock = {};
     (d.sheetStock||[]).forEach(s=>{ stock[s.key]=s.remain; });
-  }catch(e){ slots=[]; }
+  }catch(e){ slots = normalize(null); }
   loaded = true;
   render();
 }
@@ -184,11 +232,19 @@ function slotsFor(program){
 function render(){
   const prog = PROGRAMS.filter(p=>p.key===F.program)[0];
   const list = F.program ? slotsFor(F.program) : [];
-  const ready = F.program && F.time && F.name.trim() && F.tel.trim() && F.agree;
+  const ready = live && F.program && F.time && F.name.trim() && F.tel.trim() && F.agree;
 
   let h = '<header><h1>체험 예약</h1>' +
     '<div class="when">' + EVENT_DATE + ' · 수봉산 폭포 앞<br>13:30 ~ 18:30 · 30분 10회차</div></header>' +
-    '<div class="err" id="err"></div><div class="pane">';
+    '<div class="err" id="err"></div>';
+
+  if (loaded && !live) {
+    h += '<div class="notice"><b>예약 서버 점검 중입니다.</b><br>' +
+         '회차는 계획대로 ' + EVENT_DATE + ' 13:30~18:30 · 30분 10회차로 운영하지만, ' +
+         '지금은 온라인 접수를 받을 수 없습니다. 잠시 후 다시 시도하시거나 현장 부스로 문의해 주세요.</div>';
+  }
+
+  h += '<div class="pane">';
 
   h += '<h2>참여 프로그램</h2><div class="progs">';
   PROGRAMS.forEach(p=>{
@@ -207,8 +263,11 @@ function render(){
   } else {
     h += '<div class="times">';
     list.forEach(s=>{
-      const off = s.past || s.remain<=0;
-      const label = s.past ? '지난 회차' : (s.remain<=0 ? '마감' : '잔여 '+s.remain);
+      const pending = (s.remain === null);
+      const off = s.past || pending || s.remain<=0;
+      const label = s.past ? '지난 회차'
+                  : pending ? '확인 중'
+                  : (s.remain<=0 ? '마감' : '잔여 '+s.remain);
       h += '<button class="time'+(F.time===s.time?' on':'')+(!off&&s.remain<=2?' low':'')+'" type="button"' +
            ' data-time="'+esc(s.time)+'"'+(off?' disabled':'')+'>' +
            '<span class="t">'+esc(s.time)+'</span><span class="r">'+label+'</span></button>';
@@ -241,9 +300,11 @@ function render(){
   h += '</div>';
 
   h += '<div class="bar">' +
-    '<div class="sum">' + (F.program && F.time
-      ? '<b>'+esc(prog.name)+' '+esc(F.time)+'</b> 회차로 예약합니다'
-      : '프로그램과 시간을 선택해 주세요') + '</div>' +
+    '<div class="sum">' + (loaded && !live
+      ? '예약 서버 점검 중 — 현장 부스로 문의해 주세요'
+      : (F.program && F.time
+        ? '<b>'+esc(prog.name)+' '+esc(F.time)+'</b> 회차로 예약합니다'
+        : '프로그램과 시간을 선택해 주세요')) + '</div>' +
     '<button type="button" id="submit"'+(ready?'':' disabled')+'>예약하기</button></div>';
 
   root.innerHTML = h;
@@ -277,7 +338,7 @@ function bind(){
 
 function toggleSubmit(){
   const b=document.getElementById('submit');
-  if (b) b.disabled = !(F.program && F.time && F.name.trim() && F.tel.trim() && F.agree);
+  if (b) b.disabled = !(live && F.program && F.time && F.name.trim() && F.tel.trim() && F.agree);
 }
 
 async function submit(){

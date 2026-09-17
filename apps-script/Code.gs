@@ -48,13 +48,12 @@ var FIELD = {
     { key: '스티커 증정',   price: 0, stock: '스티커' }
   ],
 
-  /* 재고 9종 — 도안 5종 + 굿즈 4종. 키는 기존 sheetStock / goods 키를 그대로 씁니다. */
+  /* 재고 8종 — 도안 4종 + 굿즈 4종. 키는 기존 sheetStock / goods 키를 그대로 씁니다. */
   STOCK_ITEMS: [
-    { key: '01 소서노',     total: 12,  group: 'sheet' },
-    { key: '02 문학산성',   total: 12,  group: 'sheet' },
-    { key: '03 갯벌',       total: 12,  group: 'sheet' },
-    { key: '04 수봉폭포',   total: 12,  group: 'sheet' },
-    { key: '05 수봉도서관', total: 12,  group: 'sheet' },
+    { key: '01 소서노',     total: 30,  group: 'sheet' },
+    { key: '02 문학산성',   total: 30,  group: 'sheet' },
+    { key: '03 갯벌',       total: 30,  group: 'sheet' },
+    { key: '04 수봉폭포',   total: 10,  group: 'sheet' },
     { key: '바인더 체험',   total: 50,  group: 'goods' },
     { key: '바인더 완성품', total: 50,  group: 'goods' },
     { key: '스티커',       total: 100, group: 'goods' },
@@ -77,7 +76,7 @@ var FIELD = {
 
   PAY_METHODS: ['현금', '카드', '계좌'],
   MEMO_TAGS:   ['미완성', '대기발생', '문의많음'],
-  DESIGNS:     ['01 소서노', '02 문학산성', '03 갯벌', '04 수봉폭포', '05 수봉도서관'],
+  DESIGNS:     ['01 소서노', '02 문학산성', '03 갯벌', '04 수봉폭포'],
 
   /* ── 설문 ──
      문항은 survey.html 이 들고 있고, 여기서는 어떤 설문이 있는지와

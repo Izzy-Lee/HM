@@ -149,9 +149,14 @@
   .slot-book-btn.full { background: rgba(200,120,120,0.15); color: var(--brush-pink); pointer-events: none; }
 
   /* 시간대 선택 예약 박스 */
-  .reserve-slot-section { background: white; border: 1px solid rgba(74,156,140,0.25); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.9rem; text-align: left; }
+  /* 예약 · 설문 · 후기 세 구역을 각자의 버튼 색 테두리로 묶는다 */
+  .reserve-slot-section { background: white; border: 2px solid #3d8a7a; border-radius: 14px; padding: 0.9rem 1rem; margin-bottom: 1.1rem; text-align: left; box-shadow: 0 2px 10px rgba(61,138,122,0.10); }
+  .step-badge { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-size: 0.7rem; font-weight: 700; color: #fff; margin-right: 0.35rem; flex-shrink: 0; }
+  .step-badge.teal { background: #3d8a7a; }
+  .step-badge.pink { background: #e8879d; }
+  .step-badge.blue { background: var(--brush-blue); }
   .reserve-slot-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
-  .reserve-slot-title { font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--ink); }
+  .reserve-slot-title { display: inline-flex; align-items: center; font-family: 'Noto Sans KR', sans-serif; font-size: 0.86rem; font-weight: 700; color: var(--ink); }
   .slot-refresh-btn { padding: 0.22rem 0.6rem; background: transparent; border: 1px solid rgba(74,156,140,0.35); border-radius: 6px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.7rem; color: var(--brush-teal); cursor: pointer; }
   .slot-refresh-btn:active { background: rgba(74,156,140,0.08); }
   /* 안쪽 스크롤을 두지 않는다 — 회차 목록과 예약 버튼이 한 흐름으로 보이게 */
@@ -189,7 +194,7 @@
   /* SNS 후기 인증 */
   .cta-btn--sns { background: var(--brush-blue); color: white; }
   .cta-btn--sns:hover { background: #4d6ea3; }
-  .survey-box { background: white; border: 1px solid rgba(245,174,188,0.55); border-radius: 12px; padding: 0.9rem 1rem 0.6rem; margin-bottom: 0.7rem; text-align: left; }
+  .survey-box { background: white; border: 2px solid #f5aebc; border-radius: 14px; padding: 0.9rem 1rem 0.6rem; margin-bottom: 1.1rem; text-align: left; box-shadow: 0 2px 10px rgba(232,135,157,0.12); }
   .gift-pill { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; font-weight: 700; padding: 0.18rem 0.55rem; border-radius: 10px; background: rgba(212,132,58,0.14); color: var(--brush-amber); white-space: nowrap; }
   .survey-sub { font-family: 'Noto Sans KR', sans-serif; font-size: 0.72rem; color: var(--ink-soft); line-height: 1.65; margin: 0.1rem 0 0.5rem; }
   .survey-sub b { color: var(--brush-amber); }
@@ -201,9 +206,9 @@
   .buy-btn .bt { font-size: 0.85rem; font-weight: 700; color: var(--ink); }
   .buy-btn .bg { font-size: 0.66rem; font-weight: 700; color: var(--brush-amber); white-space: nowrap; }
 
-  .sns-box { background: white; border: 1px solid rgba(90,126,184,0.28); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.7rem; text-align: left; }
+  .sns-box { background: white; border: 2px solid var(--brush-blue); border-radius: 14px; padding: 0.9rem 1rem; margin-bottom: 1.1rem; text-align: left; box-shadow: 0 2px 10px rgba(90,126,184,0.12); }
   .sns-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
-  .sns-title { font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--ink); }
+  .sns-title { display: inline-flex; align-items: center; font-family: 'Noto Sans KR', sans-serif; font-size: 0.86rem; font-weight: 700; color: var(--ink); }
   .frame-pill { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; font-weight: 700; padding: 0.18rem 0.55rem; border-radius: 10px; background: rgba(90,126,184,0.12); color: var(--brush-blue); white-space: nowrap; }
   .frame-pill.low { background: rgba(212,132,58,0.14); color: var(--brush-amber); }
   .frame-pill.out { background: rgba(200,120,120,0.14); color: var(--brush-pink); }
@@ -322,31 +327,6 @@
 
     <div class="my-booking" id="myBooking"><!-- JS 렌더 --></div>
 
-    <div class="reserve-slot-section">
-      <div class="reserve-slot-head">
-        <span class="reserve-slot-title">체험 예약</span>
-        <button class="slot-refresh-btn" type="button" onclick="refreshSlots()">새로고침</button>
-      </div>
-
-      <div class="prog-tabs" id="progTabs"><!-- JS 렌더 --></div>
-
-      <div id="reserveSlots">
-        <div class="status-loading" style="padding:1.2rem 0;">예약 가능한 시간대를 불러오는 중...</div>
-      </div>
-      <p class="reserve-slot-note">
-        원하는 <strong>회차를 먼저 누르고</strong>, 아래 <strong style="color:var(--brush-teal);">예약하기</strong> 버튼을 눌러주세요.<br>
-        회차당 정원(<strong id="slotCapacityLabel">6</strong>명)이 모두 찬 시간대는
-        <strong style="color:var(--brush-pink);">마감</strong>으로 표시되며 선택할 수 없습니다.
-      </p>
-    </div>
-    <div id="reserveFallback" style="display:none;">
-      <a class="cta-btn cta-btn--reserve" href="reserve.html">
-        체험 예약하기
-      </a>
-      <p class="reserve-slot-note" style="text-align:center;margin-bottom:0.7rem;">
-        실시간 잔여 현황을 불러오지 못했습니다. 폼에서 시간대를 직접 선택해 주세요.
-      </p>
-    </div>
     <!-- 진행 단계 안내 -->
     <div class="journey">
       <div class="journey-title">진행 순서</div>
@@ -371,9 +351,34 @@
       </div>
     </div>
 
+    <div class="reserve-slot-section">
+      <div class="reserve-slot-head">
+        <span class="reserve-slot-title" style="color:#3d8a7a;"><span class="step-badge teal">1</span>체험 예약</span>
+        <button class="slot-refresh-btn" type="button" onclick="refreshSlots()">새로고침</button>
+      </div>
+
+      <div class="prog-tabs" id="progTabs"><!-- JS 렌더 --></div>
+
+      <div id="reserveSlots">
+        <div class="status-loading" style="padding:1.2rem 0;">예약 가능한 시간대를 불러오는 중...</div>
+      </div>
+      <p class="reserve-slot-note">
+        원하는 <strong>회차를 먼저 누르고</strong>, 아래 <strong style="color:var(--brush-teal);">예약하기</strong> 버튼을 눌러주세요.<br>
+        회차당 정원(<strong id="slotCapacityLabel">6</strong>명)이 모두 찬 시간대는
+        <strong style="color:var(--brush-pink);">마감</strong>으로 표시되며 선택할 수 없습니다.
+      </p>
+    </div>
+    <div id="reserveFallback" style="display:none;">
+      <a class="cta-btn cta-btn--reserve" href="reserve.html">
+        체험 예약하기
+      </a>
+      <p class="reserve-slot-note" style="text-align:center;margin-bottom:0.7rem;">
+        실시간 잔여 현황을 불러오지 못했습니다. 폼에서 시간대를 직접 선택해 주세요.
+      </p>
+    </div>
     <div class="survey-box">
       <div class="sns-head">
-        <span class="sns-title">① 설문 작성</span>
+        <span class="sns-title" style="color:#d4657f;"><span class="step-badge pink">2</span>체험 후 설문</span>
         <span class="gift-pill">유료 참여 시 스티커 증정</span>
       </div>
 
@@ -398,7 +403,7 @@
     <!-- SNS 후기 인증 -->
     <div class="sns-box">
       <div class="sns-head">
-        <span class="sns-title">② SNS 후기 인증 &amp; 액자 증정</span>
+        <span class="sns-title" style="color:var(--brush-blue);"><span class="step-badge blue">3</span>SNS 후기 · 액자 증정</span>
         <span class="frame-pill" id="framePill">액자 28개</span>
       </div>
       <ol class="sns-steps">
@@ -416,7 +421,8 @@
     </div>
 
     <p class="note">
-      예약 후 <strong>SMS로 확인 메시지</strong>가 발송됩니다.
+      예약을 마치면 <strong>예약 완료 화면</strong>이 나옵니다. 따로 문자는 발송되지 않으니<br>
+      그 화면을 캡처해 두시고, 현장에서 <strong>이름</strong>을 말씀해 주세요.
     </p>
 
     <div style="background:#f5f3ee;border:1px solid rgba(90,78,66,0.15);border-radius:10px;padding:0.8rem 1rem;margin-top:0.4rem;">
@@ -779,6 +785,42 @@ const DEFAULT_CAPACITY = 10;   // API가 capacity를 안 주면 사용하는 기
 let _fetchedAt = 0;
 let _inflight = null;
 
+/* 마지막 응답을 브라우저에 저장해 둔다. 다음 방문 때 화면을 먼저 그려놓고
+   새 데이터를 받아 덮어쓴다 — 부스 네트워크가 느려도 빈 화면을 보지 않게. */
+const SLOT_CACHE_KEY = 'hm_slots_cache';
+const SLOT_CACHE_MAX = 6 * 60 * 60 * 1000;   // 6시간 지난 캐시는 버린다
+
+function saveSlotCache(data) {
+  try {
+    localStorage.setItem(SLOT_CACHE_KEY, JSON.stringify({
+      at: Date.now(), slots: window._cachedSlots,
+      sheetStock: data.sheetStock, goods: data.goods
+    }));
+  } catch (e) {}
+}
+
+function readSlotCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(SLOT_CACHE_KEY) || 'null');
+    if (!c || !Array.isArray(c.slots) || (Date.now() - c.at) > SLOT_CACHE_MAX) return null;
+    return c;
+  } catch (e) { return null; }
+}
+
+/* 저장해 둔 현황으로 화면을 먼저 채운다. 서버 응답이 오면 곧바로 덮어쓴다. */
+function paintFromCache() {
+  const c = readSlotCache();
+  if (!c) return false;
+  window._cachedSlots = normalizeSlots(c.slots);
+  window._cachedStock = buildStockMap(c.sheetStock);
+  window._cachedGoods = buildGoodsMap(c.goods);
+  renderReserveSlots(window._cachedSlots);
+  renderStockList(window._cachedStock);
+  renderGoodsList(window._cachedGoods);
+  renderAboutSheets(window._cachedStock);
+  return true;
+}
+
 function fetchData(force) {
   if (!force && window._cachedSlots && (Date.now() - _fetchedAt) < SLOT_TTL_MS) {
     return Promise.resolve({ slots: window._cachedSlots, sheetStock: window._cachedStockArr });
@@ -794,6 +836,7 @@ function fetchData(force) {
       window._cachedGoods    = buildGoodsMap(data.goods);
       _fetchedAt = Date.now();
       _inflight = null;
+      saveSlotCache(data);
       return data;
     })
     .catch(err => { _inflight = null; throw err; });
@@ -1194,7 +1237,8 @@ function renderMyBooking() {
 }
 
 function loadAllData() {
-  fetchData(true)
+  paintFromCache();          // 먼저 보여주고
+  fetchData(true)            // 받는 대로 덮어쓴다
     .then(data => {
       renderAboutSheets(window._cachedStock);
       renderStockList(window._cachedStock);
@@ -1205,8 +1249,14 @@ function loadAllData() {
 }
 
 function loadStatus() {
-  document.getElementById('statusContent').innerHTML =
-    '<div class="status-loading">잔여 현황을 불러오는 중...<br><span style="font-size:0.75rem;opacity:0.6;">잠시 기다려주세요</span></div>';
+  if (window._cachedSlots) {
+    renderStatus(window._cachedSlots);      // 이미 받아둔 현황을 먼저 보여준다
+  } else if (!paintFromCache()) {
+    document.getElementById('statusContent').innerHTML =
+      '<div class="status-loading">잔여 현황을 불러오는 중...<br><span style="font-size:0.75rem;opacity:0.6;">잠시 기다려주세요</span></div>';
+  } else {
+    renderStatus(window._cachedSlots);
+  }
   fetchData(false)
     .then(data => {
       renderStatus(data.slots);
@@ -1216,6 +1266,7 @@ function loadStatus() {
       renderReserveSlots(data.slots);
     })
     .catch(() => {
+      if (window._cachedSlots) return;      // 보여줄 게 있으면 그대로 둔다
       document.getElementById('statusContent').innerHTML =
         '<div class="status-loading">현황을 불러오지 못했어요.<br>잠시 후 다시 시도해주세요.</div>';
     });

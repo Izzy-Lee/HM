@@ -126,6 +126,9 @@ function doGet(e) {
       case 'snapshot':out = actSnapshot_(p);            break;
       default:        out = { ok: false, error: '알 수 없는 action: ' + action };
     }
+    // 쓰기가 일어났으면 현황 캐시를 버린다. 다음 조회가 바로 새 값을 받는다.
+    if (action !== 'slots' && action !== 'report' && action !== 'roster') bustSlotsCache_();
+
     if (out && out.ok === undefined) out.ok = true;
   } catch (err) {
     out = { ok: false, error: String((err && err.message) || err) };
@@ -310,7 +313,40 @@ function getStockPayload_() {
 /* ══════════════════════════════════════════════════════════════
    4. 읽기 — action=slots (index.html 기존 응답 형태 유지)
    ══════════════════════════════════════════════════════════════ */
+/* 현황 조회 응답을 20초 동안 캐시한다.
+   행사 당일에는 같은 화면을 수십 명이 동시에 새로고침한다. 매번 시트를 네 번씩
+   읽으면 응답이 몇 초씩 걸리는데, 20초 캐시만으로 대부분의 요청이 즉시 나간다.
+   예약·판매 같은 쓰기가 들어오면 doGet 이 이 캐시를 바로 지운다. */
+var SLOTS_CACHE_KEY = 'slots_v2';
+var SLOTS_CACHE_SEC = 20;
+
+function slotsCache_() {
+  try { return CacheService.getScriptCache(); } catch (e) { return null; }
+}
+
+function bustSlotsCache_() {
+  var c = slotsCache_();
+  if (c) { try { c.remove(SLOTS_CACHE_KEY); } catch (e) {} }
+}
+
 function buildSlotsPayload_() {
+  var cache = slotsCache_();
+  if (cache) {
+    try {
+      var hit = cache.get(SLOTS_CACHE_KEY);
+      if (hit) return JSON.parse(hit);
+    } catch (e) {}
+  }
+
+  var payload = buildSlotsPayloadFresh_();
+
+  if (cache) {
+    try { cache.put(SLOTS_CACHE_KEY, JSON.stringify(payload), SLOTS_CACHE_SEC); } catch (e) {}
+  }
+  return payload;
+}
+
+function buildSlotsPayloadFresh_() {
   var stock = getStockPayload_();
   var payload = {
     slots:          [],

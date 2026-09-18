@@ -215,7 +215,7 @@ function render(d) {
         won(item('바인더 체험').amount)],
       ['바인더 완성품 (20,000원)', num(item('바인더 완성품').qty) + '개', num(T.binderProduct) + '개',
         { rate: R.binderProduct }, won(item('바인더 완성품').amount)],
-      ['데코 스티커 (2,000원)', num(item('스티커').qty) + '개', num(T.sticker) + '개',
+      ['데코 스티커 (2,500원)', num(item('스티커').qty) + '개', num(T.sticker) + '개',
         { rate: R.sticker }, won(item('스티커').amount)],
       ['SNS 후기 액자 (증정)', num(item('액자').qty) + '개', num(T.sns) + '개',
         { rate: Math.round(item('액자').qty / T.sns * 1000) / 10 }, '–']
@@ -311,7 +311,7 @@ function pasteBlock(d) {
   L.push('');
   L.push('[판매 실적]');
   L.push('· 바인더 완성품(20,000원): ' + item('바인더 완성품').qty + '개 · ' + won(item('바인더 완성품').amount));
-  L.push('· 데코 스티커(2,000원): ' + item('스티커').qty + '개 · ' + won(item('스티커').amount));
+  L.push('· 데코 스티커(2,500원): ' + item('스티커').qty + '개 · ' + won(item('스티커').amount));
   L.push('· 바인더 체험료(30,000원): ' + item('바인더 체험').qty + '건 · ' + won(item('바인더 체험').amount));
   L.push('· 총 매출: ' + won(S.revenue) + ' (목표 ' + won(T.revenue) + ', 달성률 ' + d.rate.revenue + '%)');
   L.push('· 결제수단별: ' + Object.keys(S.byPay).map(k => k + ' ' + won(S.byPay[k])).join(' / '));

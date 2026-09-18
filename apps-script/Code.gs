@@ -40,7 +40,7 @@ var FIELD = {
   PRODUCTS: [
     { key: '바인더 체험',   price: 30000 },
     { key: '바인더 완성품', price: 20000 },
-    { key: '스티커',       price: 2000  },
+    { key: '스티커',       price: 2500  },
     { key: '액자',         price: 0     },  // SNS 후기 증정 (매출 0, 재고만 차감)
     /* 유료 구매 후 설문을 쓰면 드리는 스티커.
        [발주자 확정] 증정분은 판매용 스티커와 같은 재고에서 나간다.
@@ -1716,7 +1716,7 @@ function demoSeed() {
     { slot: slot2, name: people[3].name, link: 'https://www.instagram.com/p/DEMO_TEST/' });
 
   writeSurveyRow_('sticker', FIELD.SURVEYS.sticker,
-    { '가장 좋았던 점': '자개 스티커가 진짜 조개껍데기라 신기했어요.', '적정 가격': '2,000원' },
+    { '가장 좋았던 점': '자개 스티커가 진짜 조개껍데기라 신기했어요.', '적정 가격': '2,500원' },
     { slot: slot2, name: people[4].name });
 
   bustSlotsCache_();

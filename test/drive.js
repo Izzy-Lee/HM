@@ -56,7 +56,7 @@ const ok = (c,m) => console.log((c?'  ✅':'  ❌')+' '+m);
   await page.waitForTimeout(900);
   const rev2 = await page.locator('#rev').textContent();
   console.log('  → 매출:', rev2);
-  ok(rev2.replace(/[^0-9]/g,'')==='26000', '20,000 + 2,000×3 = 26,000원');
+  ok(rev2.replace(/[^0-9]/g,'')==='27500', '20,000 + 2,500×3 = 27,500원');
 
   // 액자 증정 (무료 경로)
   await page.locator('.prod-main[data-item="액자"]').click();
@@ -67,7 +67,7 @@ const ok = (c,m) => console.log((c?'  ✅':'  ❌')+' '+m);
   ok(cardHidden, '무료상품은 카드/계좌 숨김');
   await page.locator('.pays button[data-pay="현금"]').click();
   await page.waitForTimeout(900);
-  ok((await page.locator('#rev').textContent()).replace(/[^0-9]/g,'')==='26000', '증정은 매출에 더해지지 않음');
+  ok((await page.locator('#rev').textContent()).replace(/[^0-9]/g,'')==='27500', '증정은 매출에 더해지지 않음');
 
   // 유료상품 다시 열었을 때 버튼 라벨 원복되는지 (이전에 잡은 버그)
   await page.locator('.prod-main[data-item="바인더 체험"]').click();
@@ -85,11 +85,11 @@ const ok = (c,m) => console.log((c?'  ✅':'  ❌')+' '+m);
   await page.waitForTimeout(1200);
   const rev3 = await page.locator('#rev').textContent();
   console.log('  Undo 후 매출:', rev3, '| 안내:', await page.locator('#lastLine').textContent());
-  ok(rev3.replace(/[^0-9]/g,'')==='26000', '증정 취소는 매출 변화 없음 (26,000 유지)');
+  ok(rev3.replace(/[^0-9]/g,'')==='27500', '증정 취소는 매출 변화 없음 (27,500 유지)');
   await page.locator('#undoBtn').click();
   await page.waitForTimeout(1500);
   const rev4 = await page.locator('#rev').textContent();
-  ok(rev4.replace(/[^0-9]/g,'')==='20000', '연속 Undo 2회차: 26,000 → '+rev4);
+  ok(rev4.replace(/[^0-9]/g,'')==='20000', '연속 Undo 2회차: 27,500 → '+rev4);
   await page.locator('#undoBtn').click();
   await page.waitForTimeout(1500);
   const rev5 = await page.locator('#rev').textContent();

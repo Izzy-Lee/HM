@@ -114,11 +114,13 @@ const RESERVATIONS = {};
   RESERVATIONS['컬러링 '+t] = [1,2,3,4,5,6].map(i=>'참가자'+(ti*6+i));
   RESERVATIONS['바인더 '+t] = [1,2,3,4].map(i=>'바인더'+(ti*4+i));
 });
+/* 리허설 화면을 그대로 찍을 때는 목업 명단을 끈다 (NO_MOCK_ROSTER=1) */
+const MOCK_ROSTER = process.env.NO_MOCK_ROSTER !== '1';
 const origRoster = ctx.buildRoster_;
 ctx.buildRoster_ = function(slot){
   const out = origRoster(slot);
   const names = out.people.map(p=>p.name);
-  (RESERVATIONS[String(slot)]||[]).forEach(n=>{ if(names.indexOf(n)===-1) out.people.push({name:n,status:'',design:'',done:''}); });
+  if (MOCK_ROSTER) (RESERVATIONS[String(slot)]||[]).forEach(n=>{ if(names.indexOf(n)===-1) out.people.push({name:n,status:'',design:'',done:''}); });
   return out;
 };
 

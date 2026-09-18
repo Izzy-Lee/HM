@@ -60,3 +60,10 @@ node test/desks.js
 node test/server.js 8815 &
 node test/demo.js
 ```
+
+`NO_MOCK_ROSTER=1` 을 주면 목업 예약 명단(참가자1…)을 끕니다.
+리허설 더미만 놓고 화면을 그대로 찍을 때 씁니다.
+
+```bash
+NO_MOCK_ROSTER=1 node test/server.js 8820 &
+```

@@ -180,6 +180,13 @@
   }
   .undobar button:disabled { opacity: 0.35; }
 
+  /* ── 담당자별 화면 바로가기 ── */
+  .desks { padding: 1.1rem 0.9rem 0; display: flex; gap: 0.4rem; }
+  .desks a { flex: 1; display: block; text-align: center; text-decoration: none;
+             border: 1px solid var(--rule); border-radius: 10px; background: #fff;
+             padding: 0.7rem 0.3rem; font-size: 0.82rem; font-weight: 700; color: var(--soft); }
+  .desks a b { display: block; font-size: 0.68rem; font-weight: 600; color: var(--faint, #8b8075); margin-top: 0.15rem; }
+
   /* ── 토스트 ── */
   #toast {
     position: fixed; left: 50%; transform: translateX(-50%); bottom: 5.4rem; z-index: 70;
@@ -296,6 +303,11 @@
 </div>
 
 </div><!-- /app -->
+
+<div class="desks" id="desks" hidden>
+  <a id="deskColoring" href="coloring.html">컬러링 접수대<b>이름·뒷번호 확인 · 작품 전달</b></a>
+  <a id="deskGift" href="gift.html">증정 접수대<b>후기 확인 · 액자·스티커</b></a>
+</div>
 
 <div class="gate" id="gate" hidden>
   접근키가 필요합니다.<br>
@@ -795,6 +807,15 @@ if (!KEY) {
   document.getElementById('gate').hidden = false;
 } else {
   document.getElementById('app').hidden = false;
+
+  // 담당자별 화면 바로가기 — 접근키와 담당자 이름을 그대로 넘겨준다
+  {
+    const q = '?k=' + encodeURIComponent(KEY) + (STAFF ? '&staff=' + encodeURIComponent(STAFF) : '');
+    document.getElementById('deskColoring').href = 'coloring.html' + q;
+    document.getElementById('deskGift').href = 'gift.html' + q;
+    document.getElementById('desks').hidden = false;
+  }
+
   ['saleSlot', 'checkSlot', 'memoSlot'].forEach(id => {
     const sel = document.getElementById(id);
     slotOptions(sel, id === 'saleSlot');

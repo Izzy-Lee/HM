@@ -124,6 +124,8 @@ function doGet(e) {
       case 'stock':   out = actStock_(p);               break;
       case 'survey':  out = actSurvey_(p);              break;
       case 'gift':    out = actGift_(p);                break;
+      case 'desk':    out = actDesk_(p);                break;
+      case 'gifts':   out = actGifts_(p);               break;
       case 'book':    out = actBook_(p);                break;
       case 'visit':   out = actVisit_(p);               break;
       case 'img':     out = actImage_(p);               break;
@@ -131,7 +133,7 @@ function doGet(e) {
       default:        out = { ok: false, error: '알 수 없는 action: ' + action };
     }
     // 쓰기가 일어났으면 현황 캐시를 버린다. 다음 조회가 바로 새 값을 받는다.
-    if (action !== 'slots' && action !== 'report' && action !== 'roster') bustSlotsCache_();
+    if (['slots', 'report', 'roster', 'desk', 'gifts'].indexOf(action) === -1) bustSlotsCache_();
 
     if (out && out.ok === undefined) out.ok = true;
   } catch (err) {
@@ -903,6 +905,169 @@ function b64urlDecode_(str) {
   return Utilities.newBlob(Utilities.base64Decode(b64)).getDataAsString('UTF-8');
 }
 
+
+/** 연락처에서 숫자만 남기고 뒤 4자리. 010-1234-5678 → 5678 */
+function tail4_(v) {
+  var d = String(v == null ? '' : v).replace(/[^0-9]/g, '');
+  return d.length >= 4 ? d.slice(-4) : d;
+}
+
+/** 이름(과 회차)으로 예약 행의 연락처 뒷자리를 찾는다. 현장 구매자는 없을 수 있다. */
+function telIndex_() {
+  var cached = telIndex_._c;
+  if (cached) return cached;
+  var idx = {};
+  try {
+    var sh = getSheet_();
+    if (sh.getLastRow() > 1) {
+      var head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(function (v) { return String(v).trim(); });
+      var find = function (labels) {
+        for (var j = 0; j < labels.length; j++)
+          for (var i = 0; i < head.length; i++) if (head[i].indexOf(labels[j]) !== -1) return i + 1;
+        return 0;
+      };
+      var cName = find(['이름', '성함', '성명']), cTel = find(['연락처', '휴대폰', '전화']);
+      if (cName && cTel) {
+        var vals = sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
+        vals.forEach(function (r) {
+          var nm = String(r[cName - 1]).trim();
+          if (nm && !idx[nm]) idx[nm] = tail4_(r[cTel - 1]);
+        });
+      }
+    }
+  } catch (err) { /* 예약 시트를 못 읽어도 화면은 떠야 한다 */ }
+  telIndex_._c = idx;
+  return idx;
+}
+
+/** 설문 답변 중 가장 긴 주관식 한 줄 — 담당자 화면에 후기로 보여준다 */
+function reviewText_(header, row) {
+  var skip = FIELD.SURVEY_HEAD.concat(['게시물 링크', '캡처 이미지', '플랫폼']);
+  var best = '';
+  for (var i = 0; i < header.length; i++) {
+    if (skip.indexOf(header[i]) !== -1) continue;
+    var v = String(row[i] == null ? '' : row[i]).trim();
+    if (v.length > best.length && /[가-힣A-Za-z]/.test(v)) best = v;
+  }
+  return best.length > 120 ? best.slice(0, 120) + '…' : best;
+}
+
+/**
+ * 컬러링 접수대 화면 — action=desk&slot=컬러링 14:00&k=키
+ * 회차 예약자에 연락처 뒷자리와 후기 작성 여부를 붙여서 내려준다.
+ */
+function actDesk_(p) {
+  requireKey_(p);
+  var out = buildRoster_(p.slot);
+  var slot = String(p.slot || '').trim();
+
+  // 이 회차 사람들이 남긴 후기 (체험 설문 2종)
+  var reviews = {};
+  ['coloring', 'binder'].forEach(function (t) {
+    var meta = FIELD.SURVEYS[t];
+    if (!meta) return;
+    var sh = ss_().getSheetByName(meta.tab);
+    if (!sh || sh.getLastRow() < 2) return;
+    var header = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(function (v) { return String(v).trim(); });
+    var cName = header.indexOf('이름'), cSlot = header.indexOf('회차'), cAt = header.indexOf('시각');
+    if (cName < 0) return;
+    sh.getRange(2, 1, sh.getLastRow() - 1, header.length).getValues().forEach(function (r) {
+      var nm = String(r[cName]).trim();
+      if (!nm) return;
+      var rs = cSlot >= 0 ? String(r[cSlot]).trim() : '';
+      if (rs && slot && rs !== slot) return;       // 회차를 적어 보냈으면 그 회차만
+      reviews[nm] = { at: cAt >= 0 ? String(r[cAt]).trim() : '', text: reviewText_(header, r), survey: meta.name };
+    });
+  });
+
+  out.people.forEach(function (x) { x.review = reviews[x.name] || null; });
+  out.stock = getStockPayload_().sheetStock;
+  return out;
+}
+
+/**
+ * 증정 접수대 화면 — action=gifts&k=키
+ * 증정 대상 설문(후기)을 최근 것부터 내려준다. 아직 안 준 것이 위로 온다.
+ */
+function actGifts_(p) {
+  requireKey_(p);
+  var tel = telIndex_();
+  var rows = [];
+  Object.keys(FIELD.SURVEYS).forEach(function (t) {
+    if (FIELD.GIFT_SURVEYS.indexOf(t) === -1) return;
+    var meta = FIELD.SURVEYS[t];
+    var sh = ss_().getSheetByName(meta.tab);
+    if (!sh || sh.getLastRow() < 2) return;
+    var header = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(function (v) { return String(v).trim(); });
+    var c = {};
+    ['시각', '회차', '이름', '증정코드', '증정여부', '증정시각', '게시물 링크'].forEach(function (h) { c[h] = header.indexOf(h); });
+    var item = giftItemFor_(t);
+    sh.getRange(2, 1, sh.getLastRow() - 1, header.length).getValues().forEach(function (r, i) {
+      var nm = c['이름'] >= 0 ? String(r[c['이름']]).trim() : '';
+      if (!nm && !(c['증정코드'] >= 0 && r[c['증정코드']])) return;   // 빈 행 건너뛰기
+      rows.push({
+        t: t, row: i + 2, survey: meta.name, group: meta.group || '',
+        name: nm, tel4: tel[nm] || '',
+        slot: c['회차'] >= 0 ? String(r[c['회차']]).trim() : '',
+        at:   c['시각'] >= 0 ? String(r[c['시각']]).trim() : '',
+        code: c['증정코드'] >= 0 ? String(r[c['증정코드']]).trim() : '',
+        done: c['증정여부'] >= 0 ? !!String(r[c['증정여부']]).trim() : false,
+        doneAt: c['증정시각'] >= 0 ? String(r[c['증정시각']]).trim() : '',
+        link: c['게시물 링크'] >= 0 ? String(r[c['게시물 링크']]).trim() : '',
+        review: reviewText_(header, r),
+        item: item, label: giftLabel_(item)
+      });
+    });
+  });
+  rows.sort(function (a, b) {
+    if (a.done !== b.done) return a.done ? 1 : -1;      // 안 준 것 먼저
+    return String(b.at).localeCompare(String(a.at));    // 최근 것 먼저
+  });
+  var stock = stockRows_().map;
+  return { ok: true, rows: rows, stock: {
+    '액자':   stockRemain_(stock['액자']   || { total: 0, used: 0, adj: 0 }),
+    '스티커': stockRemain_(stock['스티커'] || { total: 0, used: 0, adj: 0 })
+  } };
+}
+
+
+/** 증정 담당자 화면에서 이름을 보고 바로 줄 때. 코드 대신 설문 종류 + 행으로 찾는다. */
+function giftByRow_(type, row, p) {
+  var meta = FIELD.SURVEYS[type];
+  var item = giftItemFor_(type);
+  var sh = ss_().getSheetByName(meta.tab);
+  if (!sh || !row || row < 2 || row > sh.getLastRow()) throw new Error('후기를 찾지 못했습니다. 새로고침 후 다시 시도해 주세요.');
+
+  var header = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(function (v) { return String(v).trim(); });
+  var cDone = header.indexOf('증정여부') + 1;
+  var cWhen = header.indexOf('증정시각') + 1;
+  var cSlot = header.indexOf('회차') + 1;
+  var cName = header.indexOf('이름') + 1;
+
+  var done = cDone ? String(sh.getRange(row, cDone).getValue()).trim() : '';
+  if (done) {
+    var when = cWhen ? String(sh.getRange(row, cWhen).getValue()).trim() : '';
+    throw new Error('이미 증정했습니다' + (when ? ' (' + when + ')' : '') + '.');
+  }
+
+  var name = cName ? String(sh.getRange(row, cName).getValue()).trim() : '';
+  // 화면이 본 사람과 실제 행이 같은지 확인한다 (목록이 바뀐 사이 잘못 누르는 것 방지)
+  var want = String(p.name || '').trim();
+  if (want && name && want !== name) throw new Error('목록이 바뀌었습니다. 새로고침 후 다시 확인해 주세요.');
+
+  var slot = cSlot ? String(sh.getRange(row, cSlot).getValue()).trim() : '';
+  if (cDone) sh.getRange(row, cDone).setValue('증정');
+  if (cWhen) sh.getRange(row, cWhen).setValue(nowStamp_());
+
+  var sale = ensureSheet_(FIELD.TAB_SALE, FIELD.HEAD_SALE);
+  sale.appendRow([nowStamp_(), item, 0, 1, 0, '설문증정',
+                  slot + (name ? '|' + name : ''), String(p.staff || '').trim(), '']);
+  bumpStock_(stockKeyOf_(item), 1);
+
+  return { ok: true, survey: meta.name, name: name, item: item, label: giftLabel_(item),
+           remain: stockRemain_(stockRows_().map[stockKeyOf_(item)] || { total: 0, used: 0, adj: 0 }) };
+}
+
 /**
  * 설문 증정 코드 확인 — action=gift&code=HM-7K3D&k=키
  * 코드를 찾아 아직 안 준 것이면 스티커 1개를 증정 처리하고 재고를 깎는다.
@@ -921,12 +1086,18 @@ function giftLabel_(item) {
 
 function actGift_(p) {
   requireKey_(p);
+  var byRow = String(p.t || '').trim();
   var code = String(p.code || '').trim().toUpperCase();
-  if (!/^HM-[A-Z0-9]{4}$/.test(code)) throw new Error('코드 형식이 올바르지 않습니다. (예: HM-7K3D)');
+  if (byRow) {
+    if (!FIELD.SURVEYS[byRow]) throw new Error('알 수 없는 설문 종류: ' + byRow);
+  } else if (!/^HM-[A-Z0-9]{4}$/.test(code)) {
+    throw new Error('코드 형식이 올바르지 않습니다. (예: HM-7K3D)');
+  }
 
   var lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
+    if (byRow) return giftByRow_(byRow, parseInt(p.row, 10), p);
     var types = Object.keys(FIELD.SURVEYS);
     for (var t = 0; t < types.length; t++) {
       var meta = FIELD.SURVEYS[types[t]];
@@ -1172,6 +1343,7 @@ function buildRoster_(slot) {
   if (!parsed.program || !parsed.time) return out;
 
   var existing = {};   // 회차 기존 체크인 상태
+  var tel4 = {};       // 예약자별 연락처 뒷 4자리 — 현장에서 본인 확인용
   var csh = ensureSheet_(FIELD.TAB_CHECKIN, FIELD.HEAD_CHECKIN);
   if (csh.getLastRow() > 1) {
     csh.getRange(2, 1, csh.getLastRow() - 1, FIELD.HEAD_CHECKIN.length).getValues()
@@ -1193,6 +1365,11 @@ function buildRoster_(slot) {
         if (nameCol) return;
         for (var i = 0; i < head.length; i++) if (head[i].indexOf(label) !== -1) { nameCol = i + 1; break; }
       });
+      var telCol = 0;
+      ['연락처', '휴대폰', '전화'].forEach(function (label) {
+        if (telCol) return;
+        for (var i = 0; i < head.length; i++) if (head[i].indexOf(label) !== -1) { telCol = i + 1; break; }
+      });
       var vals = sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
       vals.forEach(function (r, i) {
         var program = normalizeProgram_(r[cols.program - 1]);
@@ -1201,7 +1378,9 @@ function buildRoster_(slot) {
         if (program !== parsed.program || time !== parsed.time) return;
         if (CONFIG.EXCLUDE_STATUS.some(function (x) { return status.indexOf(x) !== -1; })) return;
         var nm = nameCol ? String(r[nameCol - 1]).trim() : '';
-        names.push(nm || ('예약 ' + (i + 2) + '행'));
+        nm = nm || ('예약 ' + (i + 2) + '행');
+        names.push(nm);
+        if (telCol) tel4[nm] = tail4_(r[telCol - 1]);
       });
     }
   } catch (err) {
@@ -1215,7 +1394,8 @@ function buildRoster_(slot) {
 
   out.people = names.map(function (nm) {
     var s = existing[nm] || {};
-    return { name: nm, status: s.status || '', design: s.design || '', done: s.done || '' };
+    return { name: nm, tel4: tel4[nm] || '',
+             status: s.status || '', design: s.design || '', done: s.done || '' };
   });
   return out;
 }

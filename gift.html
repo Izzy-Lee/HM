@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>증정 접수대</title>
+<meta name="robots" content="noindex">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --ink: #14100b; --soft: #5a4e42; --faint: #8b8075; --paper: #f6f2ea; --surface: #fff;
+    --teal: #14796a; --amber: #b8620f; --red: #b23838; --plum: #8a3d6b; --rule: #ddd4c6;
+  }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+    font-size: 15px; padding: 0 0 6rem; max-width: 560px; margin: 0 auto;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .top { position: sticky; top: 0; z-index: 30; background: var(--plum); color: #fff; padding: 0.7rem 0.9rem; display: flex; align-items: center; gap: 0.7rem; }
+  .top .t { font-size: 1.05rem; font-weight: 800; }
+  .top .re { margin-left: auto; flex: none; min-width: 44px; min-height: 40px; border: 1px solid rgba(255,255,255,0.35); border-radius: 9px; background: transparent; color: #fff; font-size: 1.05rem; cursor: pointer; }
+
+  .stock { display: flex; gap: 0.4rem; padding: 0.6rem 0.9rem 0; }
+  .stock div { flex: 1; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 0.5rem 0.2rem; text-align: center; }
+  .stock b { display: block; font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+  .stock span { font-size: 0.68rem; color: var(--faint); }
+  .stock div.low b { color: var(--red); }
+
+  .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--rule); margin-top: 0.6rem; position: sticky; top: 56px; z-index: 29; }
+  .tabs button { flex: 1; padding: 0.8rem 0.2rem; border: 0; background: none; font-family: inherit; font-size: 0.83rem; font-weight: 700; color: var(--soft); border-bottom: 3px solid transparent; cursor: pointer; }
+  .tabs button[aria-selected="true"] { color: var(--plum); border-bottom-color: var(--plum); }
+  .tabs .n { display: inline-block; min-width: 20px; margin-left: 0.25rem; padding: 0 0.3rem; border-radius: 999px; background: var(--plum); color: #fff; font-size: 0.7rem; }
+  .tabs button[aria-selected="false"] .n { background: var(--rule); color: var(--soft); }
+
+  .list { padding: 0.7rem 0.9rem 0; display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .g { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 0.75rem 0.85rem; }
+  .g.done { opacity: 0.55; }
+  .ghead { display: flex; align-items: baseline; gap: 0.55rem; flex-wrap: wrap; }
+  .nm { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; }
+  .tel { font-size: 1.15rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--amber); letter-spacing: 0.02em; }
+  .tel.none { color: var(--faint); font-weight: 600; font-size: 0.78rem; letter-spacing: 0; }
+  .item { margin-left: auto; font-size: 0.72rem; font-weight: 800; padding: 0.22rem 0.5rem; border-radius: 999px; background: var(--plum); color: #fff; }
+  .item.sticker { background: var(--teal); }
+
+  .meta { font-size: 0.72rem; color: var(--faint); margin-top: 0.3rem; }
+  .meta .code { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--soft); }
+  .rv { margin-top: 0.5rem; background: #f7f4ee; border-radius: 9px; padding: 0.5rem 0.6rem; font-size: 0.8rem; line-height: 1.6; color: var(--soft); }
+  .lk { display: inline-block; margin-top: 0.45rem; font-size: 0.76rem; color: var(--plum); word-break: break-all; }
+
+  .give { width: 100%; min-height: 58px; margin-top: 0.6rem; border: 0; border-radius: 10px; background: var(--plum); color: #fff; font-family: inherit; font-size: 1.05rem; font-weight: 800; cursor: pointer; }
+  .give.sticker { background: var(--teal); }
+  .give[disabled] { background: #eef7f4; color: var(--teal); border: 1px solid var(--teal); font-weight: 700; }
+
+  .code-box { padding: 0.9rem; }
+  .code-box .row { display: flex; gap: 0.4rem; }
+  .code-box input { flex: 1; min-height: 52px; border: 1px solid var(--rule); border-radius: 10px; padding: 0 0.7rem; font-family: inherit; font-size: 1.05rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; background: #fff; color: var(--ink); }
+  .code-box button { flex: none; min-width: 90px; min-height: 52px; border: 0; border-radius: 10px; background: var(--ink); color: #fff; font-family: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
+
+  .note { font-size: 0.74rem; color: var(--faint); line-height: 1.7; padding: 0.4rem 0.9rem 0; }
+  .empty { text-align: center; color: var(--faint); font-size: 0.85rem; padding: 2.2rem 1rem; line-height: 1.7; }
+
+  .gate { padding: 3rem 1.2rem; text-align: center; }
+  .gate input { width: 100%; max-width: 220px; min-height: 52px; text-align: center; font-size: 1.3rem; font-family: inherit; letter-spacing: 0.3em; border: 1px solid var(--rule); border-radius: 10px; background: #fff; color: var(--ink); }
+  .gate button { display: block; width: 100%; max-width: 220px; margin: 0.6rem auto 0; min-height: 52px; border: 0; border-radius: 10px; background: var(--plum); color: #fff; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; }
+
+  .toast { position: fixed; left: 50%; bottom: 1.6rem; transform: translateX(-50%) translateY(140%); background: var(--ink); color: #fff; padding: 0.75rem 1.1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 600; transition: transform .25s; z-index: 60; max-width: 92vw; text-align: center; }
+  .toast.on { transform: translateX(-50%) translateY(0); }
+  .toast.bad { background: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <p style="font-size:0.9rem;color:var(--soft);margin-bottom:1rem;">증정 접수대 · 접근키를 입력하세요</p>
+  <input id="gateKey" type="tel" inputmode="numeric" placeholder="••••" aria-label="접근키">
+  <button type="button" id="gateGo">열기</button>
+</div>
+
+<div id="app" hidden>
+  <div class="top">
+    <div class="t">후기 · 증정 접수대</div>
+    <button type="button" class="re" id="reload" aria-label="새로고침">↻</button>
+  </div>
+
+  <div class="stock">
+    <div id="boxFrame"><b id="nFrame">–</b><span>액자 잔여</span></div>
+    <div id="boxSticker"><b id="nSticker">–</b><span>스티커 잔여</span></div>
+  </div>
+
+  <div class="tabs">
+    <button type="button" role="tab" aria-selected="true"  data-p="wait">줄 차례<span class="n" id="nWait">0</span></button>
+    <button type="button" role="tab" aria-selected="false" data-p="done">전달 완료<span class="n" id="nDone">0</span></button>
+  </div>
+
+  <div class="list" id="list"><p class="empty">불러오는 중…</p></div>
+
+  <div class="code-box">
+    <div class="row">
+      <input id="codeIn" placeholder="HM-XXXX" aria-label="증정 코드" maxlength="7">
+      <button type="button" id="codeGo">코드 확인</button>
+    </div>
+    <p class="note" style="padding-left:0;padding-right:0;">
+      목록에 이름이 안 보일 때만 쓰세요. 손님 완료 화면의 코드를 입력하면 바로 증정 처리됩니다.
+    </p>
+  </div>
+
+  <p class="note">
+    <b>SNS 후기</b> → 액자 · <b>구매 후기</b>(바인더·스티커) → 데코 스티커.<br>
+    이름과 <b>휴대폰 뒷 4자리</b>를 확인하고 <b>전달하기</b>를 누르면 재고가 자동으로 차감됩니다.<br>
+    한 번 준 후기는 다시 눌러도 중복 지급되지 않습니다. 화면은 20초마다 저절로 새로고침됩니다.
+  </p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
+
+const qs = new URLSearchParams(location.search);
+let KEY   = qs.get('k') || '';
+let STAFF = qs.get('staff') || '';
+let pane  = 'wait';
+let rows  = [];
+let stock = {};
+let timer = null;
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+  ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const $ = id => document.getElementById(id);
+
+let seq = 0;
+function call(params) {
+  return new Promise((resolve, reject) => {
+    const cb = '__hg' + (++seq) + '_' + Date.now();
+    const url = new URL(API_URL);
+    Object.keys(params).forEach(k => {
+      if (params[k] !== undefined && params[k] !== null && params[k] !== '') url.searchParams.set(k, params[k]);
+    });
+    url.searchParams.set('cb', cb);
+    const s = document.createElement('script');
+    let done = false;
+    const cleanup = () => { delete window[cb]; s.remove(); clearTimeout(t); };
+    const t = setTimeout(() => { if (!done) { done = true; cleanup(); reject(new Error('시간 초과')); } }, 15000);
+    window[cb] = d => { done = true; cleanup(); (d && d.ok === false) ? reject(new Error(d.error || '오류')) : resolve(d); };
+    s.onerror = () => { if (!done) { done = true; cleanup(); reject(new Error('네트워크 오류')); } };
+    s.src = url.toString();
+    document.body.appendChild(s);
+  });
+}
+
+let toastT = null;
+function toast(msg, bad) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = 'toast on' + (bad ? ' bad' : '');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { el.className = 'toast'; }, 3000);
+}
+
+function render() {
+  const wait = rows.filter(r => !r.done);
+  const done = rows.filter(r => r.done);
+  $('nWait').textContent = wait.length;
+  $('nDone').textContent = done.length;
+
+  $('nFrame').textContent   = stock['액자']   === undefined ? '–' : stock['액자'];
+  $('nSticker').textContent = stock['스티커'] === undefined ? '–' : stock['스티커'];
+  $('boxFrame').className   = (stock['액자']   <= 3) ? 'low' : '';
+  $('boxSticker').className = (stock['스티커'] <= 10) ? 'low' : '';
+
+  const show = pane === 'wait' ? wait : done;
+  const el = $('list');
+  if (!show.length) {
+    el.innerHTML = '<p class="empty">' + (pane === 'wait'
+      ? '지금 줄 차례인 분이 없습니다.<br>손님이 후기를 남기면 여기에 이름이 뜹니다.'
+      : '아직 전달한 내역이 없습니다.') + '</p>';
+    return;
+  }
+
+  el.innerHTML = show.map(r => {
+    const sticker = r.item !== '액자';
+    return '<div class="g ' + (r.done ? 'done' : '') + '" data-t="' + esc(r.t) + '" data-row="' + r.row + '" data-name="' + esc(r.name) + '">' +
+      '<div class="ghead">' +
+        '<span class="nm">' + esc(r.name || '(이름 없음)') + '</span>' +
+        (r.tel4 ? '<span class="tel">' + esc(r.tel4) + '</span>'
+                : '<span class="tel none">번호 없음</span>') +
+        '<span class="item' + (sticker ? ' sticker' : '') + '">' + esc(r.label) + '</span>' +
+      '</div>' +
+      '<div class="meta">' + esc(r.survey) + (r.slot ? ' · ' + esc(r.slot) : '') +
+        ' · ' + esc(r.at) +
+        (r.code ? ' · <span class="code">' + esc(r.code) + '</span>' : '') +
+        (r.done && r.doneAt ? ' · 전달 ' + esc(r.doneAt) : '') +
+      '</div>' +
+      (r.review ? '<div class="rv">' + esc(r.review) + '</div>' : '') +
+      (r.link ? '<a class="lk" href="' + esc(r.link) + '" target="_blank" rel="noopener">게시물 열기 ↗</a>' : '') +
+      '<button type="button" class="give' + (sticker ? ' sticker' : '') + '" data-give="1"' + (r.done ? ' disabled' : '') + '>' +
+        (r.done ? '✓ ' + esc(r.label) + ' 전달 완료' : esc(r.label) + ' 전달하기') +
+      '</button>' +
+    '</div>';
+  }).join('');
+}
+
+let loading = false;
+async function load(quiet) {
+  if (loading) return;
+  loading = true;
+  if (!quiet) $('list').innerHTML = '<p class="empty">불러오는 중…</p>';
+  try {
+    const d = await call({ action: 'gifts', k: KEY });
+    rows = d.rows || [];
+    stock = d.stock || {};
+    render();
+  } catch (e) {
+    if (!quiet) $('list').innerHTML = '<p class="empty">' + esc(e.message) + '<br>↻ 를 눌러 다시 시도해 주세요.</p>';
+  } finally {
+    loading = false;
+  }
+}
+
+document.addEventListener('click', async ev => {
+  const tab = ev.target.closest('.tabs button');
+  if (tab) {
+    pane = tab.dataset.p;
+    document.querySelectorAll('.tabs button').forEach(b =>
+      b.setAttribute('aria-selected', String(b.dataset.p === pane)));
+    render();
+    return;
+  }
+
+  const btn = ev.target.closest('button[data-give]');
+  if (!btn || btn.disabled) return;
+  const card = btn.closest('.g');
+  btn.disabled = true;
+  try {
+    const r = await call({ action: 'gift', t: card.dataset.t, row: card.dataset.row,
+                           name: card.dataset.name, k: KEY, staff: STAFF });
+    toast((r.name || '') + ' — ' + r.label + ' 전달 (잔여 ' + r.remain + ')');
+    await load(true);
+  } catch (e) {
+    toast(e.message, true);
+    btn.disabled = false;
+    await load(true);
+  }
+});
+
+$('codeGo').addEventListener('click', async () => {
+  const v = $('codeIn').value.trim().toUpperCase();
+  if (!v) { toast('코드를 입력해 주세요', true); return; }
+  try {
+    const r = await call({ action: 'gift', code: v, k: KEY, staff: STAFF });
+    toast((r.name || '') + ' — ' + r.label + ' 전달 (잔여 ' + r.remain + ')');
+    $('codeIn').value = '';
+    await load(true);
+  } catch (e) {
+    toast(e.message, true);
+  }
+});
+$('codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('codeGo').click(); });
+$('reload').addEventListener('click', () => load());
+
+function start() {
+  $('gate').hidden = true;
+  $('app').hidden = false;
+  load();
+  clearInterval(timer);
+  timer = setInterval(() => load(true), 20000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) load(true); });
+}
+
+$('gateGo').addEventListener('click', () => {
+  const v = $('gateKey').value.trim();
+  if (!v) return;
+  KEY = v;
+  history.replaceState(null, '', '?k=' + encodeURIComponent(v) + (STAFF ? '&staff=' + encodeURIComponent(STAFF) : ''));
+  start();
+});
+$('gateKey').addEventListener('keydown', e => { if (e.key === 'Enter') $('gateGo').click(); });
+
+if (KEY) start();
+</script>
+</body>
+</html>

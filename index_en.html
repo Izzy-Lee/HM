@@ -435,7 +435,7 @@
         <h2 class="about-title">Watercolor Coloring Kit</h2>
         <div class="about-line"></div>
         <p class="about-body" style="margin-bottom:0.8rem;">
-          Five scenes from Michuhol, printed with Artable watercolor paints.
+          Four scenes from Michuhol, printed with Artable watercolor paints.
           The front is yours to paint; the back is a postcard carrying the story behind the scene.
         </p>
         <div class="sheet-cards" id="aboutSheetCards"></div>
@@ -522,8 +522,9 @@ const EVENT_LABEL = 'Saturday, September 19';
 
 // ── Bookable programs (same ten sessions, separate capacity) ──
 const PROGRAMS = [
-  /* dayLimit = seats available for the whole day, capped by materials on hand */
-  { key: '컬러링', name: 'Coloring',       meta: 'Free · 30 min · 6 seats',     capacity: 6, dayLimit: 60, paid: false },
+  /* dayLimit = seats available for the whole day.
+     Coloring 66 = 11 slots x 6 seats (100 sheets on hand, so seats are the cap, not paper) */
+  { key: '컬러링', name: 'Coloring',       meta: 'Free · 30 min · 6 seats',     capacity: 6, dayLimit: 66, paid: false },
   { key: '바인더', name: 'Binder',         meta: '\u20A930,000 · 30 min · 5 seats', capacity: 5, dayLimit: 50, paid: true  },
 ];
 let activeProgram = PROGRAMS[0].key;
@@ -540,16 +541,15 @@ function programOf(key) {
 }
 
 const SHEETS_META = [
-  { num:'01', key:'01 소서노',     name:'Soseono Arrives',   img:'img/sheet_sosuno.jpg',      desc:'Soseono pointing out to sea beside a moored sailboat, with the Munhaksan ridge behind — the moment the journey south ends', tags:'# Soseono # Legend # Founding' },
-  { num:'02', key:'02 문학산성',   name:'Munhak Fortress',   img:'img/sheet_munhak.jpg',      desc:'The stone ring fortress crowning the summit, azalea slopes below, and the tidal flats as they looked before reclamation',  tags:'# Fortress # History # Azalea' },
-  { num:'03', key:'03 갯벌',       name:'Michuhol Tidal Flat', img:'img/sheet_tidal.jpg',     desc:'Ripple marks, crab burrows and tidal channels, with ghost crabs, mudskippers and shell beds of the West Sea',            tags:'# TidalFlat # Ecology # WestSea' },
+  { num:'01', key:'01 소서노',     name:'Soseono Arrives',   img:'img/sheet_sosuno2.jpg',      desc:'Soseono pointing out to sea beside a moored sailboat, with the Munhaksan ridge behind — the moment the journey south ends', tags:'# Soseono # Legend # Founding' },
+  { num:'02', key:'02 문학산성',   name:'Munhak Fortress',   img:'img/sheet_munhak2.jpg',      desc:'The stone ring fortress crowning the summit, its halls inside, and the sea and islands as they reached the hill before reclamation',  tags:'# Fortress # History # SeaView' },
+  { num:'03', key:'03 갯벌',       name:'Michuhol Tidal Flat', img:'img/sheet_tidal3.jpg',     desc:'Ripple marks, crab burrows and tidal channels, with ghost crabs, mudskippers and shell beds of the West Sea',            tags:'# TidalFlat # Ecology # WestSea' },
   { num:'04', key:'04 수봉폭포',   name:'Subong Waterfall',  img:'img/sheet_subong_fall.jpg', desc:'Water falling between rock faces into a round pond, framed by wooden steps and dense summer woods',                    tags:'# Subongsan # Waterfall # Nature' },
-  { num:'05', key:'05 수봉도서관', name:'Subong Library',    img:'img/sheet_tidal2.jpg',      desc:'The library tucked into Subong Mountain — a reading refuge in Michuhol',                                                tags:'# Library # Michuhol # Family' },
 ];
 
 // 60 sheets in total — 12 of each design
 const STOCK_FALLBACK = {
-  '01 소서노':12, '02 문학산성':12, '03 갯벌':12, '04 수봉폭포':12, '05 수봉도서관':12
+  '01 소서노':30, '02 문학산성':30, '03 갯벌':30, '04 수봉폭포':10
 };
 
 // ── Goods and frames (not bookable — stock display only) ──
@@ -561,10 +561,14 @@ const GOODS_META = [
 ];
 const GOODS_FALLBACK = { '바인더 체험':50, '바인더 완성품':50, '스티커':100, '액자':28 };
 
-function getStockInfo(remain) {
-  if (remain === 0)  return { cls:'soldout',   label:'Sold Out',  countLabel:'0' };
-  if (remain <= 10)  return { cls:'low',       label:'Low Stock', countLabel:`${remain} left` };
-  return               { cls:'available', label:'Available',  countLabel:`${remain} left` };
+/* Pass total and the "low" line becomes 30% of it (min 3) — sheet counts
+   differ per design (30 / 30 / 30 / 10), so a flat 10 would flag an untouched
+   10-sheet design as low. Without total, the old flat 10 applies. */
+function getStockInfo(remain, total) {
+  const lowAt = total ? Math.max(3, Math.ceil(total * 0.3)) : 10;
+  if (remain === 0)      return { cls:'soldout',   label:'Sold Out',  countLabel:'0' };
+  if (remain <= lowAt)   return { cls:'low',       label:'Low Stock', countLabel:`${remain} left` };
+  return                   { cls:'available', label:'Available',  countLabel:`${remain} left` };
 }
 
 function renderStockList(stockMap) {
@@ -573,7 +577,7 @@ function renderStockList(stockMap) {
   let html = '';
   SHEETS_META.forEach(s => {
     const remain = (stockMap && stockMap[s.key] !== undefined) ? stockMap[s.key] : STOCK_FALLBACK[s.key];
-    const info = getStockInfo(remain);
+    const info = getStockInfo(remain, STOCK_FALLBACK[s.key]);
     html += `
       <div class="stock-item">
         <div class="stock-num ${remain === 0 ? 'out' : ''}">${s.num}</div>
@@ -591,7 +595,7 @@ function renderAboutSheets(stockMap) {
   let html = '';
   SHEETS_META.forEach(s => {
     const remain = (stockMap && stockMap[s.key] !== undefined) ? stockMap[s.key] : STOCK_FALLBACK[s.key];
-    const info = getStockInfo(remain);
+    const info = getStockInfo(remain, STOCK_FALLBACK[s.key]);
     html += `
       <div class="sheet-card">
         <div class="sheet-thumb-img" style="background-image:url('${s.img}')"></div>

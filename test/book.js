@@ -35,7 +35,7 @@ async function book(page, {program,time,name,tel,design}){
   ok(await p.locator('[data-time]').count()===11, '회차 11개 표시 ('+await p.locator('[data-time]').count()+')');
   const firstLabel = await p.locator('[data-time]').first().textContent();
   ok(firstLabel.includes('잔여'), '잔여 인원 표시: "'+firstLabel.trim().replace(/\s+/g,' ')+'"');
-  ok(await p.locator('[data-design]').count()===5, '도안 5종');
+  ok(await p.locator('[data-design]').count()===4, '도안 4종');
 
   console.log('\n═══ 2. 필수값 검증 ═══');
   await p.locator('[data-time="14:00"]').click(); await p.waitForTimeout(250);

@@ -486,7 +486,7 @@
         <h2 class="about-title">수채화 컬러링 키트</h2>
         <div class="about-line"></div>
         <p class="about-body" style="margin-bottom:0.8rem;">
-          미추홀의 다섯 장면을 담은 도안과 아트에이블 수채물감으로 구성된 체험 키트입니다.<br>
+          미추홀의 네 장면을 담은 도안과 아트에이블 수채물감으로 구성된 체험 키트입니다.<br>
           앞면은 채색용, 뒷면은 엽서 디자인이며 씬별 스토리 설명이 함께 실려 있습니다.
         </p>
         <div class="sheet-cards" id="aboutSheetCards">
@@ -502,7 +502,7 @@
           <div class="exp-icon-wrap">🎨</div>
           <div>
             <div class="exp-item-title">현장 컬러링 체험</div>
-            <div class="exp-item-desc">수채물감 44색·세필붓 등 전 재료 제공 · 다섯 장 중 한 장 선택<br><span style="color:var(--brush-teal);font-weight:500;">30분 · 무료 (정가 25,000원 상당)</span></div>
+            <div class="exp-item-desc">수채물감 44색·세필붓 등 전 재료 제공 · 네 장 중 한 장 선택<br><span style="color:var(--brush-teal);font-weight:500;">30분 · 무료 (정가 25,000원 상당)</span></div>
           </div>
         </div>
         <div class="exp-item">
@@ -612,9 +612,10 @@ const EVENT_DATE = '9월 19일 (토)';
 
 // ── 예약 프로그램 (같은 타임을 공유하되 정원은 별개) ──
 const PROGRAMS = [
-  /* dayLimit = 하루에 받을 수 있는 최대 인원. 재료 수량이 상한이다.
-     컬러링 60 = 체험용 수채화지 60장 / 바인더 50 = 종이바인더 100개 중 체험분 50개 */
-  { key: '컬러링',      name: '컬러링 체험',  meta: '무료 · 30분 · 6명',      capacity: 6, dayLimit: 60, paid: false },
+  /* dayLimit = 하루에 받을 수 있는 최대 인원.
+     컬러링 66 = 11회차 × 6명 (수채화지 100장을 준비해 재료가 아니라 좌석이 상한)
+     바인더 50 = 종이바인더 100개 중 체험분 50개 */
+  { key: '컬러링',      name: '컬러링 체험',  meta: '무료 · 30분 · 6명',      capacity: 6, dayLimit: 66, paid: false },
   { key: '바인더',      name: '바인더 체험',  meta: '30,000원 · 30분 · 5명',  capacity: 5, dayLimit: 50, paid: true  },
 ];
 let activeProgram = PROGRAMS[0].key;
@@ -632,18 +633,17 @@ function programOf(key) {
   return PROGRAMS.find(p => p.key === key) || PROGRAMS[0];
 }
 
-// ── 도안 재고 데이터 (개선판 3종 + 수봉폭포 + 수봉도서관) ──
+// ── 도안 재고 데이터 (개선판 3종 + 수봉폭포) ──
 const SHEETS_META = [
-  { num:'01', key:'01 소서노',     name:'소서노 미추홀 정착', img:'img/sheet_sosuno.jpg',      desc:'바다를 가리키는 소서노와 물가에 정박한 돛단배. 문학산 능선을 배경으로 남하 여정의 도착을 담았습니다', tags:'# 소서노 # 정착 # 설화' },
-  { num:'02', key:'02 문학산성',   name:'문학산성 옛모습',   img:'img/sheet_munhak.jpg',      desc:'정상부를 두른 테뫼식 석축 산성과 진달래 군락. 간척 이전 산 앞 갯벌까지 고증한 옛 풍경',            tags:'# 문학산성 # 테뫼식 # 고증' },
-  { num:'03', key:'03 갯벌',       name:'미추홀 갯벌',       img:'img/sheet_tidal.jpg',       desc:'연흔과 게 구멍, 갯골이 살아 있는 갯벌. 칠게와 짱뚱어, 조개 무더기가 함께 담긴 서해 생태 풍경',       tags:'# 갯벌 # 생태 # 서해' },
+  { num:'01', key:'01 소서노',     name:'소서노 미추홀 정착', img:'img/sheet_sosuno2.jpg',      desc:'바다를 가리키는 소서노와 물가에 정박한 돛단배. 문학산 능선을 배경으로 남하 여정의 도착을 담았습니다', tags:'# 소서노 # 정착 # 설화' },
+  { num:'02', key:'02 문학산성',   name:'문학산성 옛모습',   img:'img/sheet_munhak2.jpg',      desc:'정상부를 두른 테뫼식 석축 산성과 성 안 건물들. 간척 이전, 바다와 섬이 코앞까지 들어오던 옛 풍경',            tags:'# 문학산성 # 테뫼식 # 고증' },
+  { num:'03', key:'03 갯벌',       name:'미추홀 갯벌',       img:'img/sheet_tidal3.jpg',       desc:'연흔과 게 구멍, 갯골이 살아 있는 갯벌. 칠게와 짱뚱어, 조개 무더기가 함께 담긴 서해 생태 풍경',       tags:'# 갯벌 # 생태 # 서해' },
   { num:'04', key:'04 수봉폭포',   name:'수봉폭포',         img:'img/sheet_subong_fall.jpg', desc:'암벽 사이로 쏟아지는 폭포와 둥근 연못. 나무 계단과 울창한 숲이 어우러진 여름 풍경',                 tags:'# 수봉산 # 폭포 # 자연' },
-  { num:'05', key:'05 수봉도서관', name:'수봉도서관',       img:'img/sheet_tidal2.jpg',      desc:'수봉산 속 도서관, 미추홀구의 책 쉼터',                                                        tags:'# 수봉도서관 # 미추홀구 # 가족나들이' },
 ];
 
-// 체험용 수채화지 60장 = 5종 × 12장
+// 체험용 수채화지 100장 = 소서노 30 · 문학산성 30 · 갯벌 30 · 수봉폭포 10
 const STOCK_FALLBACK = {
-  '01 소서노':12, '02 문학산성':12, '03 갯벌':12, '04 수봉폭포':12, '05 수봉도서관':12
+  '01 소서노':30, '02 문학산성':30, '03 갯벌':30, '04 수봉폭포':10
 };
 
 // ── 굿즈 · 액자 (예약 대상 아님, 재고 표시만) ──
@@ -655,10 +655,14 @@ const GOODS_META = [
 ];
 const GOODS_FALLBACK = { '바인더 체험':50, '바인더 완성품':50, '스티커':100, '액자':28 };
 
-function getStockInfo(remain) {
-  if (remain === 0)  return { cls:'soldout',   label:'품절',     countLabel:'0장' };
-  if (remain <= 10)  return { cls:'low',       label:'잔여 적음', countLabel:`${remain}장` };
-  return               { cls:'available', label:'신청 가능', countLabel:`${remain}장` };
+/* total 을 주면 '잔여 적음' 기준을 총량의 30%(최소 3)로 잡는다.
+   도안별 준비 수량이 30장·10장으로 제각각이라, 10장짜리가 손도 안 댄 상태에서
+   '잔여 적음'으로 보이는 것을 막기 위함. total 이 없으면 종전대로 10 고정. */
+function getStockInfo(remain, total) {
+  const lowAt = total ? Math.max(3, Math.ceil(total * 0.3)) : 10;
+  if (remain === 0)      return { cls:'soldout',   label:'품절',     countLabel:'0장' };
+  if (remain <= lowAt)   return { cls:'low',       label:'잔여 적음', countLabel:`${remain}장` };
+  return                   { cls:'available', label:'신청 가능', countLabel:`${remain}장` };
 }
 
 function buildStockMap(arr) {
@@ -674,7 +678,7 @@ function renderStockList(stockMap) {
   let html = '';
   SHEETS_META.forEach(s => {
     const remain = (stockMap && stockMap[s.key] !== undefined) ? stockMap[s.key] : STOCK_FALLBACK[s.key];
-    const info = getStockInfo(remain);
+    const info = getStockInfo(remain, STOCK_FALLBACK[s.key]);
     html += `
       <div class="stock-item">
         <div class="stock-num ${remain === 0 ? 'out' : ''}">${s.num}</div>
@@ -692,7 +696,7 @@ function renderAboutSheets(stockMap) {
   let html = '';
   SHEETS_META.forEach(s => {
     const remain = (stockMap && stockMap[s.key] !== undefined) ? stockMap[s.key] : STOCK_FALLBACK[s.key];
-    const info = getStockInfo(remain);
+    const info = getStockInfo(remain, STOCK_FALLBACK[s.key]);
     html += `
       <div class="sheet-card">
         <div class="sheet-thumb-img" style="background-image:url('${s.img}')"></div>

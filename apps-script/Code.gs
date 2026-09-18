@@ -1623,3 +1623,196 @@ function debugReport() {
   Logger.log('전환 %s / %s명 (%s%%)', r.conversion.converted, r.conversion.freeAttend, r.conversion.rate);
   Logger.log(JSON.stringify(r, null, 2));
 }
+
+/* ══════════════════════════════════════════════════════════════
+   9. 리허설용 더미 — demoSeed() 로 넣고 demoClear() 로 지운다
+   ══════════════════════════════════════════════════════════════ */
+
+/** 더미는 이름 앞에 이 표시를 붙인다. 지울 때 이것만 보고 지운다. */
+var DEMO_TAG = '[테스트]';
+
+/** 지금 시각에 가장 가까운 회차 (13:00~18:00 중). 행사 전이면 13:00 */
+function demoSlotTime_(offset) {
+  var times = [];
+  try { times = allTimes_(); } catch (e) {}
+  if (!times.length) times = ['13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
+  var now = new Date();
+  var mins = now.getHours() * 60 + now.getMinutes();
+  var idx = 0;
+  for (var i = 0; i < times.length; i++) {
+    var hm = times[i].split(':');
+    if (Number(hm[0]) * 60 + Number(hm[1]) <= mins + 10) idx = i;
+  }
+  idx = Math.min(times.length - 1, Math.max(0, idx + (offset || 0)));
+  return times[idx];
+}
+
+/**
+ * 현장 리허설용 더미를 넣는다.
+ *
+ * 컬러링 접수대에서 세 가지 상태를 한눈에 보려고 한 회차에 세 명을 넣는다.
+ *   · 대기        — 아직 아무것도 안 누른 사람
+ *   · 체험 중     — 참석 + 도안 선택, 후기 전 ("후기 작성 전" 이 뜬다)
+ *   · 전달 대기   — 참석 + 도안 + 후기까지 작성 (작품 전달 버튼이 뜬다)
+ *
+ * 증정 접수대에는 두 건을 넣는다. 회차가 겹쳐 정원을 먹지 않도록 다음 회차에 둔다.
+ *   · SNS 후기   → 액자 대기
+ *   · 구매 후기  → 데코 스티커 대기
+ *
+ * 다 보고 나면 demoClear() 한 번이면 흔적 없이 지워진다.
+ */
+function demoSeed() {
+  var t1 = demoSlotTime_(0);          // 컬러링 접수대용
+  var t2 = demoSlotTime_(1);          // 증정 접수대용 (다음 회차)
+  var slot1 = '컬러링 ' + t1;
+  var slot2 = '컬러링 ' + t2;
+
+  var people = [
+    { name: DEMO_TAG + ' 김대기', tel: '010-1111-9871', time: t1 },
+    { name: DEMO_TAG + ' 이체험', tel: '010-2222-4432', time: t1 },
+    { name: DEMO_TAG + ' 박후기', tel: '010-3333-7788', time: t1 },
+    { name: DEMO_TAG + ' 최에스', tel: '010-4444-1234', time: t2 },
+    { name: DEMO_TAG + ' 정구매', tel: '010-5555-5678', time: t2 }
+  ];
+
+  // 1) 예약 시트에 다섯 명
+  var sh = getSheet_();
+  var cols = getColumns_(sh);
+  var head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(function (v) { return String(v).trim(); });
+  var find = function (labels) {
+    for (var j = 0; j < labels.length; j++)
+      for (var i = 0; i < head.length; i++) if (head[i].indexOf(labels[j]) !== -1) return i + 1;
+    return 0;
+  };
+  var cName = find(['이름', '성함', '성명']), cTel = find(['연락처', '휴대폰', '전화']);
+  var cStamp = find(['타임스탬프', '시각']), cRoute = find(['접수경로']);
+
+  people.forEach(function (x) {
+    var row = [];
+    for (var i = 0; i < head.length; i++) row.push('');
+    if (cStamp) row[cStamp - 1] = nowStamp_();
+    row[cols.program - 1] = '컬러링';
+    row[cols.time - 1]    = x.time;
+    if (cName) row[cName - 1] = x.name;
+    if (cTel)  row[cTel - 1]  = x.tel;
+    if (cRoute) row[cRoute - 1] = '리허설';
+    sh.appendRow(row);
+  });
+
+  // 2) 체크인 — 이체험은 도안까지, 박후기는 도안 + 후기까지
+  var designs = FIELD.DESIGNS;
+  actCheckin_({ k: FIELD.STAFF_KEY, slot: slot1, name: people[1].name,
+                status: '참석', design: designs[0] || '' });
+  actCheckin_({ k: FIELD.STAFF_KEY, slot: slot1, name: people[2].name,
+                status: '참석', design: designs[2] || designs[0] || '' });
+
+  // 3) 후기 — 컬러링 체험 / SNS / 스티커 구매
+  writeSurveyRow_('coloring', FIELD.SURVEYS.coloring,
+    { '가장 좋았던 점': '아이가 색칠하는 30분 동안 한 번도 안 지루해했어요. 도안이 예뻐요.' },
+    { slot: slot1, name: people[2].name });
+
+  writeSurveyRow_('sns', FIELD.SURVEYS.sns,
+    { '가장 좋았던 점': '인천에 이런 체험이 있는 줄 몰랐어요. 친구들한테 알렸습니다.', '플랫폼': '인스타그램' },
+    { slot: slot2, name: people[3].name, link: 'https://www.instagram.com/p/DEMO_TEST/' });
+
+  writeSurveyRow_('sticker', FIELD.SURVEYS.sticker,
+    { '가장 좋았던 점': '자개 스티커가 진짜 조개껍데기라 신기했어요.', '적정 가격': '2,000원' },
+    { slot: slot2, name: people[4].name });
+
+  bustSlotsCache_();
+
+  Logger.log('■ 리허설 더미를 넣었습니다.');
+  Logger.log('');
+  Logger.log('▼ 컬러링 접수대 — %s 회차를 고르세요', t1);
+  Logger.log('   · %s 9871 → 대기 (체험 시작을 눌러보세요)', people[0].name);
+  Logger.log('   · %s 4432 → 체험 중 · "후기 작성 전" 이 떠야 합니다', people[1].name);
+  Logger.log('   · %s 7788 → 후기 있음 · "작품 전달하기" 가 떠야 합니다', people[2].name);
+  Logger.log('');
+  Logger.log('▼ 증정 접수대 — 줄 차례에 두 건이 떠야 합니다');
+  Logger.log('   · %s 1234 → 액자', people[3].name);
+  Logger.log('   · %s 5678 → 데코 스티커', people[4].name);
+  Logger.log('');
+  Logger.log('■ 확인이 끝나면 demoClear() 를 실행해 지우세요.');
+  try { ss_().toast('리허설 더미 5건을 넣었습니다', '헬로미추', 6); } catch (e) {}
+  return { ok: true, slot1: slot1, slot2: slot2,
+           names: people.map(function (x) { return x.name; }) };
+}
+
+/** 더미를 전부 지우고 재고까지 원래대로 돌린다 */
+function demoClear() {
+  var removed = { 예약: 0, 체크인: 0, 설문: 0, 판매: 0 };
+  var restored = [];
+
+  var isDemo = function (v) { return String(v == null ? '' : v).indexOf(DEMO_TAG) !== -1; };
+  var wipe = function (sh, test, before) {
+    if (!sh || sh.getLastRow() < 2) return 0;
+    var n = 0;
+    var vals = sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
+    for (var r = vals.length - 1; r >= 0; r--) {      // 아래에서 위로 — 행 번호가 안 밀린다
+      if (!test(vals[r])) continue;
+      if (before) before(vals[r]);
+      sh.deleteRow(r + 2);
+      n++;
+    }
+    return n;
+  };
+
+  // 1) 판매 시트 — 더미에게 준 증정분은 재고를 되돌린다
+  var sale = ss_().getSheetByName(FIELD.TAB_SALE);
+  if (sale) {
+    var sh2 = sale.getRange(1, 1, 1, sale.getLastColumn()).getValues()[0].map(function (v) { return String(v).trim(); });
+    var cItem = sh2.indexOf('상품'), cSlotName = sh2.indexOf('회차');
+    removed.판매 = wipe(sale,
+      function (r) { return cSlotName >= 0 && isDemo(r[cSlotName]); },
+      function (r) {
+        var key = stockKeyOf_(String(r[cItem]).trim());
+        bumpStock_(key, -1);
+        restored.push(key);
+      });
+  }
+
+  // 2) 체크인 — 참석 + 도안이면 도안 재고를 되돌린다
+  var csh = ss_().getSheetByName(FIELD.TAB_CHECKIN);
+  removed.체크인 = wipe(csh,
+    function (r) { return isDemo(r[3]); },
+    function (r) {
+      if (String(r[4]).trim() === '참석' && String(r[5]).trim()) {
+        bumpStock_(String(r[5]).trim(), -1);
+        restored.push(String(r[5]).trim());
+      }
+    });
+
+  // 3) 설문
+  Object.keys(FIELD.SURVEYS).forEach(function (t) {
+    var sv = ss_().getSheetByName(FIELD.SURVEYS[t].tab);
+    if (!sv || sv.getLastRow() < 2) return;
+    var h = sv.getRange(1, 1, 1, sv.getLastColumn()).getValues()[0].map(function (v) { return String(v).trim(); });
+    var c = h.indexOf('이름');
+    if (c < 0) return;
+    removed.설문 += wipe(sv, function (r) { return isDemo(r[c]); });
+  });
+
+  // 4) 예약
+  try {
+    var rsh = getSheet_();
+    var rh = rsh.getRange(1, 1, 1, rsh.getLastColumn()).getValues()[0].map(function (v) { return String(v).trim(); });
+    var rc = -1;
+    ['이름', '성함', '성명'].forEach(function (lab) {
+      if (rc >= 0) return;
+      for (var i = 0; i < rh.length; i++) if (rh[i].indexOf(lab) !== -1) { rc = i; break; }
+    });
+    if (rc >= 0) removed.예약 = wipe(rsh, function (r) { return isDemo(r[rc]); });
+  } catch (err) {
+    Logger.log('■ 예약 시트를 못 읽었습니다: %s', String(err && err.message || err));
+  }
+
+  telIndex_._c = null;
+  bustSlotsCache_();
+
+  Logger.log('■ 리허설 더미를 지웠습니다 — 예약 %s · 체크인 %s · 설문 %s · 판매 %s',
+             removed.예약, removed.체크인, removed.설문, removed.판매);
+  if (restored.length) Logger.log('■ 되돌린 재고: %s', restored.join(', '));
+  else Logger.log('■ 되돌릴 재고 없음');
+  try { ss_().toast('리허설 더미를 지웠습니다', '헬로미추', 6); } catch (e) {}
+  return { ok: true, removed: removed, restored: restored };
+}

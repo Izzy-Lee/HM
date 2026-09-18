@@ -50,3 +50,13 @@ BASE=http://127.0.0.1:8795 SEED=777 node test/sim10.js   # 다른 시나리오
 node test/server.js 8810 &
 node test/desks.js
 ```
+
+## 리허설 더미 (demo.js)
+
+`demoSeed()` 로 더미를 넣고 → 두 접수대에서 실제로 눌러보고 →
+`demoClear()` 로 지웠을 때 **재고까지 원래대로 돌아오는지** 확인합니다.
+
+```bash
+node test/server.js 8815 &
+node test/demo.js
+```

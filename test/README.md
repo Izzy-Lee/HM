@@ -67,3 +67,14 @@ node test/demo.js
 ```bash
 NO_MOCK_ROSTER=1 node test/server.js 8820 &
 ```
+
+## 준비물 탭 (checklist_tab.js)
+
+`setupChecklist()` 이 구글 시트에 체크박스 달린 준비물 탭을 만드는지,
+계획서 항목이 빠지지 않았는지, 두 번 실행해도 체크해 둔 것이
+날아가지 않는지 확인합니다.
+
+```bash
+node test/server.js 8860 &
+node test/checklist_tab.js
+```

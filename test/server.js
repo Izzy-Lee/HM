@@ -11,6 +11,12 @@ class Sheet {
   appendRow(r){ this.data.push(r.slice()); }
   deleteRow(r){ this.data.splice(r-1, 1); return this; }
   setFrozenRows(){ return this; }
+  setColumnWidth(){ return this; }
+  setColumnWidths(){ return this; }
+  setRowHeight(){ return this; }
+  setTabColor(){ return this; }
+  activate(){ return this; }
+  getIndex(){ return 1; }
   clear(){ this.data=[]; return this; }
   autoResizeColumns(){ return this; }
   autoResizeColumn(){ return this; }
@@ -25,7 +31,12 @@ class Sheet {
       setValue(v){ if(!sh.data[r-1]) sh.data[r-1]=[]; sh.data[r-1][c-1]=v; return this; },
       clearContent(){ for(let i=0;i<nr;i++){ const row=sh.data[r-1+i]; if(!row) continue;
         for(let j=0;j<nc;j++) row[c-1+j]=''; } return this; },
-      setFontWeight(){return this;}, setBackground(){return this;}
+      setFontWeight(){return this;}, setBackground(){return this;},
+      insertCheckboxes(){ for(let i=0;i<nr;i++){ if(!sh.data[r-1+i]) sh.data[r-1+i]=[];
+        for(let j=0;j<nc;j++) if(sh.data[r-1+i][c-1+j]==='') sh.data[r-1+i][c-1+j]=false; } return this; },
+      setFontColor(){return this;}, setFontSize(){return this;}, setWrap(){return this;},
+      setHorizontalAlignment(){return this;}, setVerticalAlignment(){return this;},
+      setBorder(){return this;}, merge(){return this;}
     };
   }
 }
@@ -33,6 +44,7 @@ class SS {
   constructor(){ this.sheets={}; }
   getSheetByName(n){ return this.sheets[n]||null; }
   insertSheet(n){ return this.sheets[n]=new Sheet(n); }
+  deleteSheet(sh){ delete this.sheets[sh.name]; return this; }
   getSheets(){ return Object.values(this.sheets); }
   getName(){ return '테스트 스프레드시트'; }
   getUrl(){ return 'https://docs.google.com/spreadsheets/d/TEST/edit'; }
@@ -143,6 +155,13 @@ http.createServer((req,res)=>{
     return res.end(JSON.stringify(out === undefined ? {ok:true} : out));
   }
   /* 테스트용 — 재고 탭에 임의 품목을 끼워 넣는다 (지난 행사 잔재 재현) */
+  /* 테스트용 — 체크박스 한 칸을 체크한 상태로 만든다 */
+  if (u.pathname === '/_tick') {
+    const sh = ss.getSheetByName(u.query.tab);
+    sh.data[Number(u.query.row)-1][0] = true;
+    res.writeHead(200,{'Content-Type':'application/json'});
+    return res.end('{"ok":true}');
+  }
   if (u.pathname === '/_inject_stock') {
     const sh = ss.getSheetByName('재고');
     const t = Number(u.query.total||0);

@@ -193,6 +193,8 @@ function setupEvent() {
 
   setupFieldSheets();
   Logger.log('■ 현장 데이터 탭 5종(판매·체크인·관찰메모·재고·방문) 준비 완료');
+  Logger.log('   ※ 재고 탭은 없는 품목만 추가합니다. 준비 수량이나 도안 구성을 바꿨다면');
+  Logger.log('      resetStock() 을 따로 한 번 실행하세요.');
 
   // 시트를 손으로 고쳤을 때도 사이트에 바로 반영되도록 감지 트리거를 둔다
   try {
@@ -276,6 +278,47 @@ function ensureStockSheet_() {
     if (!have[it.key]) sh.appendRow([it.key, it.total, 0, 0, it.total]);
   });
   return sh;
+}
+
+/**
+ * 재고 탭을 STOCK_ITEMS 설정과 다시 맞춘다.
+ *
+ * ensureStockSheet_() 는 없는 품목을 '추가'만 하기 때문에, 이미 있는 품목의
+ * 초기수량을 바꾸거나 빠진 품목을 내리지는 못한다. 도안 구성이나 준비 수량을
+ * 바꿨을 때는 이 함수를 한 번 실행하면 된다.
+ *
+ * 차감·보정 기록은 그대로 두고 초기수량과 잔여만 다시 계산하므로,
+ * 행사 중에 돌려도 이미 나간 수량이 사라지지 않는다.
+ */
+function resetStock() {
+  var sh = ensureSheet_(FIELD.TAB_STOCK, FIELD.HEAD_STOCK);
+  var prev = {};
+  if (sh.getLastRow() > 1) {
+    sh.getRange(2, 1, sh.getLastRow() - 1, 5).getValues().forEach(function (r) {
+      var k = String(r[0]).trim();
+      if (k) prev[k] = { used: Number(r[2]) || 0, adj: Number(r[3]) || 0 };
+    });
+    sh.getRange(2, 1, sh.getLastRow() - 1, 5).clearContent();
+  }
+
+  var rows = FIELD.STOCK_ITEMS.map(function (it) {
+    var p = prev[it.key] || { used: 0, adj: 0 };
+    return [it.key, it.total, p.used, p.adj, it.total - p.used + p.adj];
+  });
+  sh.getRange(2, 1, rows.length, 5).setValues(rows);
+
+  var dropped = Object.keys(prev).filter(function (k) {
+    return !FIELD.STOCK_ITEMS.some(function (it) { return it.key === k; });
+  });
+
+  bustSlotsCache_();
+  Logger.log('■ 재고 탭을 설정과 맞췄습니다 (%s개 품목)', rows.length);
+  rows.forEach(function (r) {
+    Logger.log('   · %s — 준비 %s / 차감 %s / 잔여 %s', r[0], r[1], r[2], r[4]);
+  });
+  if (dropped.length) Logger.log('■ 설정에서 빠져 내린 품목: %s', dropped.join(', '));
+  try { ss_().toast('재고 ' + rows.length + '종으로 맞췄습니다', '헬로미추', 5); } catch (e) {}
+  return { ok: true, items: rows.length, dropped: dropped };
 }
 
 /* ══════════════════════════════════════════════════════════════

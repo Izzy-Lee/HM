@@ -23,6 +23,8 @@ class Sheet {
       setValues(v){ for(let i=0;i<v.length;i++){ if(!sh.data[r-1+i]) sh.data[r-1+i]=[];
         for(let j=0;j<v[i].length;j++) sh.data[r-1+i][c-1+j]=v[i][j]; } return this; },
       setValue(v){ if(!sh.data[r-1]) sh.data[r-1]=[]; sh.data[r-1][c-1]=v; return this; },
+      clearContent(){ for(let i=0;i<nr;i++){ const row=sh.data[r-1+i]; if(!row) continue;
+        for(let j=0;j<nc;j++) row[c-1+j]=''; } return this; },
       setFontWeight(){return this;}, setBackground(){return this;}
     };
   }
@@ -129,6 +131,22 @@ http.createServer((req,res)=>{
     const sh = ss.getSheetByName(u.query.tab);
     res.writeHead(200,{'Content-Type':'application/json; charset=utf-8'});
     return res.end(JSON.stringify(sh ? sh.data : null));
+  }
+  /* 테스트용 — 스크립트 함수를 이름으로 직접 실행한다 */
+  if (u.pathname === '/_run') {
+    let out;
+    try { out = ctx[u.query.fn](); }
+    catch(e){ res.writeHead(500); return res.end(String(e && e.stack || e)); }
+    res.writeHead(200,{'Content-Type':'application/json; charset=utf-8'});
+    return res.end(JSON.stringify(out === undefined ? {ok:true} : out));
+  }
+  /* 테스트용 — 재고 탭에 임의 품목을 끼워 넣는다 (지난 행사 잔재 재현) */
+  if (u.pathname === '/_inject_stock') {
+    const sh = ss.getSheetByName('재고');
+    const t = Number(u.query.total||0);
+    sh.appendRow([u.query.key, t, 0, 0, t]);
+    res.writeHead(200,{'Content-Type':'application/json'});
+    return res.end('{"ok":true}');
   }
   if (u.pathname === '/exec') {
     let out;

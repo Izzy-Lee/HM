@@ -127,6 +127,9 @@ let rows  = [];
 let stock = {};
 let timer = null;
 
+/* 자동 새로고침 주기. 손님이 후기를 쓰면 이 시간 안에 담당자 화면에 뜬다. */
+const REFRESH_MS = 10000;
+
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
   ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const $ = id => document.getElementById(id);
@@ -266,7 +269,7 @@ function start() {
   $('app').hidden = false;
   load();
   clearInterval(timer);
-  timer = setInterval(() => load(true), 20000);
+  timer = setInterval(() => load(true), REFRESH_MS);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) load(true); });
 }
 

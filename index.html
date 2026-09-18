@@ -236,7 +236,7 @@
 
   .sheet-cards { display: flex; flex-direction: column; gap: 0.6rem; }
   .sheet-card { display: flex; flex-direction: column; gap: 0; background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 10px; overflow: hidden; }
-  .sheet-thumb-img { width: 100%; height: 240px; background-size: cover; background-position: center; background-color: rgba(74,156,140,0.08); }
+  .sheet-thumb-img { display: block; width: 100%; height: auto; background-color: rgba(74,156,140,0.08); }
   .sheet-card .sheet-card-info { padding: 0.7rem 0.9rem 0.8rem; display: flex; flex-direction: column; gap: 0.2rem; }
   .sheet-card .sheet-num-badge { align-self: flex-start; margin-bottom: 0.2rem; }
   .sheet-card:not(:has(.sheet-thumb-img)) { flex-direction: row; align-items: flex-start; padding: 0.8rem 1rem; }
@@ -699,7 +699,7 @@ function renderAboutSheets(stockMap) {
     const info = getStockInfo(remain, STOCK_FALLBACK[s.key]);
     html += `
       <div class="sheet-card">
-        <div class="sheet-thumb-img" style="background-image:url('${s.img}')"></div>
+        <img class="sheet-thumb-img" src="${s.img}" alt="${s.name} 도안" loading="lazy" decoding="async">
         <div class="sheet-card-info">
           <div class="sheet-num-badge">${s.num}</div>
           <div class="sheet-stock-row">

@@ -205,7 +205,7 @@
 
   .sheet-cards { display: flex; flex-direction: column; gap: 0.6rem; }
   .sheet-card { display: flex; flex-direction: column; background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 10px; overflow: hidden; }
-  .sheet-thumb-img { width: 100%; height: 200px; background-size: cover; background-position: center; background-color: rgba(74,156,140,0.08); }
+  .sheet-thumb-img { display: block; width: 100%; height: auto; background-color: rgba(74,156,140,0.08); }
   .sheet-card-info { padding: 0.7rem 0.9rem 0.8rem; display: flex; flex-direction: column; gap: 0.2rem; }
   .sheet-num-badge { min-width: 28px; height: 28px; background: var(--brush-teal); color: white; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; align-self: flex-start; margin-bottom: 0.2rem; }
   .sheet-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.2rem; }
@@ -598,7 +598,7 @@ function renderAboutSheets(stockMap) {
     const info = getStockInfo(remain, STOCK_FALLBACK[s.key]);
     html += `
       <div class="sheet-card">
-        <div class="sheet-thumb-img" style="background-image:url('${s.img}')"></div>
+        <img class="sheet-thumb-img" src="${s.img}" alt="${s.name} coloring sheet" loading="lazy" decoding="async">
         <div class="sheet-card-info">
           <div class="sheet-num-badge">${s.num}</div>
           <div class="sheet-title-row">

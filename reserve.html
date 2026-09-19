@@ -95,6 +95,9 @@
   .pv .full{ font-size:.72rem; color:var(--soft); line-height:1.75; padding-top:.3rem; }
   .pv .full p{ margin-bottom:.5rem; }
   .pv .full b{ color:var(--ink); }
+  .notice .retry{ display:block; width:100%; min-height:44px; margin-top:.6rem;
+    border:1px solid var(--amber); background:#fff; color:var(--amber);
+    border-radius:9px; font-family:inherit; font-size:.85rem; font-weight:700; cursor:pointer; }
   .bar .consent{ font-size:.71rem; color:var(--faint); text-align:center; line-height:1.5; margin-bottom:.4rem; }
   .bar .consent b{ color:var(--soft); font-weight:700; }
 
@@ -193,7 +196,7 @@ function call(params, timeoutMs){
     const s=document.createElement('script');
     let done=false;
     const clean=()=>{ delete window[cb]; s.remove(); clearTimeout(t); };
-    const t=setTimeout(()=>{ if(!done){done=true;clean();reject(new Error('시간 초과. 네트워크를 확인해 주세요.'));} }, timeoutMs || 20000);
+    const t=setTimeout(()=>{ if(!done){done=true;clean();reject(new Error('시간 초과. 네트워크를 확인해 주세요.'));} }, timeoutMs || 25000);
     window[cb]=d=>{ done=true; clean(); (d&&d.ok===false)?reject(new Error(d.error||'오류')):resolve(d); };
     s.onerror=()=>{ if(!done){done=true;clean();reject(new Error('네트워크 오류'));} };
     s.src=url.toString();
@@ -240,14 +243,21 @@ function normalize(apiSlots){
 }
 
 async function load(){
-  try{
-    const d = await call({}, 8000);       // 조회는 짧게 끊는다 (접수는 기본 20초 유지)
-    slots = normalize(d.slots);
-    stock = {};
-    (d.sheetStock||[]).forEach(s=>{ stock[s.key]=s.remain; });
-  }catch(e){ slots = normalize(null); }
-  loaded = true;
-  render();
+  /* 행사장 LTE 가 느려 한 번에 못 받아오는 일이 있다. 시간을 넉넉히 주고 두 번 더 시도한다. */
+  for (let attempt = 0; attempt < 3; attempt++){
+    try{
+      const d = await call({}, 15000);
+      slots = normalize(d.slots);
+      stock = {};
+      (d.sheetStock||[]).forEach(s=>{ stock[s.key]=s.remain; });
+      loaded = true; render();
+      return;
+    }catch(e){
+      if (attempt === 0){ slots = normalize(null); loaded = true; render(); }  // 화면부터 띄우고
+      await new Promise(r=>setTimeout(r, 1500));
+    }
+  }
+  loaded = true; render();
 }
 
 function slotsFor(program){
@@ -257,16 +267,17 @@ function slotsFor(program){
 function render(){
   const prog = PROGRAMS.filter(p=>p.key===F.program)[0];
   const list = F.program ? slotsFor(F.program) : [];
-  const ready = live && F.program && F.time && F.name.trim() && F.tel.trim();
+  const ready = F.program && F.time && F.name.trim() && F.tel.trim();
 
   let h = '<header><h1>체험 예약</h1>' +
     '<div class="when">' + EVENT_DATE + ' · 수봉산 폭포 앞<br>13:00 ~ 18:30 · 30분 11회차</div></header>' +
     '<div class="err" id="err"></div>';
 
   if (loaded && !live) {
-    h += '<div class="notice"><b>예약 서버 점검 중입니다.</b><br>' +
-         '회차는 예정대로 ' + EVENT_DATE + ' 13:00~18:30 · 30분 11회차로 운영하지만, ' +
-         '지금은 온라인 접수를 받을 수 없습니다. 잠시 후 다시 시도하시거나 현장 부스로 문의해 주세요.</div>';
+    h += '<div class="notice"><b>지금 잔여 인원을 불러오지 못했습니다.</b><br>' +
+         '현장 통신 상태 때문입니다. <b>예약은 그대로 하실 수 있고</b>, 자리가 없으면 ' +
+         '접수할 때 알려드립니다. 회차는 예정대로 ' + EVENT_DATE + ' 13:00~18:30 · 30분 11회차로 운영합니다.' +
+         '<br><button type="button" class="retry" id="retry">잔여 인원 다시 불러오기</button></div>';
   }
 
   h += '<div class="pane">';
@@ -343,7 +354,9 @@ function render(){
 
   h += '<div class="bar">' +
     '<div class="sum">' + (loaded && !live
-      ? '예약 서버 점검 중 — 현장 부스로 문의해 주세요'
+      ? (F.program && F.time
+          ? '<b>'+esc(prog.name)+' '+esc(F.time)+'</b> 회차로 예약합니다 (잔여 확인 불가)'
+          : '프로그램과 시간을 선택해 주세요')
       : (F.program && F.time
         ? '<b>'+esc(prog.name)+' '+esc(F.time)+'</b> 회차로 예약합니다'
         : '프로그램과 시간을 선택해 주세요')) + '</div>' +
@@ -368,6 +381,9 @@ function bind(){
     F.design = (F.design===el.dataset.design) ? '' : el.dataset.design;
     render();
   }));
+  const rt=document.getElementById('retry');
+  if (rt) rt.addEventListener('click',()=>{ rt.textContent='불러오는 중...'; load(); });
+
   const n=document.getElementById('fName'), t=document.getElementById('fTel');
   if (n) n.addEventListener('input',()=>{ F.name=n.value; toggleSubmit(); });
   if (t) t.addEventListener('input',()=>{ F.tel=t.value; toggleSubmit(); });
@@ -378,7 +394,7 @@ function bind(){
 
 function toggleSubmit(){
   const b=document.getElementById('submit');
-  if (b) b.disabled = !(live && F.program && F.time && F.name.trim() && F.tel.trim());
+  if (b) b.disabled = !(F.program && F.time && F.name.trim() && F.tel.trim());
 }
 
 async function submit(){

@@ -538,25 +538,57 @@ function actCheckin_(p) {
       }
     }
 
+    /* 지금 이 사람이 붙들고 있는 도안.
+       체크인 기록이 아직 없으면, 예약할 때 고른 도안이 이미 한 장을 잡고 있다. */
+    var held = found ? ((prevStatus === '노쇼') ? '' : prevDesign)
+                     : bookedDesignOf_(slot, name);
+
     // 헤더 순서와 1:1 — 시각 회차 프로그램 예약자 상태 도안 완성여부
     var row = [nowStamp_(), slot, program, name, status, design, done];
     if (found) sh.getRange(found, 1, 1, row.length).setValues([row]);
     else       sh.appendRow(row);
 
-    // 도안 재고는 '참석' 일 때만 차감하고, 되돌리면 복구한다
-    var wasAttend = (prevStatus === '참석');
-    var nowAttend = (status === '참석');
-    if (nowAttend && design && (!wasAttend || prevDesign !== design)) {
-      if (wasAttend && prevDesign) bumpStock_(prevDesign, -1);
-      bumpStock_(design, 1);
-    } else if (!nowAttend && wasAttend && prevDesign) {
-      bumpStock_(prevDesign, -1);
+    /* 노쇼·취소면 잡아둔 도안을 놓아준다. 그 외에는 지금 고른 도안을 잡는다.
+       차감은 예약 때 이미 일어났으므로, 여기서는 '바뀐 만큼만' 조정한다. */
+    var want = (status === '노쇼' || status === '취소' || status === '') ? '' : design;
+    if (want !== held) {
+      if (held) bumpStock_(held, -1);
+      if (want) bumpStock_(want, 1);
     }
 
-    return { ok: true, slot: slot, name: name, status: status };
+    return { ok: true, slot: slot, name: name, status: status, design: want };
   } finally {
     lock.releaseLock();
   }
+}
+
+
+/** 이 회차·이 사람이 예약할 때 고른 도안 (없으면 빈 문자열) */
+function bookedDesignOf_(slot, name) {
+  try {
+    var parsed = parseSlot_(slot);
+    if (!parsed.program || !parsed.time) return '';
+    var sh = getSheet_();
+    if (sh.getLastRow() < 2) return '';
+    var cols = getColumns_(sh);
+    var head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0]
+                 .map(function (v) { return String(v).trim(); });
+    var find = function (labels) {
+      for (var j = 0; j < labels.length; j++)
+        for (var i = 0; i < head.length; i++) if (head[i].indexOf(labels[j]) !== -1) return i + 1;
+      return 0;
+    };
+    var cName = find(['이름', '성함', '성명']), cDesign = find(['도안']);
+    if (!cName || !cDesign) return '';
+    var vals = sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
+    for (var r = vals.length - 1; r >= 0; r--) {
+      if (String(vals[r][cName - 1]).trim() !== name) continue;
+      if (normalizeProgram_(vals[r][cols.program - 1]) !== parsed.program) continue;
+      if (normalizeTime_(vals[r][cols.time - 1]) !== parsed.time) continue;
+      return String(vals[r][cDesign - 1]).trim();
+    }
+  } catch (err) { /* 예약 시트를 못 읽어도 체크인은 되어야 한다 */ }
+  return '';
 }
 
 /** 관찰 태그 — action=memo&tag=대기발생&slot=컬러링 14:00&note=내용&k=키 */
@@ -635,6 +667,16 @@ function actBook_(p) {
                       '명분이 모두 예약되었습니다. 현장 부스로 문의해 주세요.');
     }
 
+    /* 도안을 골랐다면 그 자리에서 한 장을 잡아둔다.
+       현장 체크인까지 기다리면, 이미 예약된 도안이 화면에는 남아 있는 것으로 보여
+       뒤에 온 손님이 같은 도안을 또 고르게 된다. */
+    if (design) {
+      var rec = stockRows_().map[design];
+      if (rec && stockRemain_(rec) <= 0) {
+        throw new Error(design + ' 도안은 방금 마감되었습니다. 다른 도안을 선택해 주세요.');
+      }
+    }
+
     // 같은 이름·연락처로 같은 회차를 두 번 넣는 것을 막는다 (버튼 두 번 누름 대비)
     if (bookedAlready_(sh, cols, program, time, name, tel)) {
       return { ok: true, duplicate: true, program: program, time: time,
@@ -676,6 +718,8 @@ function actBook_(p) {
 
     while (row.length < header.length) row.push('');
     sh.appendRow(row);
+
+    if (design) bumpStock_(design, 1);      // 예약과 동시에 차감
 
     // 정원이 찼으면 폼 선택지도 정리해 둔다 (구글 폼을 병행하는 경우 대비)
     try { if (typeof syncFormChoices === 'function') syncFormChoices(); } catch (err) {}
@@ -1344,6 +1388,7 @@ function buildRoster_(slot) {
 
   var existing = {};   // 회차 기존 체크인 상태
   var tel4 = {};       // 예약자별 연락처 뒷 4자리 — 현장에서 본인 확인용
+  var booked = {};     // 예약할 때 고른 도안 — 이미 재고를 잡아둔 상태다
   var csh = ensureSheet_(FIELD.TAB_CHECKIN, FIELD.HEAD_CHECKIN);
   if (csh.getLastRow() > 1) {
     csh.getRange(2, 1, csh.getLastRow() - 1, FIELD.HEAD_CHECKIN.length).getValues()
@@ -1370,6 +1415,8 @@ function buildRoster_(slot) {
         if (telCol) return;
         for (var i = 0; i < head.length; i++) if (head[i].indexOf(label) !== -1) { telCol = i + 1; break; }
       });
+      var designCol = 0;
+      for (var di = 0; di < head.length; di++) if (head[di].indexOf('도안') !== -1) { designCol = di + 1; break; }
       var vals = sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
       vals.forEach(function (r, i) {
         var program = normalizeProgram_(r[cols.program - 1]);
@@ -1381,6 +1428,7 @@ function buildRoster_(slot) {
         nm = nm || ('예약 ' + (i + 2) + '행');
         names.push(nm);
         if (telCol) tel4[nm] = tail4_(r[telCol - 1]);
+        if (designCol) booked[nm] = String(r[designCol - 1]).trim();
       });
     }
   } catch (err) {
@@ -1395,7 +1443,10 @@ function buildRoster_(slot) {
   out.people = names.map(function (nm) {
     var s = existing[nm] || {};
     return { name: nm, tel4: tel4[nm] || '',
-             status: s.status || '', design: s.design || '', done: s.done || '' };
+             status: s.status || '',
+             design: s.design || (existing[nm] ? '' : (booked[nm] || '')),
+             booked: booked[nm] || '',
+             done: s.done || '' };
   });
   return out;
 }
@@ -1965,4 +2016,114 @@ function setupChecklist(force) {
   Logger.log('   폰 구글 시트 앱에서 열어 체크박스를 누르면 됩니다.');
   try { ss.toast('준비물 탭을 만들었습니다 (' + items + '개 항목)', '헬로미추', 6); } catch (e) {}
   return { ok: true, created: true, items: items, sections: sections.length };
+}
+
+/**
+ * 도안 재고를 예약·체크인 기록과 다시 맞춘다.
+ *
+ * '예약과 동시에 차감' 으로 바꾸기 전에 들어온 예약은 차감이 안 된 상태다.
+ * 이 함수는 지금 누가 어떤 도안을 붙들고 있는지 처음부터 세어서 재고의
+ * '차감' 값을 그대로 다시 쓴다. 몇 번을 돌려도 결과가 같다.
+ *
+ *   붙들고 있다 = 취소/노쇼가 아닌 예약자의 도안
+ *                (현장에서 바꿨으면 바꾼 도안, 노쇼면 없음)
+ *              + 예약 없이 현장에서 체크인한 사람의 도안
+ */
+function syncSheetStock() {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    // 1) 체크인 기록 — 회차+이름 별 최신 상태
+    var chk = {};
+    var csh = ensureSheet_(FIELD.TAB_CHECKIN, FIELD.HEAD_CHECKIN);
+    if (csh.getLastRow() > 1) {
+      csh.getRange(2, 1, csh.getLastRow() - 1, FIELD.HEAD_CHECKIN.length).getValues()
+        .forEach(function (r) {
+          var slot = String(r[1]).trim(), nm = String(r[3]).trim();
+          if (!slot || !nm) return;
+          chk[slot + '\u0000' + nm] = { status: String(r[4]).trim(), design: String(r[5]).trim() };
+        });
+    }
+
+    var held = {};   // 도안별로 몇 장이 나가 있나
+    var take = function (d) { if (d) held[d] = (held[d] || 0) + 1; };
+    var seen = {};
+
+    // 2) 예약자
+    try {
+      var sh = getSheet_();
+      if (sh.getLastRow() > 1) {
+        var cols = getColumns_(sh);
+        var head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0]
+                     .map(function (v) { return String(v).trim(); });
+        var find = function (labels) {
+          for (var j = 0; j < labels.length; j++)
+            for (var i = 0; i < head.length; i++) if (head[i].indexOf(labels[j]) !== -1) return i + 1;
+          return 0;
+        };
+        var cName = find(['이름', '성함', '성명']), cDesign = find(['도안']);
+        sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues().forEach(function (r) {
+          var status = String(r[cols.status - 1] || '');
+          if (CONFIG.EXCLUDE_STATUS.some(function (x) { return status.indexOf(x) !== -1; })) return;
+          var program = normalizeProgram_(r[cols.program - 1]);
+          var time    = normalizeTime_(r[cols.time - 1]);
+          if (!program || !time) return;
+          var nm   = cName ? String(r[cName - 1]).trim() : '';
+          var slot = program + ' ' + time;
+          var key  = slot + '\u0000' + nm;
+          seen[key] = true;
+          var c = chk[key];
+          if (c) { if (c.status !== '노쇼') take(c.design); }        // 현장 상태가 우선
+          else   { take(cDesign ? String(r[cDesign - 1]).trim() : ''); }
+        });
+      }
+    } catch (err) {
+      Logger.log('■ 예약 시트를 못 읽었습니다: %s', String(err && err.message || err));
+    }
+
+    // 3) 예약 없이 현장에서 온 사람
+    Object.keys(chk).forEach(function (key) {
+      if (seen[key]) return;
+      if (chk[key].status !== '노쇼') take(chk[key].design);
+    });
+
+    // 4) 재고 탭의 '차감' 을 다시 쓴다 (도안만 — 굿즈는 판매 기록이 진짜다)
+    var ssh = ensureStockSheet_();
+    var header = ssh.getRange(1, 1, 1, FIELD.HEAD_STOCK.length).getValues()[0]
+                    .map(function (v) { return String(v).trim(); });
+    var cUsed = header.indexOf('차감') + 1, cTot = header.indexOf('초기수량') + 1;
+    var cAdj  = header.indexOf('보정') + 1,  cRem = header.indexOf('잔여') + 1;
+    var rows  = ssh.getRange(2, 1, Math.max(0, ssh.getLastRow() - 1), FIELD.HEAD_STOCK.length).getValues();
+
+    var changed = [];
+    FIELD.STOCK_ITEMS.forEach(function (it) {
+      if (it.group !== 'sheet') return;
+      for (var i = 0; i < rows.length; i++) {
+        if (String(rows[i][0]).trim() !== it.key) continue;
+        var was = Number(rows[i][cUsed - 1]) || 0;
+        var now = held[it.key] || 0;
+        if (was !== now) {
+          ssh.getRange(i + 2, cUsed).setValue(now);
+          changed.push(it.key + ' 차감 ' + was + ' → ' + now);
+        }
+        var tot = Number(rows[i][cTot - 1]) || 0, adj = Number(rows[i][cAdj - 1]) || 0;
+        ssh.getRange(i + 2, cRem).setValue(tot - now + adj);
+        break;
+      }
+    });
+
+    bustSlotsCache_();
+    Logger.log('■ 도안 재고를 예약·체크인 기록과 맞췄습니다.');
+    FIELD.STOCK_ITEMS.forEach(function (it) {
+      if (it.group !== 'sheet') return;
+      Logger.log('   · %s — 나간 장수 %s / 잔여 %s', it.key, held[it.key] || 0,
+                 it.total - (held[it.key] || 0));
+    });
+    if (changed.length) Logger.log('■ 바뀐 항목: %s', changed.join(' , '));
+    else Logger.log('■ 이미 맞아 있었습니다.');
+    try { ss_().toast('도안 재고를 기록과 맞췄습니다', '헬로미추', 6); } catch (e) {}
+    return { ok: true, held: held, changed: changed };
+  } finally {
+    lock.releaseLock();
+  }
 }

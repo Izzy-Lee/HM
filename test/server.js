@@ -162,6 +162,20 @@ http.createServer((req,res)=>{
     res.writeHead(200,{'Content-Type':'application/json'});
     return res.end('{"ok":true}');
   }
+  /* 테스트용 — 재고 '차감' 을 임의 값으로 틀어놓는다 */
+  if (u.pathname === '/_skew') {
+    const sh = ss.getSheetByName(u.query.tab);
+    const h = sh.data[0];
+    const iU = h.indexOf('차감'), iT = h.indexOf('초기수량'), iA = h.indexOf('보정'), iR = h.indexOf('잔여');
+    for (let r = 1; r < sh.data.length; r++) {
+      if (String(sh.data[r][0]).trim() !== u.query.key) continue;
+      sh.data[r][iU] = Number(u.query.used);
+      sh.data[r][iR] = Number(sh.data[r][iT]) - Number(u.query.used) + (Number(sh.data[r][iA])||0);
+      break;
+    }
+    res.writeHead(200,{'Content-Type':'application/json'});
+    return res.end('{"ok":true}');
+  }
   if (u.pathname === '/_inject_stock') {
     const sh = ss.getSheetByName('재고');
     const t = Number(u.query.total||0);

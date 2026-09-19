@@ -78,3 +78,14 @@ NO_MOCK_ROSTER=1 node test/server.js 8820 &
 node test/server.js 8860 &
 node test/checklist_tab.js
 ```
+
+## 예약 시점 도안 차감 (stock_on_book.js)
+
+예약과 동시에 도안 재고가 빠지는지, 체크인에서 이중으로 빠지지 않는지,
+현장에서 도안을 바꾸거나 노쇼일 때 제대로 되돌아오는지 확인합니다.
+`syncSheetStock()` 이 틀어진 차감을 바로잡고 두 번 돌려도 같은지도 봅니다.
+
+```bash
+node test/server.js 8880 &
+node test/stock_on_book.js
+```

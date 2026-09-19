@@ -318,13 +318,18 @@ async function survey(ctx, type, c, n) {
      2026-09-19 현장에서 화면은 전부 성공이었는데 시트는 0건이었다. */
   const svPage = await ctx.newPage();
   await svPage.goto(BASE + '/survey.html', { waitUntil: 'domcontentloaded' });
-  const rowsOf = async tab => {
+  /* 설문 한 건이 시트에 여러 줄로 남는다 — 주소 길이 한계 때문에 문항을 나눠 보내고,
+     각 덩이를 그 자체로 완결된 줄로 적기 때문이다. 둘째 줄부터는 이름 뒤에
+     '(이어짐 2/3)' 이 붙으므로, 사람 수는 그 표시가 없는 줄만 센다. */
+  const peopleIn = async tab => {
     const r = await svPage.evaluate(u => fetch(u).then(x => x.json()).catch(() => null),
                                     BASE + '/_dump?tab=' + encodeURIComponent(tab));
-    return Math.max(0, ((r || []).length) - 1);   // 탭은 첫 응답 때 생기고 1행은 헤더다
+    if (!r || r.length < 2) return 0;              // 탭은 첫 응답 때 생기고 1행은 헤더다
+    const i = r[0].indexOf('이름');
+    return r.slice(1).filter(x => !/\(이어짐 \d+\/\d+\)\s*$/.test(String(x[i]))).length;
   };
-  const inSheet = (await rowsOf('설문_컬러링체험')) + (await rowsOf('설문_바인더체험'));
-  const snsInSheet = await rowsOf('설문_SNS후기');
+  const inSheet = (await peopleIn('설문_컬러링체험')) + (await peopleIn('설문_바인더체험'));
+  const snsInSheet = await peopleIn('설문_SNS후기');
   await svPage.close();
   ok(inSheet === sv, '시트에 실제로 저장된 설문 ' + inSheet + '건 = 제출한 ' + sv + '건');
   ok(snsInSheet === sns, '시트에 실제로 저장된 SNS 후기 ' + snsInSheet + '건 = 제출한 ' + sns + '건');

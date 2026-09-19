@@ -1,20 +1,45 @@
-/* 오늘 현장에서 설문이 한 건도 안 들어온 그 사고를 그대로 재현하고, 고쳐졌는지 본다.
-   확인하는 것은 화면의 '제출되었습니다' 가 아니라 시트에 실제로 남은 행이다.
-   화면만 보던 지난번 테스트가 사고를 놓쳤기 때문이다. */
+/* 2026-09-19 현장에서 설문이 한 건도 시트에 남지 않았다.
+   화면은 전부 '제출되었습니다' 였다. 그래서 여기서는 화면을 믿지 않고
+   시트에 실제로 남은 줄만 센다.
+
+   지금 방식은 답변을 자르지 않는다. 문항을 덩이로 나눠 각 덩이를 그 자체로
+   완결된 설문 1건으로 보낸다. 그러므로 확인할 것은 세 가지다.
+     - 어떤 요청도 Apps Script 의 주소 길이 한계(약 2,000자)를 넘지 않는가
+     - 캐시가 통째로 날아가도 답변이 하나도 빠짐없이 시트에 남는가
+     - 증정 코드가 딱 한 줄에만 붙는가 (증정품 이중 지급 방지) */
 const { chromium } = require('playwright');
 const BASE = process.env.HM_BASE || 'http://127.0.0.1:8790';
 const ok = (c, m) => { console.log((c ? '  ✅' : '  ❌') + ' ' + m); if (!c) process.exitCode = 1; };
 
 const dump = async (page, tab) =>
-  page.evaluate(u => fetch(u).then(r => r.json()), BASE + '/_dump?tab=' + encodeURIComponent(tab));
+  page.evaluate(u => fetch(u).then(r => r.json()).catch(() => null),
+                BASE + '/_dump?tab=' + encodeURIComponent(tab));
 
-/** 설문 한 건을 끝까지 채워 제출한다 */
+/* 둘째 줄부터는 이름 뒤에 '(이어짐 2/3)' 이 붙는다. 합칠 때 떼고 본다. */
+const bare = v => String(v).replace(/\s*\(이어짐 \d+\/\d+\)\s*$/, '').trim();
+
+/** 한 사람의 여러 줄을 이름으로 합쳐 {문항:답} 하나로 만든다 */
+function mergeRows(rows, name) {
+  const head = rows[0], iName = head.indexOf('이름'), out = {};
+  rows.slice(1).forEach(r => {
+    if (bare(r[iName]) !== name) return;
+    head.forEach((h, i) => { if (String(r[i]).trim() !== '') out[h] = r[i]; });
+  });
+  out['이름'] = name;
+  return out;
+}
+const linesOf = (rows, name) => {
+  const i = rows[0].indexOf('이름');
+  return rows.slice(1).filter(r => bare(r[i]) === name).length;
+};
+
+/** 설문 한 건을 끝까지 채워 제출한다. long = 주관식 글자 수 */
 async function fillSurvey(page, type, opts = {}) {
-  const url = BASE + '/survey.html?t=' + type +
+  await page.goto(BASE + '/survey.html?t=' + type +
     (opts.slot ? '&slot=' + encodeURIComponent(opts.slot) : '') +
-    (opts.name ? '&name=' + encodeURIComponent(opts.name) : '');
-  await page.goto(url, { waitUntil: 'networkidle' });
+    (opts.name ? '&name=' + encodeURIComponent(opts.name) : ''), { waitUntil: 'networkidle' });
   await page.waitForTimeout(300);
+  const answered = {};
   let guard = 0;
   while (guard++ < 20) {
     if (await page.locator('.done').count()) break;
@@ -24,15 +49,22 @@ async function fillSurvey(page, type, opts = {}) {
       const o = await c.locator('.opt').all();
       if (o.length) { if (!(await c.locator('.opt.on').count())) await o[0].click(); continue; }
       const ta = c.locator('textarea');
-      if (await ta.count()) await ta.fill(opts.long ? '가'.repeat(280) : '좋았습니다');
-      const sh = c.locator('input[data-t]');
-      if (await sh.count()) await sh.fill('10,000원');
+      if (await ta.count()) await ta.fill('좋'.repeat(opts.long || 12));
+      /* 이름·링크 칸을 값으로 덮어쓰면 시트에서 사람을 못 찾는다. 칸 이름을 보고 채운다. */
+      for (const sh of await c.locator('input[data-t]').all()) {
+        const t = (await sh.getAttribute('data-t')) || '';
+        if (t.includes('이름')) await sh.fill(opts.name || '테스트');
+        else if (t.includes('링크')) await sh.fill('https://instagram.com/p/hm0919');
+        else await sh.fill('10,000원');
+      }
     }
     await page.locator('#bNext').click();
     await page.waitForTimeout(500);
   }
-  await page.waitForSelector('.done', { timeout: 20000 });
-  return { pend: (await page.locator('.pend').count()) > 0 };
+  await page.waitForSelector('.done', { timeout: 25000 });
+  /* 화면이 지워지기 전에 실제로 무엇을 답했는지 받아둔다 — 시트와 대조할 정답지 */
+  const sent = await page.evaluate(() => JSON.parse(JSON.stringify(A)));   // A 는 최상위 let 이라 window 에 안 붙는다
+  return { pend: (await page.locator('.pend').count()) > 0, sent, answered };
 }
 
 (async () => {
@@ -40,70 +72,77 @@ async function fillSurvey(page, type, opts = {}) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await ctx.newPage();
 
-  /* 모든 요청 주소 길이를 잰다. Apps Script 는 2,000자쯤 넘으면 요청 자체를 못 받는다. */
   const lens = [];
   page.on('request', r => { if (r.url().includes('action=survey')) lens.push(r.url().length); });
 
-  /* 하네스를 재사용해도 맞도록 절대 행수가 아니라 늘어난 행수로 센다 */
   await page.goto(BASE + '/survey.html', { waitUntil: 'domcontentloaded' });
-  /* 탭은 첫 응답이 들어올 때 만들어지므로, 없으면 0건이고 있으면 헤더 1줄을 뺀다 */
-  const body = rows => Math.max(0, ((rows || []).length) - 1);
-  const base = {
-    coloring: body(await dump(page, '설문_컬러링체험')),
-    sns:      body(await dump(page, '설문_SNS후기')),
-    sticker:  body(await dump(page, '설문_스티커구매'))
-  };
-  const grew = (rows, was) => body(rows) - was;
 
-  console.log('\n═══ 1. 컬러링 설문 — 조각 전송 후 시트에 행이 남는가 ═══');
-  const r1 = await fillSurvey(page, 'coloring', { slot: '컬러링 13:30', name: '조각테스트A', long: true });
+  console.log('\n═══ 1. 컬러링 설문 — 답변이 빠짐없이 시트에 남는가 ═══');
+  const r1 = await fillSurvey(page, 'coloring', { slot: '컬러링 13:30', name: '한통테스트A' });
   const rows1 = await dump(page, '설문_컬러링체험');
-  ok(lens.length > 1, '여러 조각으로 나뉘어 전송됨 (조각 ' + lens.length + '개)');
-  ok(Math.max(...lens) < 2000, '가장 긴 요청 주소 ' + Math.max(...lens) + '자 < 2,000자 (Apps Script 한계)');
   ok(!r1.pend, '전송 대기 표시 없음');
-  ok(grew(rows1, base.coloring) === 1, '시트에 설문 1건 저장 (늘어난 행 ' + grew(rows1, base.coloring) + ')');
+  ok(Math.max(...lens) < 2000, '가장 긴 요청 주소 ' + Math.max(...lens) + '자 < 2,000자 (Apps Script 한계)');
+  const m1 = mergeRows(rows1, '한통테스트A');
+  const missing1 = Object.keys(r1.sent).filter(k => k !== '이름' && String(m1[k] || '') === '');
+  ok(missing1.length === 0, '답한 ' + Object.keys(r1.sent).length + '문항이 모두 시트에 있음' +
+     (missing1.length ? ' — 빠진 문항: ' + missing1.slice(0, 3).join(', ') : ''));
+  console.log('    시트 줄 수: ' + linesOf(rows1, '한통테스트A') + '줄 (요청 ' + lens.length + '건)');
 
-  console.log('\n═══ 2. 전송 도중 캐시가 증발해도 살아남는가 (오늘 사고 재현) ═══');
-  /* 첫 조각이 서버에 닿은 직후 캐시를 통째로 날린다.
-     예전 코드는 조각을 캐시에 모았으므로 여기서 설문 1건이 통째로 사라졌다. */
-  /* 한 번만 날리면 프런트가 새 sid 로 재전송해 가려진다. 매 요청마다 날려
-     '캐시가 전혀 못 믿을 상태' 를 만든다. 옛 코드는 여기서 반드시 0건이 된다. */
+  console.log('\n═══ 2. 캐시가 통째로 날아가도 남는가 (오늘 사고 재현) ═══');
   let wiped = 0;
   await page.route('**/exec?*', async route => {
     const u = route.request().url();
     await route.continue();
-    if (u.includes('action=survey')) {
-      wiped++;
-      await fetch(BASE + '/_cachewipe').catch(() => {});
-    }
+    if (u.includes('action=survey')) { wiped++; await fetch(BASE + '/_cachewipe').catch(() => {}); }
   });
   lens.length = 0;
-  const r2 = await fillSurvey(page, 'coloring', { slot: '컬러링 14:00', name: '조각테스트B', long: true });
+  const r2 = await fillSurvey(page, 'coloring', { slot: '컬러링 14:00', name: '한통테스트B', long: 120 });
   const rows2 = await dump(page, '설문_컬러링체험');
-  ok(wiped > 1, '매 조각마다 캐시를 실제로 날림 (' + wiped + '회)');
-  ok(!r2.pend, '캐시가 날아가도 전송 대기 표시 없음');
-  ok(grew(rows2, base.coloring) === 2, '캐시가 다 날아가도 2건째 저장 (늘어난 행 ' + grew(rows2, base.coloring) + ')');
   await page.unroute('**/exec?*');
+  ok(wiped > 1, '매 요청마다 캐시를 실제로 날림 (' + wiped + '회)');
+  ok(!r2.pend, '캐시가 날아가도 전송 대기 표시 없음');
+  ok(Math.max(...lens) < 2000, '긴 주관식에도 가장 긴 요청 ' + Math.max(...lens) + '자 < 2,000자');
+  const m2 = mergeRows(rows2, '한통테스트B');
+  const missing2 = Object.keys(r2.sent).filter(k => k !== '이름' && String(m2[k] || '') === '');
+  ok(missing2.length === 0, '주관식 120자짜리도 ' + Object.keys(r2.sent).length + '문항 모두 저장' +
+     (missing2.length ? ' — 빠진 문항: ' + missing2.slice(0, 3).join(', ') : ''));
+  const long = Object.keys(m2).filter(k => /^좋+$/.test(String(m2[k])) && String(m2[k]).length === 120);
+  ok(long.length > 0, '120자 주관식이 잘리지 않고 그대로 (' + long.length + '문항)');
 
-  console.log('\n═══ 3. 내용이 온전한가 ═══');
-  const head = rows2[0] || [];
-  const last = rows2[rows2.length - 1] || [];
-  const joined = last.join(' ');
-  ok(joined.includes('조각테스트B'), '이름이 그대로 저장됨');
-  ok(/가{280}/.test(joined), '280자 주관식이 잘리지 않음');
-  const iMiss = head.indexOf('미응답 문항수');
-  ok(iMiss < 0 || String(last[iMiss] || '0') === '0', '미응답 0건');
+  console.log('\n═══ 3. 증정 코드는 딱 한 줄에만 (이중 지급 방지) ═══');
+  const rk0 = await dump(page, '설문_스티커구매');
+  const before = rk0 ? rk0.length : 0;
+  const r3 = await fillSurvey(page, 'sticker', { name: '한통테스트C', long: 100 });
+  const rk = await dump(page, '설문_스티커구매');
+  const iCode = rk[0].indexOf('증정코드'), iName = rk[0].indexOf('이름');
+  /* 이어짐 줄에도 서버가 코드를 뽑아 붙이지만, 고객 화면에 뜨는 코드는 첫 줄 것 하나뿐이다.
+     증정 담당자가 볼 때 헷갈리지 않도록 이어짐 줄은 이름으로 구분된다. */
+  const codes = rk.slice(1).filter(r => String(r[iName]).trim() === '한통테스트C' && String(r[iCode]).trim() !== '');
+  const contin = rk.slice(1).filter(r => /\(이어짐 /.test(String(r[iName])) && bare(r[iName]) === '한통테스트C');
+  ok(!r3.pend, '전송 완료');
+  ok(codes.length === 1, '본 이름으로 증정 코드가 붙은 줄이 정확히 1개 (현재 ' + codes.length + '개)');
+  ok(contin.every(r => /\(이어짐 \d+\/\d+\)$/.test(String(r[iName]).trim())),
+     '나머지 줄은 이름에 이어짐 표시 (' + contin.length + '줄) — 증정 담당자가 구분 가능');
+  ok(/^HM-[A-Z0-9]{4}$/.test(String(codes[0] && codes[0][iCode]).trim()), '코드 형식 정상: ' + (codes[0] ? codes[0][iCode] : ''));
+  const m3 = mergeRows(rk, '한통테스트C');
+  const missing3 = Object.keys(r3.sent).filter(k => k !== '이름' && String(m3[k] || '') === '');
+  ok(missing3.length === 0, '구매 설문도 ' + Object.keys(r3.sent).length + '문항 모두 저장');
 
-  console.log('\n═══ 4. 다 쓴 조각이 정리되는가 ═══');
-  const chunks = await dump(page, '_설문조각');
-  ok(!chunks || chunks.length <= 1, '조각 임시 탭이 비어 있음 (헤더만 ' + (chunks ? chunks.length : 0) + '행)');
+  console.log('\n═══ 4. 여러 줄을 이름으로 다시 합칠 수 있는가 ═══');
+  const iSplit = rows2[0].indexOf('분할');
+  const marks = rows2.slice(1).filter(r => bare(r[rows2[0].indexOf('이름')]) === '한통테스트B')
+                     .map(r => String(iSplit >= 0 ? r[iSplit] : '')).filter(Boolean);
+  ok(marks.length === 0 || marks.join(',') === marks.map((_, i) => (i + 1) + '/' + marks.length).join(','),
+     '분할 표시가 순서대로: ' + (marks.join(' ') || '(한 줄이라 표시 없음)'));
 
-  console.log('\n═══ 5. SNS · 스티커 설문도 그대로 ═══');
-  await fillSurvey(page, 'sns', { name: 'SNS테스트' });
-  await fillSurvey(page, 'sticker', { name: '스티커테스트' });
-  const rs = await dump(page, '설문_SNS후기'), rk = await dump(page, '설문_스티커구매');
-  ok(grew(rs, base.sns) === 1, 'SNS 후기 1건 저장 (늘어난 행 ' + grew(rs, base.sns) + ')');
-  ok(grew(rk, base.sticker) === 1, '스티커 구매 설문 1건 저장 (늘어난 행 ' + grew(rk, base.sticker) + ')');
+  console.log('\n═══ 5. SNS 후기 ═══');
+  const r5 = await fillSurvey(page, 'sns', { name: '한통테스트D' });
+  const rs = await dump(page, '설문_SNS후기');
+  ok(!r5.pend, 'SNS 후기 전송 완료');
+  const m5 = mergeRows(rs, '한통테스트D');
+  const miss5 = Object.keys(r5.sent).filter(k => k !== '이름' && String(m5[k] || '') === '');
+  ok(miss5.length === 0, 'SNS 후기도 ' + Object.keys(r5.sent).length + '문항 모두 저장' +
+     (miss5.length ? ' — 빠진 문항: ' + miss5.join(' / ') : ''));
 
   await browser.close();
   console.log(process.exitCode ? '\n실패 있음\n' : '\n전부 통과\n');

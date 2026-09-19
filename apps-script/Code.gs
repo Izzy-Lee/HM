@@ -1094,6 +1094,9 @@ function actGifts_(p) {
     sh.getRange(2, 1, sh.getLastRow() - 1, header.length).getValues().forEach(function (r, i) {
       var nm = c['이름'] >= 0 ? String(r[c['이름']]).trim() : '';
       if (!nm && !(c['증정코드'] >= 0 && r[c['증정코드']])) return;   // 빈 행 건너뛰기
+      /* 설문 한 건이 여러 줄로 들어온 경우, 둘째 줄부터는 증정 대상이 아니다.
+         담당자 화면에 같은 사람이 두 번 떠서 증정품이 두 번 나가면 안 된다. */
+      if (isContinuation_(nm)) return;
       rows.push({
         t: t, row: i + 2, survey: meta.name, group: meta.group || '',
         name: nm, tel4: tel[nm] || '',
@@ -1236,6 +1239,16 @@ function actGift_(p) {
 }
 
 /** 설문 종류별 응답 수 */
+/** '홍길동 (이어짐 2/3)' 처럼 앞 줄에서 이어지는 줄인가 */
+function isContinuation_(name) {
+  return /\(이어짐 \d+\/\d+\)\s*$/.test(String(name || ''));
+}
+
+/** 이어짐 꼬리표를 뗀 본래 이름 */
+function bareName_(name) {
+  return String(name || '').replace(/\s*\(이어짐 \d+\/\d+\)\s*$/, '').trim();
+}
+
 function surveyCounts_() {
   var out = { byType: {}, experience: 0, purchase: 0, sns: 0, total: 0, gifted: 0 };
   Object.keys(FIELD.SURVEYS).forEach(function (t) {
@@ -1245,9 +1258,13 @@ function surveyCounts_() {
     if (sh && sh.getLastRow() > 1) {
       var header = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(function (v) { return String(v).trim(); });
       var cDone = header.indexOf('증정여부') + 1;
+      var cName = header.indexOf('이름') + 1;
       var vals = sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
       vals.forEach(function (r) {
         if (String(r[0]).trim() === '') return;
+        /* 설문 한 건이 주소 길이 때문에 여러 줄로 나뉘어 들어온다.
+           둘째 줄부터는 이름 뒤에 '(이어짐 2/3)' 이 붙는다. 사람 수를 세는 자리이므로 건너뛴다. */
+        if (cName && isContinuation_(r[cName - 1])) return;
         n++;
         if (cDone && String(r[cDone - 1]).trim()) g++;
       });

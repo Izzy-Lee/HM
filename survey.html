@@ -390,33 +390,78 @@ function newCode(){
   return 'HM-'+s;
 }
 
-/* 응답이 길어 한 번에 안 들어가므로 조각내 보낸다. 마지막 조각에서 서버가 시트에 쓴다. */
-/* Apps Script 는 GET 주소가 2,000자쯤 넘으면 요청 자체를 받지 못한다.
-   컬러링 설문은 3,400자가 넘으므로 반드시 나눠 보내야 한다.
-   조각은 서버가 시트에 모으므로 유실되지 않는다. */
-const CHUNK = 1200;
-async function submit(sub){
-  let last = await sendOnce(sub, sub.sid);
-  /* done 이 아니면 조각이 유실된 것이다. 화면만 성공으로 보이고 시트에는 안 남는다.
-     새 sid 로 한 번 더 통째로 보낸다. 그래도 안 되면 실패로 처리해 큐에 쌓는다. */
-  if (!last || last.done !== true){
-    last = await sendOnce(sub, sub.sid + 'r' + Date.now().toString(36));
-  }
-  if (!last || last.done !== true){
-    throw new Error('서버가 응답을 다 받지 못했습니다.');
-  }
-  return last;
+/* ── 한 통씩 저장 ─────────────────────────────────────────────
+   Apps Script 는 GET 주소가 2,000자쯤 넘으면 요청 자체를 받지 못한다.
+   그래서 예전에는 답변을 잘라 보내고 서버가 조각을 모아 합쳤는데,
+   조각 하나만 사라져도 설문 한 건이 통째로 없어졌다. 2026-09-19 현장에서
+   실제로 그렇게 됐고, 화면에는 '제출되었습니다' 가 그대로 떴다.
+
+   이제는 자르지 않는다. 문항을 몇 덩이로 나누되, 각 덩이를 그 자체로
+   완결된 설문 1건으로 보낸다. 서버가 합칠 것이 없으니 중간에 사라질 것도
+   없고, 보낸 즉시 시트에 줄이 남는다. 한 사람이 여러 줄이 되지만
+   이름·회차·분할번호로 다시 합칠 수 있다. 줄이 예뻐지는 것보다
+   줄이 남는 것이 중요하다. */
+const BUDGET = 1300;   // 한 요청의 답변(base64)이 쓸 수 있는 길이
+
+/** 답변을 '그대로 보내도 되는 크기' 의 덩이 여러 개로 나눈다. 문항은 안 자른다. */
+function splitAnswers(A){
+  const out = [];
+  let cur = {}, n = 0;
+  Object.keys(A).forEach(k => {
+    const t = Object.assign({}, cur); t[k] = A[k];
+    if (n && b64url(JSON.stringify(t)).length > BUDGET){ out.push(cur); cur = {}; cur[k] = A[k]; n = 1; }
+    else { cur = t; n++; }
+  });
+  if (n) out.push(cur);
+  return out;
 }
 
-async function sendOnce(sub, sid){
+async function submit(sub){
+  /* 오늘 이전에 큐에 쌓인 것은 d 만 있고 답변 원본이 없다. 그건 옛 방식으로 보낸다. */
+  if (!sub.A) return sendChunked(sub);
+
+  const groups = splitAnswers(sub.A);
+  let first = null;
+  for (let g = 0; g < groups.length; g++){
+    const part = Object.assign({}, groups[g]);
+    if (groups.length > 1) part['분할'] = (g + 1) + '/' + groups.length;
+    /* 서버는 증정 설문이면 코드가 비어 있을 때 새로 뽑아 버린다(배포된 코드라 못 고친다).
+       그래서 둘째 줄부터는 이름 뒤에 '이어짐' 을 붙인다. 증정 담당자 화면에
+       같은 사람이 두 번 떠도 어느 쪽이 본 줄인지 바로 보이고, 고객 화면에 뜨는
+       코드는 어차피 첫 줄 것 하나뿐이다. 합칠 때 이 꼬리표는 떼면 된다. */
+    const nm = (g === 0) ? sub.name
+                         : sub.name + ' (이어짐 ' + (g + 1) + '/' + groups.length + ')';
+    const p = { action:'survey', t:sub.t, sid:sub.sid + 'g' + g, i:0, n:1,
+                d: b64url(JSON.stringify(part)),
+                slot:sub.slot, name:nm,
+                code: g === 0 ? sub.code : '',
+                /* 링크·사진은 서버가 고정 칸에 덮어쓰므로 모든 줄에 같이 보낸다.
+                   첫 줄에만 보내면 나머지 줄에서 그 칸이 빈칸으로 지워진다. */
+                link: sub.link, img: sub.img };
+    let r = null;
+    try { r = await call(p); } catch(e){ r = null; }
+    if (!r || r.done !== true){                    // 한 번은 다시 보내본다
+      p.sid = sub.sid + 'g' + g + 'r' + Date.now().toString(36);
+      try { r = await call(p); } catch(e){ r = null; }
+    }
+    if (!r || r.done !== true) throw new Error('설문 일부가 저장되지 않았습니다.');
+    if (g === 0) first = r;
+  }
+  return first;
+}
+
+/* 예전 방식(조각내 보내고 서버가 합치기). 오래된 큐를 비울 때만 쓴다. */
+const CHUNK = 1200;
+async function sendChunked(sub){
   const parts = [];
   for (let i=0; i<sub.d.length; i+=CHUNK) parts.push(sub.d.slice(i, i+CHUNK));
   let last = null;
   for (let i=0; i<parts.length; i++){
-    last = await call({ action:'survey', t:sub.t, sid:sid, i:i, n:parts.length,
+    last = await call({ action:'survey', t:sub.t, sid:sub.sid, i:i, n:parts.length,
                         d:parts[i], slot:sub.slot, name:sub.name, code:sub.code,
                         link:sub.link, img:sub.img });
   }
+  if (!last || last.done !== true) throw new Error('서버가 응답을 다 받지 못했습니다.');
   return last;
 }
 
@@ -693,7 +738,8 @@ async function finish(){
   }
 
   const sub = { t:TYPE, sid:newSid(), slot:SLOT, name:A['이름']||NAME, code:newCode(),
-                link:A['게시물 링크']||'', img:imgUrl, d:b64url(JSON.stringify(A)) };
+                link:A['게시물 링크']||'', img:imgUrl,
+                A:A, d:b64url(JSON.stringify(A)) };
   window.__imgFailed = imgFailed;
   let res=null, queued=false;
   try{ res = await submit(sub); }

@@ -16,7 +16,7 @@ const dump = async (page, tab) =>
                 BASE + '/_dump?tab=' + encodeURIComponent(tab));
 
 /* 둘째 줄부터는 이름 뒤에 '(이어짐 2/3)' 이 붙는다. 합칠 때 떼고 본다. */
-const bare = v => String(v).replace(/\s*\(이어짐 \d+\/\d+\)\s*$/, '').trim();
+const bare = v => String(v).replace(/\s*\(이어짐\s*\d+(\/\d+)?\)\s*$/, '').trim();
 
 /** 한 사람의 여러 줄을 이름으로 합쳐 {문항:답} 하나로 만든다 */
 function mergeRows(rows, name) {
@@ -81,7 +81,7 @@ async function fillSurvey(page, type, opts = {}) {
   const r1 = await fillSurvey(page, 'coloring', { slot: '컬러링 13:30', name: '한통테스트A' });
   const rows1 = await dump(page, '설문_컬러링체험');
   ok(!r1.pend, '전송 대기 표시 없음');
-  ok(Math.max(...lens) < 2000, '가장 긴 요청 주소 ' + Math.max(...lens) + '자 < 2,000자 (Apps Script 한계)');
+  ok(Math.max(...lens) < 1800, '가장 긴 요청 주소 ' + Math.max(...lens) + '자 (나눠 보냄)');
   const m1 = mergeRows(rows1, '한통테스트A');
   const missing1 = Object.keys(r1.sent).filter(k => k !== '이름' && String(m1[k] || '') === '');
   ok(missing1.length === 0, '답한 ' + Object.keys(r1.sent).length + '문항이 모두 시트에 있음' +
@@ -101,7 +101,7 @@ async function fillSurvey(page, type, opts = {}) {
   await page.unroute('**/exec?*');
   ok(wiped > 1, '매 요청마다 캐시를 실제로 날림 (' + wiped + '회)');
   ok(!r2.pend, '캐시가 날아가도 전송 대기 표시 없음');
-  ok(Math.max(...lens) < 2000, '긴 주관식에도 가장 긴 요청 ' + Math.max(...lens) + '자 < 2,000자');
+  ok(Math.max(...lens) < 1800, '긴 주관식에도 가장 긴 요청 ' + Math.max(...lens) + '자');
   const m2 = mergeRows(rows2, '한통테스트B');
   const missing2 = Object.keys(r2.sent).filter(k => k !== '이름' && String(m2[k] || '') === '');
   ok(missing2.length === 0, '주관식 120자짜리도 ' + Object.keys(r2.sent).length + '문항 모두 저장' +
@@ -121,7 +121,7 @@ async function fillSurvey(page, type, opts = {}) {
   const contin = rk.slice(1).filter(r => /\(이어짐 /.test(String(r[iName])) && bare(r[iName]) === '한통테스트C');
   ok(!r3.pend, '전송 완료');
   ok(codes.length === 1, '본 이름으로 증정 코드가 붙은 줄이 정확히 1개 (현재 ' + codes.length + '개)');
-  ok(contin.every(r => /\(이어짐 \d+\/\d+\)$/.test(String(r[iName]).trim())),
+  ok(contin.every(r => /\(이어짐\s*\d+(\/\d+)?\)$/.test(String(r[iName]).trim())),
      '나머지 줄은 이름에 이어짐 표시 (' + contin.length + '줄) — 증정 담당자가 구분 가능');
   ok(/^HM-[A-Z0-9]{4}$/.test(String(codes[0] && codes[0][iCode]).trim()), '코드 형식 정상: ' + (codes[0] ? codes[0][iCode] : ''));
   const m3 = mergeRows(rk, '한통테스트C');
@@ -130,10 +130,14 @@ async function fillSurvey(page, type, opts = {}) {
 
   console.log('\n═══ 4. 여러 줄을 이름으로 다시 합칠 수 있는가 ═══');
   const iSplit = rows2[0].indexOf('분할');
-  const marks = rows2.slice(1).filter(r => bare(r[rows2[0].indexOf('이름')]) === '한통테스트B')
+  const iNm = rows2[0].indexOf('이름');
+  const marks = rows2.slice(1).filter(r => bare(r[iNm]) === '한통테스트B')
                      .map(r => String(iSplit >= 0 ? r[iSplit] : '')).filter(Boolean);
-  ok(marks.length === 0 || marks.join(',') === marks.map((_, i) => (i + 1) + '/' + marks.length).join(','),
-     '분할 표시가 순서대로: ' + (marks.join(' ') || '(한 줄이라 표시 없음)'));
+  /* 둘째 줄부터 '이어짐 2', '이어짐 3' … 으로 번호가 이어져야 순서대로 합칠 수 있다 */
+  const want = marks.map((_, i) => '이어짐 ' + (i + 2)).join(',');
+  ok(marks.join(',') === want, '이어짐 번호가 순서대로: ' + (marks.join(' ') || '(한 줄이라 표시 없음)'));
+  const firstRow = rows2.slice(1).find(r => String(r[iNm]).trim() === '한통테스트B');
+  ok(!!firstRow && String(firstRow[iSplit] || '') === '', '첫 줄에는 이어짐 표시가 없음 (본 줄)');
 
   console.log('\n═══ 5. SNS 후기 ═══');
   const r5 = await fillSurvey(page, 'sns', { name: '한통테스트D' });

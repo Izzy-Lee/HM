@@ -190,6 +190,11 @@ http.createServer((req,res)=>{
     res.writeHead(200,{'Content-Type':'application/json'});
     return res.end('{"ok":true}');
   }
+  /* 테스트용 — 주소가 일정 길이를 넘으면 응답 없이 연결을 끊는다.
+     현장에서 본 '요청이 닿지 않음' 을 그대로 재현한다 (Apps Script 주소 길이 한계). */
+  if (process.env.MAX_URL && req.url.length > Number(process.env.MAX_URL)) {
+    return req.socket.destroy();
+  }
   if (u.pathname === '/exec') {
     let out;
     try { out = ctx.doGet({parameter:u.query}); }

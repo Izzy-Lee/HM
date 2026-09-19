@@ -1239,14 +1239,14 @@ function actGift_(p) {
 }
 
 /** 설문 종류별 응답 수 */
-/** '홍길동 (이어짐 2/3)' 처럼 앞 줄에서 이어지는 줄인가 */
+/** '홍길동 (이어짐 2)' 처럼 앞 줄에서 이어지는 줄인가 */
 function isContinuation_(name) {
-  return /\(이어짐 \d+\/\d+\)\s*$/.test(String(name || ''));
+  return /\(이어짐\s*\d+(\/\d+)?\)\s*$/.test(String(name || ''));
 }
 
 /** 이어짐 꼬리표를 뗀 본래 이름 */
 function bareName_(name) {
-  return String(name || '').replace(/\s*\(이어짐 \d+\/\d+\)\s*$/, '').trim();
+  return String(name || '').replace(/\s*\(이어짐\s*\d+(\/\d+)?\)\s*$/, '').trim();
 }
 
 function surveyCounts_() {
@@ -1263,7 +1263,7 @@ function surveyCounts_() {
       vals.forEach(function (r) {
         if (String(r[0]).trim() === '') return;
         /* 설문 한 건이 주소 길이 때문에 여러 줄로 나뉘어 들어온다.
-           둘째 줄부터는 이름 뒤에 '(이어짐 2/3)' 이 붙는다. 사람 수를 세는 자리이므로 건너뛴다. */
+           둘째 줄부터는 이름 뒤에 '(이어짐 2)' 이 붙는다. 사람 수를 세는 자리이므로 건너뛴다. */
         if (cName && isContinuation_(r[cName - 1])) return;
         n++;
         if (cDone && String(r[cDone - 1]).trim()) g++;

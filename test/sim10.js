@@ -326,7 +326,7 @@ async function survey(ctx, type, c, n) {
                                     BASE + '/_dump?tab=' + encodeURIComponent(tab));
     if (!r || r.length < 2) return 0;              // 탭은 첫 응답 때 생기고 1행은 헤더다
     const i = r[0].indexOf('이름');
-    return r.slice(1).filter(x => !/\(이어짐 \d+\/\d+\)\s*$/.test(String(x[i]))).length;
+    return r.slice(1).filter(x => !/\(이어짐\s*\d+(\/\d+)?\)\s*$/.test(String(x[i]))).length;
   };
   const inSheet = (await peopleIn('설문_컬러링체험')) + (await peopleIn('설문_바인더체험'));
   const snsInSheet = await peopleIn('설문_SNS후기');

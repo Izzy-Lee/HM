@@ -38,8 +38,12 @@ async function book(page, {program,time,name,tel,design}){
      (live[0]||'').trim().replace(/\s+/g,' ')+'"');
   ok(await p.locator('[data-design]').count()===4, '도안 4종');
 
+  /* 행사 시간이 지난 뒤에 돌리면 앞 회차는 잠긴다. 아직 열려 있는 회차를 골라 쓴다. */
+  const SLOT = await p.locator('[data-time]:not([disabled])').first().getAttribute('data-time');
+  console.log('    이번 실행에 쓸 회차:', SLOT);
+
   console.log('\n═══ 2. 필수값 검증 ═══');
-  await p.locator('[data-time="14:00"]').click(); await p.waitForTimeout(250);
+  await p.locator('[data-time="'+SLOT+'"]').click(); await p.waitForTimeout(250);
   ok(await p.locator('#submit').isDisabled(), '이름·연락처 없으면 비활성');
   await p.locator('#fName').fill('홍길동'); await p.locator('#fTel').fill('010-1111-2222');
   await p.waitForTimeout(300);
@@ -60,48 +64,50 @@ async function book(page, {program,time,name,tel,design}){
   console.log('    1행 :', rows[1].join(' | '));
   ok(rows[0].includes('참여 프로그램') && rows[0].includes('예약 시간'), '기존 폼 헤더 그대로 사용');
   const m=Object.fromEntries(rows[0].map((h,i)=>[h,rows[1][i]]));
-  ok(m['참여 프로그램']==='컬러링' && m['예약 시간']==='14:00', '프로그램·시간 정확한 칸에 기록');
+  ok(m['참여 프로그램']==='컬러링' && m['예약 시간']===SLOT, '프로그램·시간 정확한 칸에 기록');
   ok(m['이름']==='홍길동' && m['연락처']==='010-1111-2222', '이름·연락처 기록');
 
   console.log('\n═══ 5. 중복 예약 차단 ═══');
-  const dup = await book(p,{program:'컬러링',time:'14:00',name:'홍길동',tel:'010-1111-2222'});
+  const dup = await book(p,{program:'컬러링',time:SLOT,name:'홍길동',tel:'010-1111-2222'});
   const rows2 = await p.evaluate(async()=>(await fetch('/_dump?tab='+encodeURIComponent('설문지 응답 시트1'))).json());
   ok(rows2.length===2, '같은 사람·같은 회차는 행이 안 늘어남 (현재 '+(rows2.length-1)+'건)');
 
   console.log('\n═══ 6. 정원 초과 차단 (컬러링 6명) ═══');
   for (let i=2;i<=6;i++){
-    const r = await book(p,{program:'컬러링',time:'14:00',name:'참가자'+i,tel:'010-0000-000'+i});
+    const r = await book(p,{program:'컬러링',time:SLOT,name:'참가자'+i,tel:'010-0000-000'+i});
     if (!r.ok) console.log('    '+i+'번째 실패:', r.err||r.blocked);
   }
   const rows3 = await p.evaluate(async()=>(await fetch('/_dump?tab='+encodeURIComponent('설문지 응답 시트1'))).json());
   ok(rows3.length-1===6, '정확히 6명까지 접수 (현재 '+(rows3.length-1)+'명)');
 
-  const over = await book(p,{program:'컬러링',time:'14:00',name:'초과자',tel:'010-9999-9999'});
+  const over = await book(p,{program:'컬러링',time:SLOT,name:'초과자',tel:'010-9999-9999'});
   ok(over.blocked==='마감' || (over.err||'').includes('마감'), '7번째는 차단됨 ('+(over.blocked||over.err)+')');
 
   console.log('\n═══ 7. 동시 접수 (마지막 한 자리에 3명이 동시에) ═══');
-  const seed = await p.evaluate(async()=>{
-    // 15:00 회차에 5명 채우고 마지막 1자리를 남긴다
+  /* 6번에서 쓴 회차와 겹치면 안 된다. 서버로 직접 넣으므로 시간 잠금과는 무관하다. */
+  const SLOT2 = (SLOT === '15:00') ? '16:00' : '15:00';
+  const seed = await p.evaluate(async(slot)=>{
+    // 한 회차에 5명 채우고 마지막 1자리를 남긴다
     for (let i=1;i<=5;i++){
-      await fetch('/exec?action=book&program=컬러링&time=15:00&name=선점'+i+'&tel=010-5555-000'+i+'&agree=1');
+      await fetch('/exec?action=book&program=컬러링&time='+slot+'&name=선점'+i+'&tel=010-5555-000'+i+'&agree=1');
     }
     // 3명이 동시에 마지막 자리를 노린다
     const rs = await Promise.all([1,2,3].map(i=>
-      fetch('/exec?action=book&program=컬러링&time=15:00&name=동시'+i+'&tel=010-7777-000'+i+'&agree=1').then(r=>r.json())));
+      fetch('/exec?action=book&program=컬러링&time='+slot+'&name=동시'+i+'&tel=010-7777-000'+i+'&agree=1').then(r=>r.json())));
     return rs;
-  });
+  }, SLOT2);
   const won = seed.filter(r=>r.ok!==false).length;
   console.log('    결과:', seed.map(r=>r.ok===false?('거절: '+r.error.slice(0,20)):'성공').join(' / '));
   ok(won===1, '한 명만 성공, 나머지는 거절 (성공 '+won+'명)');
 
   const rows4 = await p.evaluate(async()=>(await fetch('/_dump?tab='+encodeURIComponent('설문지 응답 시트1'))).json());
-  const c15 = rows4.slice(1).filter(r=>r[2]==='15:00').length;
-  ok(c15===6, '15:00 회차 정확히 6명 (현재 '+c15+'명) — 정원 초과 없음');
+  const c15 = rows4.slice(1).filter(r=>r[2]===SLOT2).length;
+  ok(c15===6, SLOT2+' 회차 정확히 6명 (현재 '+c15+'명) — 정원 초과 없음');
 
   console.log('\n═══ 8. 예약 현황에 반영 ═══');
   const rep = await p.evaluate(async()=>(await fetch('/exec')).json());
-  const s14 = rep.slots.filter(s=>s.program==='컬러링'&&s.time==='14:00')[0];
-  ok(s14.remain===0, '14:00 잔여 0으로 표시');
+  const sUsed = rep.slots.filter(s=>s.program==='컬러링'&&s.time===SLOT)[0];
+  ok(sUsed.remain===0, SLOT+' 잔여 0으로 표시');
 
   await b.close();
   console.log('\nJS 오류: '+(errs.length?errs.join(' | '):'0건'));

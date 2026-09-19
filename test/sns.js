@@ -28,6 +28,11 @@ const errs=[];
   ok(after !== before, '사진 없이 눌러도 다음으로 넘어간다 ("'+before.trim()+'" → "'+after.trim()+'")');
 
   console.log('\n═══ 3. 큰 사진을 넣으면 자동으로 줄이는가 ═══');
+  /* 2번에서 사진 없이도 다음 섹션으로 넘어갔으므로 사진 칸이 화면에 없다.
+     사진 첨부를 보려면 설문을 처음부터 다시 연다. */
+  await p.evaluate(()=>{ try{ Object.keys(localStorage).filter(k=>k.indexOf('hm_survey_')===0).forEach(k=>localStorage.removeItem(k)); }catch(e){} });
+  await p.goto(BASE+'/survey.html?t=sns&slot='+encodeURIComponent('컬러링 15:00'),{waitUntil:'domcontentloaded'});
+  await p.waitForSelector('#photoInput',{state:'attached'}); await p.waitForTimeout(400);
   // 2400x1800 짜리 큰 이미지를 만들어 첨부한다
   const bigPng = await p.evaluate(()=>{
     const cv=document.createElement('canvas'); cv.width=2400; cv.height=1800;

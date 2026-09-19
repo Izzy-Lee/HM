@@ -261,7 +261,7 @@ async function survey(ctx, type, c, n) {
   await st.locator('.tabs button[data-p="sale"]').click();
   await st.waitForTimeout(500);
   let expected = 0;
-  const PRICE = { '바인더 체험': 30000, '바인더 완성품': 20000, '스티커': 2000 };
+  const PRICE = { '바인더 체험': 30000, '바인더 완성품': 20000, '스티커': 2500 };
   for (const c of attended) {
     if (c.program === '바인더') {                    // 바인더 체험자는 체험료를 낸다
       await st.locator('.prod-main[data-item="바인더 체험"]').click(); await st.waitForTimeout(250);
@@ -313,6 +313,21 @@ async function survey(ctx, type, c, n) {
     if (await survey(ctx, 'sns', attended[i], 'S' + (i + 1))) sns++;
   }
   log('  SNS 후기 ' + sns + '건');
+
+  /* 화면의 '제출되었습니다' 는 믿지 않는다. 실제로 시트에 남은 행을 센다.
+     2026-09-19 현장에서 화면은 전부 성공이었는데 시트는 0건이었다. */
+  const svPage = await ctx.newPage();
+  await svPage.goto(BASE + '/survey.html', { waitUntil: 'domcontentloaded' });
+  const rowsOf = async tab => {
+    const r = await svPage.evaluate(u => fetch(u).then(x => x.json()).catch(() => null),
+                                    BASE + '/_dump?tab=' + encodeURIComponent(tab));
+    return Math.max(0, ((r || []).length) - 1);   // 탭은 첫 응답 때 생기고 1행은 헤더다
+  };
+  const inSheet = (await rowsOf('설문_컬러링체험')) + (await rowsOf('설문_바인더체험'));
+  const snsInSheet = await rowsOf('설문_SNS후기');
+  await svPage.close();
+  ok(inSheet === sv, '시트에 실제로 저장된 설문 ' + inSheet + '건 = 제출한 ' + sv + '건');
+  ok(snsInSheet === sns, '시트에 실제로 저장된 SNS 후기 ' + snsInSheet + '건 = 제출한 ' + sns + '건');
 
   /* 집계 화면 */
   log('\n══════ 집계 화면 대조 ══════');

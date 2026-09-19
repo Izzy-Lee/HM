@@ -15,6 +15,7 @@ class Sheet {
   setColumnWidths(){ return this; }
   setRowHeight(){ return this; }
   setTabColor(){ return this; }
+  hideSheet(){ this.hidden=true; return this; }
   activate(){ return this; }
   getIndex(){ return 1; }
   clear(){ this.data=[]; return this; }
@@ -145,6 +146,12 @@ http.createServer((req,res)=>{
     const sh = ss.getSheetByName(u.query.tab);
     res.writeHead(200,{'Content-Type':'application/json; charset=utf-8'});
     return res.end(JSON.stringify(sh ? sh.data : null));
+  }
+  /* 테스트용 — 캐시를 통째로 날린다 (실서버에서 조각이 증발하는 상황 재현) */
+  if (u.pathname === '/_cachewipe') {
+    if (global.__cache) global.__cache.clear();
+    res.writeHead(200,{'Content-Type':'application/json'});
+    return res.end('{"ok":true}');
   }
   /* 테스트용 — 스크립트 함수를 이름으로 직접 실행한다 */
   if (u.pathname === '/_run') {

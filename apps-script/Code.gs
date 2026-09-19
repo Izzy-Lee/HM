@@ -828,15 +828,11 @@ function actSurvey_(p) {
   var cache = CacheService.getScriptCache();
 
   if (tot > 1) {
-    cache.put('sv_' + sid + '_' + idx, data, 600);
-    var have = [], missing = false;
-    for (var i = 0; i < tot; i++) {
-      var part = (i === idx) ? data : cache.get('sv_' + sid + '_' + i);
-      if (part === null) { missing = true; break; }
-      have.push(part);
-    }
-    if (missing) return { ok: true, received: idx + 1, of: tot, done: false };
-    data = have.join('');
+    /* 조각을 캐시에 모으다가 하나라도 사라지면 설문 한 건이 통째로 날아간다.
+       실제로 그런 일이 있었다. 캐시 대신 시트에 적어 두면 유실될 수 없다. */
+    var have = putChunk_(sid, idx, tot, data);
+    if (!have) return { ok: true, received: idx + 1, of: tot, done: false };
+    data = have;
   }
 
   var answers;
@@ -860,8 +856,57 @@ function actSurvey_(p) {
     lock.releaseLock();
   }
   cache.put(guard, JSON.stringify(result), 600);
-  for (var j = 0; j < tot; j++) cache.remove('sv_' + sid + '_' + j);
+  if (tot > 1) dropChunks_(sid);
   return result;
+}
+
+
+/** 조각을 모으는 임시 탭. 사람이 볼 일이 없어 숨겨 둔다. */
+var TAB_CHUNK = '_설문조각';
+
+/**
+ * 조각 하나를 적고, 다 모였으면 이어 붙여 돌려준다. 아직이면 빈 문자열.
+ * 캐시와 달리 시트는 지워지지 않으므로 조각이 사라질 수 없다.
+ */
+function putChunk_(sid, idx, tot, data) {
+  var ss = ss_();
+  var sh = ss.getSheetByName(TAB_CHUNK);
+  if (!sh) {
+    sh = ss.insertSheet(TAB_CHUNK);
+    sh.appendRow(['시각', 'sid', '번호', '총개수', '조각']);
+    try { sh.hideSheet(); } catch (e) {}
+  }
+
+  var last = sh.getLastRow();
+  var rows = last > 1 ? sh.getRange(2, 1, last - 1, 5).getValues() : [];
+
+  var seen = {};
+  rows.forEach(function (r) {
+    if (String(r[1]).trim() === sid) seen[Number(r[2])] = String(r[4]);
+  });
+
+  if (seen[idx] === undefined) {
+    sh.appendRow([nowStamp_(), sid, idx, tot, data]);
+    seen[idx] = data;
+  }
+
+  for (var i = 0; i < tot; i++) if (seen[i] === undefined) return '';
+
+  var out = '';
+  for (var j = 0; j < tot; j++) out += seen[j];
+  return out;
+}
+
+/** 다 쓴 조각을 지운다. 설문 1건이 시트에 들어간 뒤에 부른다. */
+function dropChunks_(sid) {
+  try {
+    var sh = ss_().getSheetByName(TAB_CHUNK);
+    if (!sh || sh.getLastRow() < 2) return;
+    var vals = sh.getRange(2, 1, sh.getLastRow() - 1, 5).getValues();
+    for (var r = vals.length - 1; r >= 0; r--) {
+      if (String(vals[r][1]).trim() === sid) sh.deleteRow(r + 2);
+    }
+  } catch (e) {}
 }
 
 /**

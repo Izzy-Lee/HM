@@ -60,7 +60,8 @@ const ok=(c,m)=>console.log((c?'  ✅':'  ❌')+' '+m);
   ok(qAfter===0, '복구 후 큐 자동 전송 완료 (남은 '+qAfter+'건)');
   const revAfter = await page.locator('#rev').textContent();
   console.log('  복구 후 매출:', revAfter);
-  const expect = 30000+2000+20000;
+  /* 스티커 2,500원 인상 반영 (바인더 30,000 + 스티커 2,500 + 컬러링 20,000) */
+  const expect = 30000+2500+20000;
   ok(revAfter.replace(/[^0-9]/g,'')===String(rev0.replace(/[^0-9]/g,'')*1+expect), '누락 없이 3건 모두 반영 (+'+expect.toLocaleString()+'원)');
   ok(!(await page.locator('#queue').isVisible()), '배너 사라짐');
 

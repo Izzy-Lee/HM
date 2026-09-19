@@ -21,9 +21,11 @@ const errs=[];
   await p.waitForSelector('.q'); await p.waitForTimeout(400);
   ok(await p.locator('#photoBtn').count()===1, '사진 첨부 버튼 있음');
 
-  console.log('\n═══ 2. 필수값 (사진 포함) ═══');
-  await p.locator('#bNext').click(); await p.waitForTimeout(500);
-  ok(await p.locator('.q.miss').count()>=3, '이름·링크·사진·플랫폼 누락 표시 ('+await p.locator('.q.miss').count()+'개)');
+  console.log('\n═══ 2. 사진이 없어도 막히지 않는다 ═══');
+  const before = (await p.locator('.q').first().textContent()||'').slice(0,20);
+  await p.locator('#bNext').click(); await p.waitForTimeout(600);
+  const after = (await p.locator('.q').count()) ? (await p.locator('.q').first().textContent()||'').slice(0,20) : '(완료)';
+  ok(after !== before, '사진 없이 눌러도 다음으로 넘어간다 ("'+before.trim()+'" → "'+after.trim()+'")');
 
   console.log('\n═══ 3. 큰 사진을 넣으면 자동으로 줄이는가 ═══');
   // 2400x1800 짜리 큰 이미지를 만들어 첨부한다

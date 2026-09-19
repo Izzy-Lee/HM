@@ -124,10 +124,12 @@ async function fillSurvey(page, type, opts={}){
   await dp.goto(BASE+'/survey.html?t=sticker',{waitUntil:'networkidle'});
   await dp.evaluate(()=>localStorage.clear());
   await dp.reload({waitUntil:'networkidle'}); await dp.waitForTimeout(500);
+  const q0 = (await dp.locator('.q').first().textContent()||'').slice(0,20);
   await dp.locator('#bNext').click();
-  await dp.waitForTimeout(400);
-  ok(await dp.locator('#err.on').count()===1, '빈 채로 다음 누르면 경고');
-  ok(await dp.locator('.q.miss').count()>0, '누락 문항 붉게 표시 ('+await dp.locator('.q.miss').count()+'개)');
+  await dp.waitForTimeout(500);
+  const q1 = (await dp.locator('.q').first().textContent()||'').slice(0,20);
+  ok(q1 !== q0, '빈 채로 눌러도 막히지 않고 넘어간다 ("'+q0.trim()+'" → "'+q1.trim()+'")');
+  ok(await dp.locator('#err.on').count()===0, '넘어갈 때 오류 배너로 막지 않는다');
 
   await browser.close();
   console.log('\n═══ 콘솔 ═══');

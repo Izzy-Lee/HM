@@ -562,8 +562,21 @@ function bindPhoto(){
     if (!f) return;
     const state = document.getElementById('photoState');
     if (state) state.textContent = '사진을 줄이는 중...';
+    let dataUrl = '';
     try{
-      const dataUrl = await shrinkImage(f, 900, 0.55);
+      dataUrl = await shrinkImage(f, 900, 0.55);
+    }catch(e){
+      /* 아이폰 HEIC 등 캔버스로 못 줄이는 사진이 있다. 그럴 땐 원본 그대로 붙인다. */
+      try{
+        dataUrl = await new Promise((res,rej)=>{
+          const r=new FileReader();
+          r.onload=()=>res(String(r.result||''));
+          r.onerror=()=>rej(new Error('읽기 실패'));
+          r.readAsDataURL(f);
+        });
+      }catch(e2){ dataUrl=''; }
+    }
+    if (dataUrl && dataUrl.indexOf(',')!==-1){
       PHOTO.preview = dataUrl;
       PHOTO.b64 = dataUrl.split(',')[1];
       A['캡처 이미지'] = '첨부됨';
@@ -571,8 +584,11 @@ function bindPhoto(){
       saveDraft(); render();
       const st2 = document.getElementById('photoState');
       if (st2) st2.textContent = '첨부됨 · 약 ' + kb + 'KB (제출할 때 올립니다)';
-    }catch(e){
-      if (state) state.textContent = e.message || '사진을 불러오지 못했습니다.';
+    } else {
+      A['캡처 이미지'] = '첨부 실패 — 현장 확인';
+      saveDraft(); render();
+      const st3 = document.getElementById('photoState');
+      if (st3) st3.textContent = '사진을 불러오지 못했습니다. 그대로 제출하시고 직원에게 화면을 보여주세요.';
     }
   });
 }
@@ -625,7 +641,8 @@ function next(sec){
     if (it.t==='matrix'){
       it.rows.forEach(r=>{ if(!A[it.k+' '+r]) missing.push('q'+i); });
     } else if (it.t==='photo'){
-      if (!PHOTO.b64) missing.push('q'+i);
+      /* 사진은 필수로 잡지 않는다 — 일부 기종에서 첨부가 인식되지 않아
+         손님이 아예 제출을 못 하는 일이 있었다. 현장에서 눈으로 확인한다. */
     } else {
       const v=A[it.k];
       const empty = Array.isArray(v) ? v.length===0 : !v;
@@ -633,15 +650,13 @@ function next(sec){
     }
   });
 
+  /* 현장에서는 막히는 것이 빈 칸보다 나쁘다.
+     안 채운 문항은 붉게 짚어만 주고, 넘어가는 것은 막지 않는다. */
   const err=document.getElementById('err');
   root.querySelectorAll('.q').forEach(q=>q.classList.remove('miss'));
   if (missing.length){
     missing.forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add('miss'); });
-    err.textContent='답하지 않은 문항이 '+new Set(missing).size+'개 있습니다. 붉게 표시된 곳을 확인해 주세요.';
-    err.classList.add('on');
-    const first=document.getElementById(missing[0]);
-    if (first) first.scrollIntoView({behavior:'smooth', block:'center'});
-    return;
+    A['미응답 문항수'] = String((Number(A['미응답 문항수'])||0) + new Set(missing).size);
   }
   err.classList.remove('on');
 
@@ -654,21 +669,16 @@ async function finish(){
   btn.disabled=true; btn.textContent='보내는 중...';
 
   // 사진이 있으면 먼저 드라이브에 올리고, 그 주소를 설문과 함께 기록한다
-  let imgUrl = '';
+  let imgUrl = '', imgFailed = false;
   if (PHOTO.b64){
+    /* 사진이 안 올라가도 답변까지 날리지는 않는다. 사진만 포기하고 설문은 남긴다. */
     try{ imgUrl = await uploadPhoto(); }
-    catch(e){
-      btn.disabled=false; btn.textContent='제출하기';
-      const err=document.getElementById('err');
-      err.textContent='사진을 올리지 못했습니다: ' + (e.message||'') + ' 잠시 후 다시 눌러주세요.';
-      err.classList.add('on');
-      window.scrollTo({top:0,behavior:'smooth'});
-      return;
-    }
+    catch(e){ imgFailed = true; A['캡처 이미지'] = '업로드 실패 — 현장 확인'; }
   }
 
   const sub = { t:TYPE, sid:newSid(), slot:SLOT, name:A['이름']||NAME, code:newCode(),
                 link:A['게시물 링크']||'', img:imgUrl, d:b64url(JSON.stringify(A)) };
+  window.__imgFailed = imgFailed;
   let res=null, queued=false;
   try{ res = await submit(sub); }
   catch(e){ const q=qGet(); q.push(sub); qSet(q); queued=true; }
@@ -693,6 +703,10 @@ function renderDone(res, sub, queued){
          '<div class="cd">이 화면을 <b>부스 직원에게 보여주시면</b><br>' +
          (isSns ? '완성 작품을 <b>액자에 넣어</b> 드립니다.' : esc(what) + ' 1개를 드립니다.') +
          '</div></div>';
+  }
+  if (window.__imgFailed){
+    h += '<div class="pend">답변은 저장되었습니다. 다만 <b>사진이 올라가지 않았습니다.</b> ' +
+         '이 화면과 올리신 게시물을 직원에게 보여주시면 확인해 드립니다.</div>';
   }
   if (queued){
     h += '<div class="pend">지금 네트워크가 불안정해 <b>전송 대기 중</b>입니다. ' +

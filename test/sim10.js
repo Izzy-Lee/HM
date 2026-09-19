@@ -89,7 +89,6 @@ async function journey(ctx, c, n) {
     await page.locator('#fName').fill(c.name);
     await page.locator('#fTel').fill(c.tel);
     if (c.design) await turnOn('[data-design="' + c.design + '"]');
-    await turnOn('#agree');
 
     if (await page.locator('#submit').isDisabled()) { await page.close(); return { skip: '예약 버튼 비활성' }; }
     await page.locator('#submit').click();

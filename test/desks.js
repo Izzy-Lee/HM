@@ -71,7 +71,6 @@ async function survey(ctx, type, name, slot, shot) {
       if (!/\bon\b/.test((await e.getAttribute('class')) || '')) { await e.click(); await p.waitForTimeout(150); } };
     await on('[data-prog="컬러링"]'); await on('[data-time="14:00"]');
     await p.locator('#fName').fill(c.n); await p.locator('#fTel').fill(c.t);
-    await on('#agree');
     await p.locator('#submit').click(); await p.waitForTimeout(1500);
     ok(await p.locator('.done').count() === 1, c.n + ' 예약 완료');
     await p.close();

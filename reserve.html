@@ -20,7 +20,7 @@
   body{
     background:var(--paper); color:var(--ink);
     font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;
-    font-size:15px; line-height:1.7; padding:0 0 7rem; max-width:560px; margin:0 auto;
+    font-size:15px; line-height:1.7; padding:0 0 10rem; max-width:560px; margin:0 auto;
     -webkit-text-size-adjust:100%;
   }
   header{ padding:1.4rem .95rem .8rem; }
@@ -81,13 +81,22 @@
   .field:last-child{ margin-bottom:0; }
   .hint{ font-size:.72rem; color:var(--faint); margin-top:.3rem; line-height:1.6; }
 
-  .agree{ display:flex; align-items:flex-start; gap:.6rem; cursor:pointer; }
-  .agree .box{ flex:none; width:24px; height:24px; margin-top:.1rem; border:2px solid var(--rule); background:#fff; border-radius:6px; position:relative; }
-  .agree.on .box{ border-color:var(--teal); background:var(--teal); }
-  .agree.on .box::after{ content:''; position:absolute; left:50%; top:46%; transform:translate(-50%,-50%) rotate(-45deg); width:10px; height:5px; border:2px solid #fff; border-top:0; border-right:0; }
-  .agree .tx{ font-size:.8rem; line-height:1.65; }
-  .agree .tx b{ font-weight:700; }
-  .agree .tx span{ display:block; font-size:.72rem; color:var(--faint); margin-top:.15rem; }
+  /* ── 개인정보 수집·이용 고지 — 신청이 곧 동의다 ── */
+  .pv .lead{ font-size:.8rem; line-height:1.7; margin-bottom:.6rem; }
+  .pv .lead b{ color:var(--teal); font-weight:700; }
+  .pv table{ width:100%; border-collapse:collapse; font-size:.73rem; line-height:1.55; }
+  .pv th,.pv td{ border:1px solid var(--rule); padding:.4rem .45rem; text-align:left; vertical-align:top; }
+  .pv th{ background:#f2ece2; font-weight:700; color:var(--soft); white-space:nowrap; }
+  .pv details{ margin-top:.6rem; }
+  .pv summary{ font-size:.75rem; font-weight:700; color:var(--teal); cursor:pointer; padding:.35rem 0; list-style:none; }
+  .pv summary::-webkit-details-marker{ display:none; }
+  .pv summary::before{ content:'▸ '; }
+  .pv details[open] summary::before{ content:'▾ '; }
+  .pv .full{ font-size:.72rem; color:var(--soft); line-height:1.75; padding-top:.3rem; }
+  .pv .full p{ margin-bottom:.5rem; }
+  .pv .full b{ color:var(--ink); }
+  .bar .consent{ font-size:.71rem; color:var(--faint); text-align:center; line-height:1.5; margin-bottom:.4rem; }
+  .bar .consent b{ color:var(--soft); font-weight:700; }
 
   .bar{
     position:fixed; left:0; right:0; bottom:0; z-index:30; max-width:560px; margin:0 auto;
@@ -168,7 +177,7 @@ const QS = new URLSearchParams(location.search);
 const F = {
   program: PROGRAMS.some(p=>p.key===QS.get('program')) ? QS.get('program') : '',
   time: SLOT_TIMES.indexOf(QS.get('time')||'') !== -1 ? QS.get('time') : '',
-  name:'', tel:'', design:'', agree:false
+  name:'', tel:'', design:''
 };
 
 const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -248,7 +257,7 @@ function slotsFor(program){
 function render(){
   const prog = PROGRAMS.filter(p=>p.key===F.program)[0];
   const list = F.program ? slotsFor(F.program) : [];
-  const ready = live && F.program && F.time && F.name.trim() && F.tel.trim() && F.agree;
+  const ready = live && F.program && F.time && F.name.trim() && F.tel.trim();
 
   let h = '<header><h1>체험 예약</h1>' +
     '<div class="when">' + EVENT_DATE + ' · 수봉산 폭포 앞<br>13:00 ~ 18:30 · 30분 11회차</div></header>' +
@@ -308,10 +317,27 @@ function render(){
   });
   h += '</div><p class="hint">고르지 않으셔도 현장에서 남은 도안 중 선택하실 수 있습니다.</p>';
 
-  h += '<h2>동의</h2><div class="card">' +
-    '<div class="agree'+(F.agree?' on':'')+'" id="agree"><span class="box"></span>' +
-    '<span class="tx"><b>개인정보 수집·이용에 동의합니다.</b>' +
-    '<span>수집 항목: 이름, 연락처 · 목적: 체험 예약 확인 및 현장 안내 · 보유 기간: 행사 종료 후 3개월</span></span></div></div>';
+  h += '<h2>개인정보 수집·이용 안내</h2><div class="card pv">' +
+    '<p class="lead">아래 내용을 확인하신 뒤 <b>예약하기</b>를 누르시면 ' +
+      '개인정보 수집·이용에 동의하신 것으로 봅니다.</p>' +
+    '<table><tr><th>수집 항목</th><th>이용 목적</th><th>보유 기간</th></tr>' +
+    '<tr><td>이름<br>연락처</td>' +
+        '<td>체험 예약 확인 및 본인 식별<br>현장 안내 · 회차 배정 · 노쇼 관리</td>' +
+        '<td>행사 종료 후 1년<br>(사업 정산·결과보고 확인 후 파기)</td></tr></table>' +
+    '<details><summary>자세히 보기 (거부 권리 · 제3자 제공)</summary><div class="full">' +
+      '<p><b>관련 법규</b> 개인정보 보호법 제15조, 제22조</p>' +
+      '<p><b>동의를 거부할 권리</b> 귀하는 개인정보 수집·이용 동의를 거부하실 권리가 있으며, ' +
+        '거부에 따른 불이익은 없습니다. 다만 위 항목은 <b>체험 회차 배정과 현장 본인 확인에 ' +
+        '반드시 필요한 사항</b>이므로, 동의하지 않으시면 사전 예약이 어렵습니다. ' +
+        '이 경우 현장 부스에서 잔여 인원에 한해 접수하실 수 있습니다.</p>' +
+      '<p><b>개인정보의 제공</b> 제공하신 정보는 관광두레 파일럿사업의 운영 실적 보고 목적으로 ' +
+        '<b>한국관광공사</b>에 제공될 수 있습니다.</p>' +
+      '<p><b>제3자 제공 및 목적 외 이용</b> 동의하신 내용 외의 다른 목적으로는 활용하지 않으며, ' +
+        '위 기관 외 제3자에게 제공하지 않습니다.</p>' +
+      '<p><b>열람·정정·삭제</b> 제공하신 개인정보의 이용을 거부하시거나 열람·정정·삭제를 ' +
+        '원하시면 아래로 연락 주시면 지체 없이 처리해 드립니다.</p>' +
+      '<p><b>개인정보 관리책임자</b> 주식회사 헬로미추 이영지 · 010-3394-3372</p>' +
+    '</div></details></div>';
 
   h += '</div>';
 
@@ -321,6 +347,7 @@ function render(){
       : (F.program && F.time
         ? '<b>'+esc(prog.name)+' '+esc(F.time)+'</b> 회차로 예약합니다'
         : '프로그램과 시간을 선택해 주세요')) + '</div>' +
+    '<p class="consent"><b>예약하기</b>를 누르면 위 개인정보 수집·이용에 동의한 것으로 봅니다.</p>' +
     '<button type="button" id="submit"'+(ready?'':' disabled')+'>예약하기</button></div>';
 
   root.innerHTML = h;
@@ -341,9 +368,6 @@ function bind(){
     F.design = (F.design===el.dataset.design) ? '' : el.dataset.design;
     render();
   }));
-  const ag = document.getElementById('agree');
-  if (ag) ag.addEventListener('click',()=>{ F.agree=!F.agree; render(); });
-
   const n=document.getElementById('fName'), t=document.getElementById('fTel');
   if (n) n.addEventListener('input',()=>{ F.name=n.value; toggleSubmit(); });
   if (t) t.addEventListener('input',()=>{ F.tel=t.value; toggleSubmit(); });
@@ -354,7 +378,7 @@ function bind(){
 
 function toggleSubmit(){
   const b=document.getElementById('submit');
-  if (b) b.disabled = !(live && F.program && F.time && F.name.trim() && F.tel.trim() && F.agree);
+  if (b) b.disabled = !(live && F.program && F.time && F.name.trim() && F.tel.trim());
 }
 
 async function submit(){

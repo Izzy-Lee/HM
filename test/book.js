@@ -13,7 +13,6 @@ async function book(page, {program,time,name,tel,design}){
   await page.locator('#fName').fill(name);
   await page.locator('#fTel').fill(tel);
   if (design) { await page.locator('[data-design="'+design+'"]').click(); await page.waitForTimeout(250); }
-  await page.locator('#agree').click(); await page.waitForTimeout(250);
   await page.locator('#submit').click();
   await page.waitForTimeout(1600);
   if (await page.locator('.done').count()) return {ok:true, ticket:(await page.locator('.ticket .v').textContent()).trim()};
@@ -39,12 +38,14 @@ async function book(page, {program,time,name,tel,design}){
 
   console.log('\n═══ 2. 필수값 검증 ═══');
   await p.locator('[data-time="14:00"]').click(); await p.waitForTimeout(250);
-  ok(await p.locator('#submit').isDisabled(), '이름·연락처·동의 없으면 비활성');
+  ok(await p.locator('#submit').isDisabled(), '이름·연락처 없으면 비활성');
   await p.locator('#fName').fill('홍길동'); await p.locator('#fTel').fill('010-1111-2222');
-  await p.waitForTimeout(200);
-  ok(await p.locator('#submit').isDisabled(), '동의 안 하면 여전히 비활성');
-  await p.locator('#agree').click(); await p.waitForTimeout(300);
-  ok(!(await p.locator('#submit').isDisabled()), '전부 채우면 활성화');
+  await p.waitForTimeout(300);
+  ok(!(await p.locator('#submit').isDisabled()), '이름·연락처를 채우면 활성화');
+  ok(await p.locator('.pv table').count()===1, '개인정보 수집·이용 고지표 표시');
+  ok((await p.locator('.bar .consent').textContent()).includes('동의한 것으로'),
+     '버튼 위 동의 간주 문구: "'+(await p.locator('.bar .consent').textContent()).trim()+'"');
+  ok(await p.locator('.pv details').count()===1, '거부 권리·제3자 제공 상세 안내 있음');
 
   console.log('\n═══ 3. 예약 접수 ═══');
   await p.locator('#submit').click(); await p.waitForTimeout(1800);

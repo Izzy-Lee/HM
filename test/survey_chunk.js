@@ -18,6 +18,17 @@ const dump = async (page, tab) =>
 /* 둘째 줄부터는 이름 뒤에 '(이어짐 2/3)' 이 붙는다. 합칠 때 떼고 본다. */
 const bare = v => String(v).replace(/\s*\(이어짐\s*\d+(\/\d+)?\)\s*$/, '').trim();
 
+/* 답이 길어 두 칸에 나눠 담긴 경우 '문항' + '문항 (이어 2)' … 를 순서대로 이어붙인다 */
+function joinValues(o){
+  const out = {};
+  Object.keys(o).forEach(k => {
+    const m = k.match(/^(.*?)\s*\(이어 (\d+)\)$/);
+    const base = m ? m[1] : k, seq = m ? Number(m[2]) : 1;
+    (out[base] = out[base] || [])[seq - 1] = o[k];
+  });
+  Object.keys(out).forEach(k => { out[k] = out[k].join(''); });
+  return out;
+}
 /** 한 사람의 여러 줄을 이름으로 합쳐 {문항:답} 하나로 만든다 */
 function mergeRows(rows, name) {
   const head = rows[0], iName = head.indexOf('이름'), out = {};
@@ -25,8 +36,9 @@ function mergeRows(rows, name) {
     if (bare(r[iName]) !== name) return;
     head.forEach((h, i) => { if (String(r[i]).trim() !== '') out[h] = r[i]; });
   });
-  out['이름'] = name;
-  return out;
+  const j = joinValues(out);
+  j['이름'] = name;
+  return j;
 }
 const linesOf = (rows, name) => {
   const i = rows[0].indexOf('이름');

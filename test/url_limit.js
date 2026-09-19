@@ -11,13 +11,24 @@ const dump = async (page, tab) =>
                 BASE + '/_dump?tab=' + encodeURIComponent(tab));
 const bare = v => String(v).replace(/\s*\(이어짐 \d+\)\s*$/, '').trim();
 
+/* 답이 길어 두 칸에 나눠 담긴 경우 '문항' + '문항 (이어 2)' … 를 순서대로 이어붙인다 */
+function joinValues(o){
+  const out = {};
+  Object.keys(o).forEach(k => {
+    const m = k.match(/^(.*?)\s*\(이어 (\d+)\)$/);
+    const base = m ? m[1] : k, seq = m ? Number(m[2]) : 1;
+    (out[base] = out[base] || [])[seq - 1] = o[k];
+  });
+  Object.keys(out).forEach(k => { out[k] = out[k].join(''); });
+  return out;
+}
 function merge(rows, name) {
   const head = rows[0], i = head.indexOf('이름'), out = {};
   rows.slice(1).forEach(r => {
     if (bare(r[i]) !== name) return;
     head.forEach((h, j) => { if (String(r[j]).trim() !== '') out[h] = r[j]; });
   });
-  return out;
+  return joinValues(out);
 }
 
 async function fill(page, type, opts = {}) {

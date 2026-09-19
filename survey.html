@@ -408,12 +408,14 @@ function newCode(){
    없고, 보낸 즉시 시트에 줄이 남는다. 한 사람이 여러 줄이 되지만
    이름·회차·분할번호로 다시 합칠 수 있다. 줄이 예뻐지는 것보다
    줄이 남는 것이 중요하다. */
-const BUILD = '0919-g';   // 화면 판 번호. 캡처 한 장으로 어느 판인지 알 수 있게 한다.
+const BUILD = '0919-j';   // 화면 판 번호. 캡처 한 장으로 어느 판인지 알 수 있게 한다.
 try { document.getElementById('bld').textContent = '화면 ' + BUILD; } catch(e){}
-const BUDGET_START = 350;   /* 처음 보낼 때의 크기. 예약(주소 300자대)은 온종일 잘 갔으므로
+const BUDGET_START = 120;   /* 처음에는 한 문항씩 보낸다. 주소가 400자 안팎이 되는데,
+                               예약 요청(300자대)이 온종일 들어갔으므로 같은 크기다.
+                               통하면 아래에서 점점 키운다. */   /* 처음 보낼 때의 크기. 예약(주소 300자대)은 온종일 잘 갔으므로
                                그 언저리에서 시작한다. */
 const BUDGET_MAX   = 1400;  // 성공해도 이보다 크게는 안 키운다
-const BUDGET_MIN   = 200;
+const BUDGET_MIN   = 60;    // 예약 요청(주소 300자대)보다도 작게까지 내려간다
 
 /* 한 통짜리(n=1)는 서버가 시트에 줄을 쓴 뒤에만 응답한다. 실패하면 ok:false 로 오고
    전송 함수가 거절한다. 그러니 응답이 왔다는 것 자체가 저장됐다는 뜻이다. */
@@ -438,15 +440,50 @@ async function submit(sub){
   /* ceiling — 한 번 막힌 크기 위로는 다시 안 키운다. 안 그러면 키웠다 막히고를
      되풀이하며 손님만 기다리게 된다. */
   const st = { seq: 0, first: null, left: Object.assign({}, sub.A),
-               budget: BUDGET_START, ceiling: BUDGET_MAX };
+               budget: BUDGET_START, ceiling: BUDGET_MAX, lost: 0 };
   try {
-    while (Object.keys(st.left).length) await sendPart(sub, takeNext(st), st);
+    /* 한 조각이 끝내 안 가도 멈추지 않는다. 나머지는 계속 보내 될 것만이라도 쌓는다.
+       한 문항 때문에 설문 전체를 잃는 일은 없어야 한다. */
+    let guard = 0;
+    while (Object.keys(st.left).length && guard++ < 400){
+      const part = takeNext(st);
+      try { await sendPart(sub, part, st); }
+      catch (e) {
+        st.why = (e && e.message) || String(e);
+        Object.keys(part).forEach(k => { delete st.left[k]; });   // 무한 반복 방지
+        st.lost++;
+      }
+    }
   } finally {
-    /* 이미 저장된 문항은 빼고 남긴다. 큐에 쌓였다가 다시 보내도 중복으로 안 들어간다. */
+    /* 못 보낸 것만 남긴다. 큐에 쌓였다가 다시 보내도 이미 저장된 것은 중복으로 안 들어간다. */
     sub.A = st.left;
   }
   if (!st.seq) throw new Error(st.why || '한 건도 저장되지 않았습니다.');
+  if (st.lost) window.__lost = st.lost;
   return st.first;
+}
+
+/** 덩이 하나를 실제로 보낸다. 저장됐으면 true. */
+async function trySend(sub, body, st){
+  const idx = st.seq;
+  /* 둘째 줄부터는 이름 뒤에 표시를 붙인다. 증정 담당자 화면에서 같은 사람이
+     여러 번 떠도 어느 것이 본 줄인지 보이고, 합칠 때 떼면 된다. */
+  const nm = idx === 0 ? sub.name : sub.name + ' (이어짐 ' + (idx + 1) + ')';
+  const send = Object.assign({}, body);
+  if (idx > 0) send['분할'] = '이어짐 ' + (idx + 1);
+
+  const p = { action:'survey', t:sub.t, sid:sub.sid + 'g' + idx, i:0, n:1,
+              d: b64url(JSON.stringify(send)), slot:sub.slot, name:nm,
+              code: idx === 0 ? sub.code : '',
+              /* 링크·사진은 서버가 고정 칸에 덮어쓰므로 모든 줄에 같이 보낸다 */
+              link: sub.link, img: sub.img };
+
+  let r = null;
+  try { r = await call(p); } catch(e){ st.why = (e && e.message) || String(e); }
+  if (!wrote(r)) return false;
+  st.seq++;
+  if (idx === 0) st.first = r;
+  return true;
 }
 
 /**
@@ -454,44 +491,22 @@ async function submit(sub){
  *
  * Apps Script 는 요청을 다른 주소로 넘기면서 주소가 더 길어지고, 그 과정에서
  * 긴 주소가 잘린다. 진짜 한계가 얼마인지는 밖에서 알 수 없다. 그래서 정하지 않는다.
- * 성공하면 다음 덩이를 키우고, 실패하면 반으로 줄여 다시 보낸다. 몇 번 오가면
- * 그 폰·그 회선에서 실제로 통하는 크기에 붙는다.
+ * 통하면 다음 덩이를 키우고, 막히면 반으로 줄인다. 몇 번 오가면 그 폰·그 회선에서
+ * 실제로 통하는 크기에 붙는다.
  */
 async function sendPart(sub, part, st){
   const keys = Object.keys(part);
-  const idx = st.seq;
-  /* 둘째 줄부터는 이름 뒤에 표시를 붙인다. 증정 담당자 화면에서 같은 사람이
-     여러 번 떠도 어느 것이 본 줄인지 보이고, 합칠 때 떼면 된다. */
-  const nm = idx === 0 ? sub.name : sub.name + ' (이어짐 ' + (idx + 1) + ')';
-  const body = Object.assign({}, part);
-  if (idx > 0) body['분할'] = '이어짐 ' + (idx + 1);
 
-  const p = { action:'survey', t:sub.t, sid:sub.sid + 'g' + idx, i:0, n:1,
-              d: b64url(JSON.stringify(body)), slot:sub.slot, name:nm,
-              code: idx === 0 ? sub.code : '',
-              /* 링크·사진은 서버가 고정 칸에 덮어쓰므로 모든 줄에 같이 보낸다 */
-              link: sub.link, img: sub.img };
-
-  let r = null;
-  try { r = await call(p); } catch(e){ st.why = (e && e.message) || String(e); }
-  /* 더 쪼갤 수 없는 한 문항일 때만 같은 크기로 다시 시도한다. 쪼갤 수 있으면
-     바로 반으로 나눈다 — 길이 때문에 막힌 것이면 같은 크기 재시도는 시간만 두 배로 쓴다. */
-  if (!wrote(r) && keys.length === 1){
-    p.sid = sub.sid + 'g' + idx + 'r' + Date.now().toString(36);
-    try { r = await call(p); } catch(e){ st.why = (e && e.message) || String(e); }
-  }
-
-  if (wrote(r)){
-    st.seq++;
+  if (await trySend(sub, part, st)){
     keys.forEach(k => { delete st.left[k]; });
-    if (idx === 0) st.first = r;
     st.budget = Math.min(st.ceiling, Math.round(st.budget * 1.6));   // 통했으니 조금 키운다
     return;
   }
 
   st.ceiling = Math.max(BUDGET_MIN, Math.round(st.budget / 2));      // 이 위로는 다시 안 키운다
-  st.budget  = st.ceiling;                                           // 막혔으니 줄인다
-  if (keys.length > 1){
+  st.budget  = st.ceiling;
+
+  if (keys.length > 1){                                              // 문항 단위로 반씩 나눈다
     const h = Math.ceil(keys.length / 2), a = {}, b = {};
     keys.slice(0, h).forEach(k => { a[k] = part[k]; });
     keys.slice(h).forEach(k => { b[k] = part[k]; });
@@ -500,7 +515,23 @@ async function sendPart(sub, part, st){
     return;
   }
 
-  throw new Error('문항 "' + keys[0] + '" 전송 실패 — ' + (st.why || '응답 없음'));
+  /* 문항이 하나인데도 막힌다면 그 답변 자체가 길어서다. 답을 앞에서부터 잘라
+     여러 줄에 나눠 담는다. 키 뒤 번호는 보낸 순서대로 붙으므로 합칠 때 그대로
+     이어붙이면 된다. 글자를 버리는 것이 아니라 여러 칸에 나눠 담는 것이다. */
+  const k0 = keys[0];
+  const base = k0.replace(/\s*\(이어 \d+\)$/, '');
+  let rest = String(part[k0] == null ? '' : part[k0]);
+  let size = Math.max(1, Math.ceil(rest.length / 2));
+  let n = 0;
+
+  while (rest.length){
+    const one = {};
+    one[n === 0 ? base : base + ' (이어 ' + (n + 1) + ')'] = rest.slice(0, size);
+    if (await trySend(sub, one, st)){ rest = rest.slice(size); n++; continue; }
+    size = Math.floor(size / 2);
+    if (size < 1) throw new Error('문항 "' + base + '" 전송 실패 — ' + (st.why || '응답 없음'));
+  }
+  delete st.left[k0];
 }
 
 /* 예전 방식(조각내 보내고 서버가 합치기). 오래된 큐를 비울 때만 쓴다. */

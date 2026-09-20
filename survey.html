@@ -408,7 +408,7 @@ function newCode(){
    없고, 보낸 즉시 시트에 줄이 남는다. 한 사람이 여러 줄이 되지만
    이름·회차·분할번호로 다시 합칠 수 있다. 줄이 예뻐지는 것보다
    줄이 남는 것이 중요하다. */
-const BUILD = '0920-a';   // 화면 판 번호. 캡처 한 장으로 어느 판인지 알 수 있게 한다.
+const BUILD = '0920-b';   // 화면 판 번호. 캡처 한 장으로 어느 판인지 알 수 있게 한다.
 try { document.getElementById('bld').textContent = '화면 ' + BUILD; } catch(e){}
 const BUDGET_START = 120;   /* 처음에는 한 문항씩 보낸다. 주소가 400자 안팎이 되는데,
                                예약 요청(300자대)이 온종일 들어갔으므로 같은 크기다.
@@ -581,7 +581,67 @@ async function flushQueue(){
 }
 
 /* ── 렌더 ──────────────────────────────────────────────────── */
+
+/* ── 진단 화면 ────────────────────────────────────────────────
+   survey.html?diag=1 로 열면 설문을 채우지 않고도 어디서 막히는지 본다.
+   같은 주소, 같은 순간에 어떤 요청은 되고 어떤 요청은 안 되는지 나란히 찍는다.
+   JSONP 는 실패해도 이유를 못 보여주므로, 같은 주소를 fetch 로도 한 번 더 불러
+   실제 응답 코드와 본문 앞부분을 그대로 적는다. 그래야 추측을 멈출 수 있다. */
+function diagUrl(params){
+  const u = new URL(API_URL);
+  Object.keys(params).forEach(k => { if (params[k] !== undefined && params[k] !== '') u.searchParams.set(k, params[k]); });
+  return u.toString();
+}
+
+async function diagFetch(params){
+  const url = diagUrl(params);
+  try {
+    const res = await fetch(url, { method:'GET' });
+    const txt = (await res.text()).replace(/\s+/g, ' ').slice(0, 160);
+    return { line: 'HTTP ' + res.status + ' · ' + (res.type || '-') + ' · ' + (txt || '(빈 응답)'), len: url.length };
+  } catch (e) {
+    return { line: '불러오기 실패 — ' + ((e && e.message) || e), len: url.length };
+  }
+}
+
+async function diagJsonp(params){
+  try { const r = await call(params); return (r && r.ok !== false) ? '정상' : ('서버 거절 — ' + (r && r.error)); }
+  catch (e) { return '실패 — ' + ((e && e.message) || e); }
+}
+
+async function renderDiag(){
+  const root = document.getElementById('root');
+  /* 로컬 테스트에서 '설문만 거부하는 서버' 를 만들어 보기 위한 스위치.
+     실제 배포 주소에서는 이 경로가 없으므로 아무 일도 일어나지 않는다. */
+  if (QS.get('block') === '1'){ try { await fetch('/_block?on=1'); } catch(e){} }
+  const mini = b64url(JSON.stringify({ '진단': '확인' }));
+  const svParams = { action:'survey', t:'coloring', sid:'diag' + Date.now().toString(36),
+                     i:0, n:1, d:mini, name:'[진단]' };
+
+  const rows = [];
+  const put = (k, v) => { rows.push([k, v]);
+    root.innerHTML = '<div class="pick"><h1 style="font-size:1.1rem;margin:.2rem 0 .8rem">전송 진단</h1>' +
+      rows.map(r => '<div class="pend" style="margin:0 0 .5rem"><b>' + esc(r[0]) + '</b>' +
+                    '<div class="why" style="border-top:none;padding-top:.3rem">' + esc(r[1]) + '</div></div>').join('') +
+      '<p class="sns-note" style="margin-top:.6rem">화면 ' + BUILD + '</p></div>';
+  };
+
+  put('1. 회차 조회 (JSONP)', '확인 중…');
+  rows.pop(); put('1. 회차 조회 (JSONP)', await diagJsonp({ action:'slots' }));
+
+  put('2. 설문 최소 전송 (JSONP)', '확인 중…');
+  rows.pop(); put('2. 설문 최소 전송 (JSONP) · 주소 ' + diagUrl(svParams).length + '자',
+                  await diagJsonp(svParams));
+
+  const f1 = await diagFetch({ action:'slots' });
+  put('3. 회차 조회 (fetch) · 주소 ' + f1.len + '자', f1.line);
+
+  const f2 = await diagFetch(svParams);
+  put('4. 설문 최소 전송 (fetch) · 주소 ' + f2.len + '자', f2.line);
+}
+
 function render(){
+  if (QS.get('diag') === '1') return renderDiag();
   if (!SPEC) return renderPicker();
   const sec = SPEC.sections[step];
   const total = SPEC.sections.length;

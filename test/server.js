@@ -206,6 +206,17 @@ http.createServer((req,res)=>{
   if (process.env.MAX_URL && req.url.length > Number(process.env.MAX_URL)) {
     return req.socket.destroy();
   }
+  /* 테스트용 — 현장 증상 재현: action=survey 만 서버가 거부한다.
+     설문 화면에 ?block=1 을 주면 그 화면이 보내는 설문 요청이 500 으로 떨어진다. */
+  if (u.pathname === '/exec' && u.query.action === 'survey' && global.__blockSurvey) {
+    res.writeHead(500, {'Content-Type':'text/html; charset=utf-8'});
+    return res.end('<html><body>Sorry, unable to open the file at this time.</body></html>');
+  }
+  if (u.pathname === '/_block') {
+    global.__blockSurvey = u.query.on !== '0';
+    res.writeHead(200,{'Content-Type':'application/json'});
+    return res.end('{"ok":true}');
+  }
   if (u.pathname === '/exec') {
     let out;
     try { out = ctx.doGet({parameter:u.query}); }

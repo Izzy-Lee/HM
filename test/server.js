@@ -119,6 +119,17 @@ resv.appendRow(['타임스탬프','참여 프로그램','예약 시간','이름'
 /* CONFIG 는 const 라 전역 객체에 안 붙는다. 컨텍스트 안에서 직접 설정한다. */
 vm.runInContext("CONFIG.SHEET_NAME = '설문지 응답 시트1'; CONFIG.NOTIFY_EMAIL = '';", ctx);
 
+/* 행사일(2026-09-19)이 지나면 모든 회차가 '지난 회차' 가 되어 예약 테스트가 전부 막힌다.
+   테스트에서는 하네스를 행사 당일인 척하게 해 둔다. 날짜와 무관하게 같은 결과가 나온다.
+   HM_EVENT_DATE=2026-09-19 처럼 주면 특정 날짜로 고정할 수도 있다. */
+{
+  const d = process.env.HM_EVENT_DATE ? new Date(process.env.HM_EVENT_DATE + 'T00:00:00') : new Date();
+  const wd = ['일','월','화','수','목','금','토'][d.getDay()];
+  vm.runInContext(
+    `CONFIG.YEAR = ${d.getFullYear()}; CONFIG.MONTH = ${d.getMonth()+1}; CONFIG.DAY = ${d.getDate()};` +
+    ` CONFIG.EVENT_DATE = '${d.getMonth()+1}월 ${d.getDate()}일 (${wd})';`, ctx);
+}
+
 ctx.setupFieldSheets();
 
 /* 예약 명단 목업 — roster 가 예약 시트를 못 읽을 때의 동작도 함께 본다 */

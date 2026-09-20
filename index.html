@@ -194,6 +194,13 @@
   /* SNS 후기 인증 */
   .cta-btn--sns { background: var(--brush-blue); color: white; }
   .cta-btn--sns:hover { background: #4d6ea3; }
+
+  /* 설문이 아직 제대로 저장되지 않아 손님에게는 감춰둔다.
+     주소 끝에 ?k=0919 (또는 ?test=1) 를 붙이면 보인다 — 테스트용. */
+  [data-testonly] { display: none; }
+  .testonly-note { font-family:'Noto Sans KR',sans-serif; font-size:.7rem; color:#8a6520;
+                   background:#fff3e0; border:1px solid #e0b184; border-radius:8px;
+                   padding:.5rem .7rem; margin-bottom:.7rem; text-align:left; }
   .survey-box { background: white; border: 2px solid #f5aebc; border-radius: 14px; padding: 0.9rem 1rem 0.6rem; margin-bottom: 1.1rem; text-align: left; box-shadow: 0 2px 10px rgba(232,135,157,0.12); }
   .gift-pill { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; font-weight: 700; padding: 0.18rem 0.55rem; border-radius: 10px; background: rgba(212,132,58,0.14); color: var(--brush-amber); white-space: nowrap; }
   .survey-sub { font-family: 'Noto Sans KR', sans-serif; font-size: 0.72rem; color: var(--ink-soft); line-height: 1.65; margin: 0.1rem 0 0.5rem; }
@@ -376,7 +383,7 @@
         실시간 잔여 현황을 불러오지 못했습니다. 폼에서 시간대를 직접 선택해 주세요.
       </p>
     </div>
-    <div class="survey-box">
+    <div class="survey-box" data-testonly>
       <div class="sns-head">
         <span class="sns-title" style="color:#d4657f;"><span class="step-badge pink">2</span>체험 후 설문</span>
         <span class="gift-pill">유료 참여 시 스티커 증정</span>
@@ -401,7 +408,7 @@
     </div>
 
     <!-- SNS 후기 인증 -->
-    <div class="sns-box">
+    <div class="sns-box" data-testonly>
       <div class="sns-head">
         <span class="sns-title" style="color:var(--brush-blue);"><span class="step-badge blue">3</span>SNS 후기 · 액자 증정</span>
         <span class="frame-pill" id="framePill">액자 28개</span>
@@ -1308,6 +1315,40 @@ window.addEventListener('load', () => {
       .catch(() => {});
   }, 60000);
 });
+
+/* 설문 영역은 기본으로 감춰두고, 테스트할 때만 연다.
+   주소에 k=0919 또는 test=1 이 있으면 보이고, 설문 링크에도 그 값을 넘겨준다. */
+(function () {
+  var q, on;
+  try {
+    q  = new URLSearchParams(location.search);
+    on = q.get('test') === '1' || q.get('k') === '0919';
+  } catch (e) { return; }
+  if (!on) return;
+
+  function open_() {
+    document.querySelectorAll('[data-testonly]').forEach(function (el) {
+      /* 인라인 스타일로는 스타일시트의 display:none 을 못 이긴다. 속성을 떼어 규칙에서 벗어난다. */
+      el.removeAttribute('data-testonly');
+      if (!el.querySelector('.testonly-note')) {
+        var note = document.createElement('p');
+        note.className = 'testonly-note';
+        note.textContent = '테스트 전용 — 손님 화면에는 보이지 않습니다.';
+        el.insertBefore(note, el.firstChild);
+      }
+    });
+    /* 이 페이지의 본 스크립트가 나중에 설문 버튼의 주소를 다시 쓴다. 그 뒤에 한 번 더 붙인다. */
+    document.querySelectorAll('a[href*="survey.html"]').forEach(function (a) {
+      if (a.href.indexOf('test=1') === -1) {
+        a.href += (a.href.indexOf('?') === -1 ? '?' : '&') + 'test=1';
+      }
+    });
+  }
+
+  open_();
+  window.addEventListener('load', open_);
+  setTimeout(open_, 1500);
+})();
 </script>
 
 </body>

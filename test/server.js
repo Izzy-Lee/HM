@@ -119,15 +119,20 @@ resv.appendRow(['타임스탬프','참여 프로그램','예약 시간','이름'
 /* CONFIG 는 const 라 전역 객체에 안 붙는다. 컨텍스트 안에서 직접 설정한다. */
 vm.runInContext("CONFIG.SHEET_NAME = '설문지 응답 시트1'; CONFIG.NOTIFY_EMAIL = '';", ctx);
 
-/* 행사일(2026-09-19)이 지나면 모든 회차가 '지난 회차' 가 되어 예약 테스트가 전부 막힌다.
-   테스트에서는 하네스를 행사 당일인 척하게 해 둔다. 날짜와 무관하게 같은 결과가 나온다.
-   HM_EVENT_DATE=2026-09-19 처럼 주면 특정 날짜로 고정할 수도 있다. */
+/* 행사일(2026-09-19)이 지나거나 행사 시간(13:00~18:30) 밖에 돌리면 모든 회차가
+   '지난 회차' 가 되어 예약이 얽힌 테스트가 전부 막힌다. 테스트에서는 날짜뿐 아니라
+   시각까지 행사 중으로 고정한다. 언제 돌려도 같은 결과가 나온다.
+   HM_EVENT_DATE=2026-09-19, HM_NOW=13:05 로 바꿀 수 있다. */
 {
   const d = process.env.HM_EVENT_DATE ? new Date(process.env.HM_EVENT_DATE + 'T00:00:00') : new Date();
   const wd = ['일','월','화','수','목','금','토'][d.getDay()];
+  const [hh, mm] = (process.env.HM_NOW || '13:05').split(':').map(Number);
   vm.runInContext(
     `CONFIG.YEAR = ${d.getFullYear()}; CONFIG.MONTH = ${d.getMonth()+1}; CONFIG.DAY = ${d.getDate()};` +
-    ` CONFIG.EVENT_DATE = '${d.getMonth()+1}월 ${d.getDate()}일 (${wd})';`, ctx);
+    ` CONFIG.EVENT_DATE = '${d.getMonth()+1}월 ${d.getDate()}일 (${wd})';` +
+    /* '지금' 을 행사 중의 한 시점으로 고정한다 */
+    ` nowKst_ = function(){ return new Date(${d.getFullYear()}, ${d.getMonth()}, ${d.getDate()}, ${hh}, ${mm}, 0); };`,
+    ctx);
 }
 
 ctx.setupFieldSheets();
@@ -217,11 +222,37 @@ http.createServer((req,res)=>{
     res.writeHead(200,{'Content-Type':'application/json'});
     return res.end('{"ok":true}');
   }
+  /* 테스트용 — doPost 가 없는 옛 배포를 흉내낸다 */
+  if (u.pathname === '/_nopost') {
+    global.__noPost = u.query.on !== '0';
+    res.writeHead(200,{'Content-Type':'application/json'});
+    return res.end('{"ok":true}');
+  }
+  if (u.pathname === '/exec' && req.method === 'POST' && global.__noPost) {
+    res.writeHead(405, {'Content-Type':'text/html; charset=utf-8'});
+    return res.end('<html><body>Method Not Allowed</body></html>');
+  }
+  if (u.pathname === '/exec' && req.method === 'POST') {
+    let body = '';
+    req.on('data', c => { body += c; });
+    return req.on('end', () => {
+      /* GET 과 마찬가지로, 설문 요청만 거부하는 서버를 흉내낼 수 있어야 한다 */
+      if (global.__blockSurvey && /"action"\s*:\s*"survey"/.test(body)) {
+        res.writeHead(500, {'Content-Type':'text/html; charset=utf-8'});
+        return res.end('<html><body>Sorry, unable to open the file at this time.</body></html>');
+      }
+      let out;
+      try { out = ctx.doPost({ parameter: u.query, postData: { contents: body } }); }
+      catch(e){ res.writeHead(500); return res.end(String(e)); }
+      res.writeHead(200, { 'Content-Type': out.getMime(), 'Access-Control-Allow-Origin': '*' });
+      res.end(out.getContent());
+    });
+  }
   if (u.pathname === '/exec') {
     let out;
     try { out = ctx.doGet({parameter:u.query}); }
     catch(e){ res.writeHead(500); return res.end(String(e)); }
-    res.writeHead(200,{'Content-Type':out.getMime()});
+    res.writeHead(200,{'Content-Type':out.getMime(), 'Access-Control-Allow-Origin':'*'});
     return res.end(out.getContent());
   }
   let p = u.pathname === '/' ? '/index.html' : u.pathname;

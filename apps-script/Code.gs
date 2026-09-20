@@ -110,6 +110,37 @@ var FIELD = {
    ══════════════════════════════════════════════════════════════ */
 function doGet(e) {
   var p = (e && e.parameter) ? e.parameter : {};
+  return reply_(handle_(p), p);
+}
+
+/**
+ * POST 로도 같은 요청을 받는다.
+ *
+ * 주소(GET)에 담아 보내면 길이 한계에 걸리고, 중간에 있는 무엇이 긴 주소를
+ * 잘라도 우리는 이유를 알 수 없다. 2026-09-19 현장에서 설문이 그렇게 사라졌다.
+ * POST 는 본문에 담으므로 길이 문제가 없다.
+ *
+ * 본문은 JSON 한 덩이로 받는다. 보내는 쪽에서 Content-Type 을 text/plain 으로
+ * 두면 브라우저가 미리 확인 요청(preflight)을 보내지 않아 그대로 통과한다.
+ */
+function doPost(e) {
+  var p = {};
+  try {
+    if (e && e.postData && e.postData.contents) {
+      var body = JSON.parse(e.postData.contents);
+      if (body && typeof body === 'object') p = body;
+    }
+  } catch (err) {
+    return reply_({ ok: false, error: '본문을 읽지 못했습니다: ' + ((err && err.message) || err) }, {});
+  }
+  if (e && e.parameter) {                       // 주소에 붙은 값도 같이 본다
+    Object.keys(e.parameter).forEach(function (k) { if (p[k] === undefined) p[k] = e.parameter[k]; });
+  }
+  return reply_(handle_(p), p);
+}
+
+/** GET 이든 POST 든 여기서 같은 일을 한다. */
+function handle_(p) {
   var action = String(p.action || 'slots');
   var out;
 
@@ -139,13 +170,13 @@ function doGet(e) {
   } catch (err) {
     out = { ok: false, error: String((err && err.message) || err) };
   }
-  return reply_(out, p);
+  return out;
 }
 
 /**
- * GitHub Pages → Apps Script 는 fetch() POST 가 CORS 로 막힌다.
- * 그래서 쓰기까지 전부 GET + JSONP 로 처리한다.
- * callback(또는 cb) 파라미터가 있으면 JS 로, 없으면 순수 JSON 으로 응답.
+ * callback(또는 cb) 파라미터가 있으면 JS 로, 없으면 순수 JSON 으로 응답한다.
+ * JSONP(GET)는 오래된 기기에서도 되지만 실패해도 이유를 알 수 없고 주소 길이
+ * 한계가 있다. POST 가 되는 곳에서는 POST 를 먼저 쓴다.
  */
 function reply_(obj, p) {
   var json = JSON.stringify(obj);

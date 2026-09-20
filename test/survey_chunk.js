@@ -88,6 +88,11 @@ async function fillSurvey(page, type, opts = {}) {
   page.on('request', r => { if (r.url().includes('action=survey')) lens.push(r.url().length); });
 
   await page.goto(BASE + '/survey.html', { waitUntil: 'domcontentloaded' });
+  /* 이 파일은 예전 방식(JSONP · 주소에 담아 보내기)이 여전히 멀쩡한지 보는 테스트다.
+     주소 길이 한계와 캐시 유실은 그 길에서만 생긴다. POST 가 되는 서버에서는
+     POST 를 쓰므로, 여기서는 일부러 POST 를 막아 옛 길로 내려보낸다.
+     POST 쪽은 test/post.js 가 본다. */
+  await page.evaluate(u => fetch(u), BASE + '/_nopost?on=1');
 
   console.log('\n═══ 1. 컬러링 설문 — 답변이 빠짐없이 시트에 남는가 ═══');
   const r1 = await fillSurvey(page, 'coloring', { slot: '컬러링 13:30', name: '한통테스트A' });
@@ -102,7 +107,7 @@ async function fillSurvey(page, type, opts = {}) {
 
   console.log('\n═══ 2. 캐시가 통째로 날아가도 남는가 (오늘 사고 재현) ═══');
   let wiped = 0;
-  await page.route('**/exec?*', async route => {
+  await page.route('**/exec*', async route => {
     const u = route.request().url();
     await route.continue();
     if (u.includes('action=survey')) { wiped++; await fetch(BASE + '/_cachewipe').catch(() => {}); }
@@ -110,7 +115,7 @@ async function fillSurvey(page, type, opts = {}) {
   lens.length = 0;
   const r2 = await fillSurvey(page, 'coloring', { slot: '컬러링 14:00', name: '한통테스트B', long: 120 });
   const rows2 = await dump(page, '설문_컬러링체험');
-  await page.unroute('**/exec?*');
+  await page.unroute('**/exec*');
   ok(wiped > 1, '매 요청마다 캐시를 실제로 날림 (' + wiped + '회)');
   ok(!r2.pend, '캐시가 날아가도 전송 대기 표시 없음');
   ok(Math.max(...lens) < 1800, '긴 주관식에도 가장 긴 요청 ' + Math.max(...lens) + '자');

@@ -366,7 +366,50 @@ function clearDraft(){ try{ localStorage.removeItem(DKEY()); }catch(e){} }
 
 /* ── JSONP ── */
 let seq = 0;
-function call(params){
+/* ── 보내는 길 두 가지 ─────────────────────────────────────────
+   POST: 본문에 담아 보낸다. 주소 길이 한계가 없고, 실패하면 응답 코드와
+         본문을 볼 수 있어 원인을 알 수 있다. 서버에 doPost 가 배포돼 있어야 한다.
+   JSONP(GET): 예전 방식. 어디서나 되지만 주소에 다 담아야 하고, 실패하면
+         '안 됐다' 만 알 수 있다.
+   POST 를 먼저 써보고, 안 되면 그 뒤로는 JSONP 만 쓴다. */
+let POST_OK = null;        // null = 아직 모름, true/false = 확인됨
+
+async function callPost(params){
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    /* text/plain 이라야 브라우저가 미리 확인 요청(preflight)을 안 보낸다 */
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(params)
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const txt = await res.text();
+  let d;
+  try { d = JSON.parse(txt); }
+  catch(e){ throw new Error('응답을 읽지 못함: ' + txt.slice(0, 60)); }
+  /* 읽을 수 있는 답이 왔다는 것은 POST 가 되는 환경이라는 뜻이다.
+     내용이 거절이더라도 그것은 서버의 판단이지 길이 탓이 아니다. */
+  POST_OK = true;
+  if (d && d.ok === false) throw new Error(d.error || '오류');
+  return d;
+}
+
+async function call(params){
+  if (POST_OK !== false){
+    try {
+      const d = await callPost(params);
+      POST_OK = true;
+      return d;
+    } catch(e){
+      /* 서버가 거절한 것(오류 메시지가 온 것)은 길이 문제가 아니므로 그대로 알린다.
+         POST 자체가 안 되는 환경일 때만 예전 방식으로 내려간다. */
+      if (POST_OK === true) throw e;
+      POST_OK = false;
+    }
+  }
+  return callJsonp(params);
+}
+
+function callJsonp(params){
   return new Promise((resolve,reject)=>{
     const cb = '__sv'+(++seq)+'_'+Date.now();
     const url = new URL(API_URL);
@@ -408,7 +451,7 @@ function newCode(){
    없고, 보낸 즉시 시트에 줄이 남는다. 한 사람이 여러 줄이 되지만
    이름·회차·분할번호로 다시 합칠 수 있다. 줄이 예뻐지는 것보다
    줄이 남는 것이 중요하다. */
-const BUILD = '0920-d';   // 화면 판 번호. 캡처 한 장으로 어느 판인지 알 수 있게 한다.
+const BUILD = '0920-e';   // 화면 판 번호. 캡처 한 장으로 어느 판인지 알 수 있게 한다.
 try { document.getElementById('bld').textContent = '화면 ' + BUILD; } catch(e){}
 const BUDGET_START = 120;   /* 처음에는 한 문항씩 보낸다. 주소가 400자 안팎이 되는데,
                                예약 요청(300자대)이 온종일 들어갔으므로 같은 크기다.

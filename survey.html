@@ -408,7 +408,7 @@ function newCode(){
    없고, 보낸 즉시 시트에 줄이 남는다. 한 사람이 여러 줄이 되지만
    이름·회차·분할번호로 다시 합칠 수 있다. 줄이 예뻐지는 것보다
    줄이 남는 것이 중요하다. */
-const BUILD = '0920-b';   // 화면 판 번호. 캡처 한 장으로 어느 판인지 알 수 있게 한다.
+const BUILD = '0920-c';   // 화면 판 번호. 캡처 한 장으로 어느 판인지 알 수 있게 한다.
 try { document.getElementById('bld').textContent = '화면 ' + BUILD; } catch(e){}
 const BUDGET_START = 120;   /* 처음에는 한 문항씩 보낸다. 주소가 400자 안팎이 되는데,
                                예약 요청(300자대)이 온종일 들어갔으므로 같은 크기다.
@@ -422,12 +422,28 @@ const BUDGET_MIN   = 60;    // 예약 요청(주소 300자대)보다도 작게�
 const wrote = x => !!x && x.ok !== false;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-/* 설문이 안 갈 때, 서버로 가는 길 자체가 막힌 것인지 확인한다.
-   회차 조회는 우리가 보내는 것 중 가장 짧고 단순한 요청이다.
-   이것도 안 되면 설문 문제가 아니라 서버에 아예 못 닿는 것이다. */
-async function probeServer(){
-  try { const r = await call({ action:'slots' }); return (r && r.ok !== false) ? '정상' : '서버가 거절'; }
-  catch(e){ return '실패(' + ((e && e.message) || e) + ')'; }
+/* 설문이 안 갔을 때, 그 자리에서 원인을 알아본다.
+   JSONP 는 실패해도 '안 됐다' 만 알려주고 응답 코드도 본문도 보여주지 않는다.
+   그래서 같은 주소를 fetch 로 한 번 더 불러 서버가 실제로 뭐라고 답하는지 적는다.
+   회차 조회는 대조군이다 — 이건 되는데 설문만 안 되면 서버가 설문만 거부하는 것이다. */
+async function diagnose(){
+  const lines = [];
+  try { const r = await call({ action:'slots' });
+        lines.push('회차 조회: ' + ((r && r.ok !== false) ? '정상' : '서버가 거절')); }
+  catch(e){ lines.push('회차 조회: 실패 — ' + ((e && e.message) || e)); }
+
+  const mini = { action:'survey', t: TYPE || 'coloring', sid:'diag' + Date.now().toString(36),
+                 i:0, n:1, d: b64url(JSON.stringify({ '진단':'확인' })), name:'[진단]' };
+  try {
+    const u = new URL(API_URL);
+    Object.keys(mini).forEach(k => u.searchParams.set(k, mini[k]));
+    const res = await fetch(u.toString());
+    const txt = (await res.text()).replace(/\s+/g, ' ').slice(0, 150);
+    lines.push('설문 최소 전송: HTTP ' + res.status + ' · ' + (txt || '(빈 응답)'));
+  } catch(e){
+    lines.push('설문 최소 전송: 불러오기 실패 — ' + ((e && e.message) || e));
+  }
+  return lines.join(' / ');
 }
 
 /** 아직 못 보낸 답변에서, 지금 크기에 맞는 만큼 떼어 온다. 문항은 안 자른다. */
@@ -909,7 +925,7 @@ async function finish(){
   catch(e){ const q=qGet(); q.push(sub); qSet(q); queued=true;
             window.__why = (e && e.message) || String(e);
             /* 무엇이 막혔는지 화면에 남긴다 — 캡처 한 장으로 원인을 가릴 수 있게 */
-            window.__probe = await probeServer(); }
+            window.__probe = await diagnose(); }
 
   /* 시트에 들어간 것이 확인될 때만 임시저장을 지운다.
      전송 대기 중이면 남겨둬서, 이 화면을 다시 열었을 때 되살릴 수 있게 한다. */
@@ -942,7 +958,7 @@ function renderDone(res, sub, queued){
     h += '<div class="pend"><b>전송 대기 중</b>입니다. ' +
          '이 화면을 닫지 마시고 직원에게 보여주세요. 신호가 돌아오면 자동으로 전송됩니다.' +
          '<div class="why">사유: ' + esc(window.__why || '알 수 없음') +
-         (window.__probe ? '<br>가장 단순한 요청(회차 조회): <b>' + esc(window.__probe) + '</b>' : '') +
+         (window.__probe ? '<br>진단: <b>' + esc(window.__probe) + '</b>' : '') +
          '<br>화면 ' + BUILD + '</div></div>';
   }
   h += '</div>';

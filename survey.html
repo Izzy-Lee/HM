@@ -408,7 +408,7 @@ function newCode(){
    없고, 보낸 즉시 시트에 줄이 남는다. 한 사람이 여러 줄이 되지만
    이름·회차·분할번호로 다시 합칠 수 있다. 줄이 예뻐지는 것보다
    줄이 남는 것이 중요하다. */
-const BUILD = '0920-c';   // 화면 판 번호. 캡처 한 장으로 어느 판인지 알 수 있게 한다.
+const BUILD = '0920-d';   // 화면 판 번호. 캡처 한 장으로 어느 판인지 알 수 있게 한다.
 try { document.getElementById('bld').textContent = '화면 ' + BUILD; } catch(e){}
 const BUDGET_START = 120;   /* 처음에는 한 문항씩 보낸다. 주소가 400자 안팎이 되는데,
                                예약 요청(300자대)이 온종일 들어갔으므로 같은 크기다.
@@ -428,9 +428,16 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
    회차 조회는 대조군이다 — 이건 되는데 설문만 안 되면 서버가 설문만 거부하는 것이다. */
 async function diagnose(){
   const lines = [];
+  /* 회차 조회는 캐시에 있으면 스프레드시트를 아예 안 읽고 그대로 돌려준다(Code.gs).
+     그래서 이것만으로는 서버가 시트를 쓸 수 있는지 알 수 없다.
+     집계 조회는 반드시 시트를 읽으므로, 둘을 나란히 봐야 어디가 막혔는지 갈린다. */
   try { const r = await call({ action:'slots' });
-        lines.push('회차 조회: ' + ((r && r.ok !== false) ? '정상' : '서버가 거절')); }
-  catch(e){ lines.push('회차 조회: 실패 — ' + ((e && e.message) || e)); }
+        lines.push('회차 조회(캐시 가능): ' + ((r && r.ok !== false) ? '정상' : '서버가 거절')); }
+  catch(e){ lines.push('회차 조회(캐시 가능): 실패 — ' + ((e && e.message) || e)); }
+
+  try { const r = await call({ action:'report' });
+        lines.push('집계 조회(시트 읽음): ' + ((r && r.ok !== false) ? '정상' : '서버가 거절 — ' + (r && r.error))); }
+  catch(e){ lines.push('집계 조회(시트 읽음): 실패 — ' + ((e && e.message) || e)); }
 
   const mini = { action:'survey', t: TYPE || 'coloring', sid:'diag' + Date.now().toString(36),
                  i:0, n:1, d: b64url(JSON.stringify({ '진단':'확인' })), name:'[진단]' };
@@ -642,8 +649,11 @@ async function renderDiag(){
       '<p class="sns-note" style="margin-top:.6rem">화면 ' + BUILD + '</p></div>';
   };
 
-  put('1. 회차 조회 (JSONP)', '확인 중…');
-  rows.pop(); put('1. 회차 조회 (JSONP)', await diagJsonp({ action:'slots' }));
+  put('1. 회차 조회 (JSONP · 캐시면 시트 안 읽음)', '확인 중…');
+  rows.pop(); put('1. 회차 조회 (JSONP · 캐시면 시트 안 읽음)', await diagJsonp({ action:'slots' }));
+
+  put('1-2. 집계 조회 (JSONP · 시트를 반드시 읽음)', '확인 중…');
+  rows.pop(); put('1-2. 집계 조회 (JSONP · 시트를 반드시 읽음)', await diagJsonp({ action:'report' }));
 
   put('2. 설문 최소 전송 (JSONP)', '확인 중…');
   rows.pop(); put('2. 설문 최소 전송 (JSONP) · 주소 ' + diagUrl(svParams).length + '자',

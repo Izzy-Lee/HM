@@ -40,7 +40,8 @@ async function fill(p){
   console.log('\n  화면에 찍힌 사유:\n  ' + why.replace(/\s+/g, ' ') + '\n');
 
   ok(/전송 실패/.test(why), '무엇이 실패했는지 적힘');
-  ok(/회차 조회: 정상/.test(why), '대조군(회차 조회)은 정상이라고 적힘');
+  ok(/회차 조회\(캐시 가능\): 정상/.test(why), '회차 조회(캐시 가능) 결과가 적힘');
+  ok(/집계 조회\(시트 읽음\): 정상/.test(why), '집계 조회(시트를 읽는 요청) 결과도 적힘');
   ok(/설문 최소 전송: HTTP 500/.test(why), '설문 요청의 실제 응답 코드가 적힘');
   ok(/unable to open the file/.test(why), '서버가 보낸 본문까지 적힘');
   ok(/화면 09\d\d-[a-z]/.test(why), '화면 판 번호가 적힘');

@@ -13,7 +13,8 @@ const ok = (c,m) => { console.log((c?'  ✅':'  ❌')+' '+m); if(!c) process.exi
   await p.goto(BASE + '/survey.html?diag=1', {waitUntil:'networkidle'});
   await p.waitForTimeout(2500);
   let txt = await p.locator('#root').textContent();
-  ok(/1\. 회차 조회 \(JSONP\)[\s\S]*?정상/.test(txt), '회차 조회 정상으로 표시');
+  ok(/1\. 회차 조회[\s\S]*?정상/.test(txt), '회차 조회 정상으로 표시');
+  ok(/1-2\. 집계 조회[\s\S]*?정상/.test(txt), '집계 조회(시트 읽음) 정상으로 표시');
   ok(/2\. 설문 최소 전송 \(JSONP\)[\s\S]*?정상/.test(txt), '설문 최소 전송 정상으로 표시');
   ok(/HTTP 200/.test(txt), 'fetch 응답 코드 표시 (HTTP 200)');
   ok(/주소 \d+자/.test(txt), '주소 길이 표시');
@@ -22,7 +23,7 @@ const ok = (c,m) => { console.log((c?'  ✅':'  ❌')+' '+m); if(!c) process.exi
   await p.goto(BASE + '/survey.html?diag=1&block=1', {waitUntil:'domcontentloaded'});
   await p.waitForTimeout(3500);
   txt = await p.locator('#root').textContent();
-  ok(/1\. 회차 조회 \(JSONP\)[\s\S]*?정상/.test(txt), '회차 조회는 여전히 정상');
+  ok(/1\. 회차 조회[\s\S]*?정상/.test(txt), '회차 조회는 여전히 정상');
   ok(/2\. 설문 최소 전송 \(JSONP\)[\s\S]*?(실패|거절)/.test(txt), '설문만 실패로 갈라냄');
   ok(/4\. 설문 최소 전송 \(fetch\)[\s\S]*?(HTTP 5\d\d|불러오기 실패)/.test(txt),
      'fetch 가 실제 응답 코드/사유를 보여줌');

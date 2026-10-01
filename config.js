@@ -2,7 +2,7 @@
    헬로미추 수업 만족도 — 공통 설정
    Apps Script 배포 후 받은 웹앱 URL(…/exec)을 아래에 붙여넣으세요.
    ============================================================ */
-const API_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxjO0_LyMpx7lHzYtjwb8SLkOxXWCag1av7DJbNxbfy1jw4pevSiw5fuLiGTagZVEpY/exec';
 
 const BRAND = {
   name: '헬로미추',

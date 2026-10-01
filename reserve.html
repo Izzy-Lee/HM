@@ -229,6 +229,12 @@ function isPast(time){
   return now.getHours()*60 + now.getMinutes() >= Number(p[0])*60 + Number(p[1]) + SLOT_MIN;
 }
 
+/* 체험별 운영 회차 — 키는 시트 '예약프로그램' 탭의 '키'와 같아야 함 (비우면 모든 회차) */
+function timesOf(key) {
+  const m = (typeof PROGRAM_TIMES !== 'undefined' && PROGRAM_TIMES[key]) || null;
+  return (m && m.length) ? SLOT_TIMES.filter(t => m.indexOf(t) > -1) : SLOT_TIMES;
+}
+
 function normalize(apiSlots){
   const byKey = {};
   live = false;
@@ -241,7 +247,7 @@ function normalize(apiSlots){
     live = true;
   });
   const out = [];
-  PROGRAMS.forEach(p=>SLOT_TIMES.forEach(t=>{
+  PROGRAMS.forEach(p=>timesOf(p.key).forEach(t=>{
     const s = byKey[p.key+'|'+t];
     out.push({ program: p.key, time: t, past: isPast(t),
       remain: s ? Math.max(0, Number(s.remain)||0) : (live ? p.capacity : null) });

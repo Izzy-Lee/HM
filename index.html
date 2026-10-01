@@ -205,21 +205,6 @@
   <!-- 현황 패널 -->
   <div class="tab-panel" id="panel-status">
     <div class="status-panel">
-      <!-- 도안 재고 현황 — 상단 -->
-      <div class="stock-section" style="margin-bottom:1.2rem;">
-        <div class="stock-section-title">도안별 신청 가능 현황</div>
-        <div id="stockList">
-          <div class="status-loading" style="padding:1rem 0;">불러오는 중...</div>
-        </div>
-        <div class="stock-section-title" style="margin-top:1.3rem;">굿즈 · 액자 잔여</div>
-        <div id="goodsList">
-          <div class="status-loading" style="padding:1rem 0;">불러오는 중...</div>
-        </div>
-        <p style="font-size:0.68rem;color:var(--ink-soft);margin-top:0.8rem;line-height:1.5;">
-          * 재고는 현장 상황에 따라 변동될 수 있습니다.<br>
-          * 예약 폼에서 원하는 도안을 선택하실 수 있습니다. 선택하지 않으셔도 현장에서 잔여 수량 중 고르실 수 있습니다.
-        </p>
-      </div>
       <!-- 슬롯 현황 -->
       <div id="statusContent">
         <div class="status-loading">잔여 현황을 불러오는 중...<br><span style="font-size:0.75rem;opacity:0.6;">잠시 기다려주세요</span></div>
@@ -298,24 +283,39 @@
 </a>
 <p class="footer">주식회사 헬로미추 · Hello Michu</p>
 
+<script src="config.js"></script>
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
+/* API_URL 은 config.js — 예약·만족도 모두 '헬로미추-원도사재' 시트로 간다 */
 
 /* 첫 화면(홈)은 소개 + 예약 버튼 + 수업 만족도 설문 버튼만 둔다.
    예약은 reserve.html, 설문은 survey.html(수업 만족도 — 별도 시트)에서 받는다.
    아래 코드는 '예약 현황' 탭과 '헬로미추' 탭의 도안 카드를 그린다. */
 
-// ── 행사 상수 (예약 현황 표시용) ──
-const EVENT_DATE = '9월 19일 (토)';
+// ── 예약 일정 (시트 '예약설정'·'예약프로그램' 값으로 덮어쓴다) ──
+let EVENT_DATE = '';
+let SLOT_MIN = 30;
 
-const PROGRAMS = [
+let PROGRAMS = [
   { key: '컬러링', name: '컬러링 체험', meta: '무료 · 30분 · 6명',     capacity: 6, dayLimit: 66, paid: false },
   { key: '바인더', name: '바인더 체험', meta: '30,000원 · 30분 · 5명', capacity: 5, dayLimit: 50, paid: true  },
 ];
 
-const SLOT_TIMES = ['13:00','13:30','14:00','14:30','15:00','15:30',
-                    '16:00','16:30','17:00','17:30','18:00'];
-const EVENT_YMD  = { y: 2026, m: 9, d: 19 };   // 지난 회차 판정 기준일
+let SLOT_TIMES = [];
+let EVENT_YMD  = null;   // 지난 회차 판정 기준일
+
+function applyConfig(c) {
+  if (!c) return;
+  if (Array.isArray(c.programs) && c.programs.length) PROGRAMS = c.programs;
+  SLOT_TIMES = Array.isArray(c.times) ? c.times : [];
+  SLOT_MIN = Number(c.slotMin) || 30;
+  const m = String(c.date || '').match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) {
+    EVENT_YMD = { y: +m[1], m: +m[2], d: +m[3] };
+    const wd = ['일','월','화','수','목','금','토'][new Date(EVENT_YMD.y, EVENT_YMD.m - 1, EVENT_YMD.d).getDay()];
+    EVENT_DATE = EVENT_YMD.m + '월 ' + EVENT_YMD.d + '일 (' + wd + ')' + (c.place ? ' · ' + c.place : '');
+  } else { EVENT_YMD = null; EVENT_DATE = ''; }
+  window._resOpen = c.open !== false && !!EVENT_YMD && SLOT_TIMES.length > 0;
+}
 
 function programOf(key) {
   return PROGRAMS.find(p => p.key === key) || PROGRAMS[0];
@@ -346,7 +346,7 @@ function getStockInfo(remain, total) {
 }
 
 function buildStockMap(arr) {
-  if (!Array.isArray(arr)) return null;
+  if (!Array.isArray(arr) || !arr.length) return null;
   const map = {};
   arr.forEach(item => { map[item.key] = item.remain; });
   return map;
@@ -384,7 +384,7 @@ function renderAboutSheets(stockMap) {
           <div class="sheet-num-badge">${s.num}</div>
           <div class="sheet-stock-row">
             <div class="sheet-card-title">${s.name}</div>
-            <span class="sheet-stock-badge ${info.cls}">${info.label} · ${info.countLabel}</span>
+            ${stockMap ? `<span class="sheet-stock-badge ${info.cls}">${info.label} · ${info.countLabel}</span>` : ''}
           </div>
           <div class="sheet-card-desc">${s.desc}</div>
           <div class="sheet-card-tags">${s.tags}</div>
@@ -442,13 +442,14 @@ function getKST() {
 }
 
 function isPast(timeStr) {
+  if (!EVENT_YMD) return false;
   const kst   = getKST();
   const today = kst.getFullYear() * 10000 + (kst.getMonth() + 1) * 100 + kst.getDate();
   const event = EVENT_YMD.y * 10000 + EVENT_YMD.m * 100 + EVENT_YMD.d;
   if (today < event) return false;
   if (today > event) return true;
   const [h, m] = timeStr.split(':').map(Number);
-  const endTotal = h * 60 + m + 30;
+  const endTotal = h * 60 + m + SLOT_MIN;
   const nowTotal = kst.getHours() * 60 + kst.getMinutes();
   return nowTotal >= endTotal;
 }
@@ -496,9 +497,11 @@ function fetchData(force) {
     return Promise.resolve({ slots: window._cachedSlots, sheetStock: window._cachedStockArr });
   }
   if (_inflight) return _inflight;
+  if (!apiReady()) return Promise.reject(new Error('no api'));
   _inflight = fetch(API_URL + '?t=' + Date.now(), { cache: 'no-store' })
     .then(r => r.json())
     .then(data => {
+      applyConfig(data.config);
       window._cachedSlots    = normalizeSlots(data.slots);
       data.slots             = window._cachedSlots;
       window._cachedStockArr = data.sheetStock;
@@ -622,6 +625,13 @@ function bookSlot(program, time) {
 function renderStatus(slots) {
   const last = getLastSelection();
   let html = '';
+
+  if (!window._resOpen) {
+    document.getElementById('statusContent').innerHTML =
+      '<div class="status-loading">지금은 예정된 체험 일정이 없습니다.<br><span style="font-size:0.75rem;opacity:0.6;">다음 일정이 열리면 여기에서 잔여 현황을 보실 수 있어요.</span></div>';
+    document.getElementById('updatedAt').textContent = '';
+    return;
+  }
 
   if (last && isSlotBookable(slots, last.program, last.time)) {
     html += '<div style="background:rgba(74,156,140,0.08);border:1px solid rgba(74,156,140,0.25);border-radius:10px;padding:0.7rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">' +

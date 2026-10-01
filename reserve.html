@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>헬로미추 체험 예약</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- 폰트는 렌더링을 막지 않게 나중에 적용한다. 부스 네트워크가 느려도
+<!-- 폰트는 렌더링을 막지 않게 나중에 적용한다. 네트워크가 느려도
      시스템 폰트로 화면이 먼저 뜬다. -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap"
       onload="this.onload=null;this.rel='stylesheet'">
@@ -152,43 +152,55 @@
 <body>
 
 <div id="root"></div>
-<div class="foot">주식회사 헬로미추 · 2026. 9. 19.(토) 학산마당극 놀래</div>
+<div class="foot">주식회사 헬로미추 · Hello Michu</div>
 
+<script src="config.js"></script>
 <script>
 'use strict';
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
+/* 예약은 '헬로미추-원도사재' 시트의 '예약' 탭에 쌓인다 (API_URL 은 config.js).
+   행사일·장소·시간·정원은 시트의 '예약설정' / '예약프로그램' 탭에서 바꾸면 그대로 반영된다. */
 
-const EVENT_DATE = '2026. 9. 19.(토)';
-const PROGRAMS = [
-  { key:'컬러링', name:'컬러링 체험', meta:'무료 · 30분 · 회차당 6명', capacity:6 },
-  { key:'바인더', name:'자개바인더 체험', meta:'30,000원 · 30분 · 회차당 5명', capacity:5 }
+let EVENT_DATE = '', EVENT_YMD = null, PLACE = '', TITLE = '', SLOT_MIN = 30, OPEN = true;
+let PROGRAMS = [
+  { key:'컬러링', name:'컬러링 체험', meta:'무료 · 30분 · 회차당 6명', capacity:6, fee:'무료' },
+  { key:'바인더', name:'자개바인더 체험', meta:'30,000원 · 30분 · 회차당 5명', capacity:5, fee:'30,000원 (현장 결제)' }
 ];
+let SLOT_TIMES = [];
+let DESIGNS = [];
 
-/* 회차표 (확정) — 13:00~18:30 · 회당 30분 · 11타임, 쉬는 시간 없이 연속 운영.
-   API 응답이 아니라 이 표를 기준으로 그린다. 옛 배포본이 지난 행사의
-   20분 격자(12:20·13:20…)를 내려줘도 화면과 링크가 어긋나지 않게 하기 위해서다. */
-const SLOT_TIMES = ['13:00','13:30','14:00','14:30','15:00','15:30',
-                    '16:00','16:30','17:00','17:30','18:00'];
-const EVENT_YMD  = { y:2026, m:9, d:19 };
-const DESIGNS = ['01 소서노','02 문학산성','03 갯벌','04 수봉폭포'];
-
-let slots = [], stock = {}, loaded = false, live = false;
+let slots = [], stock = {}, loaded = false, live = false, cfgLoaded = false;
 
 /* 사이트 예약 현황에서 회차를 눌러 넘어오면 그대로 선택해 둔다 */
 const QS = new URLSearchParams(location.search);
-const F = {
-  program: PROGRAMS.some(p=>p.key===QS.get('program')) ? QS.get('program') : '',
-  time: SLOT_TIMES.indexOf(QS.get('time')||'') !== -1 ? QS.get('time') : '',
-  name:'', tel:'', design:''
-};
+const F = { program: QS.get('program') || '', time: QS.get('time') || '', name:'', tel:'', design:'' };
 
 const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const root = document.getElementById('root');
+const WEEK = ['일','월','화','수','목','금','토'];
+
+/* 시트 '예약설정' 값을 화면 설정으로 옮긴다 */
+function applyConfig(c){
+  if (!c) return;
+  cfgLoaded = true;
+  TITLE = c.title || ''; PLACE = c.place || ''; SLOT_MIN = Number(c.slotMin) || 30; OPEN = c.open !== false;
+  SLOT_TIMES = Array.isArray(c.times) ? c.times : [];
+  DESIGNS = Array.isArray(c.designs) ? c.designs : [];
+  if (Array.isArray(c.programs) && c.programs.length) PROGRAMS = c.programs;
+  const m = String(c.date || '').match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) {
+    EVENT_YMD = { y:+m[1], m:+m[2], d:+m[3] };
+    const wd = new Date(EVENT_YMD.y, EVENT_YMD.m - 1, EVENT_YMD.d).getDay();
+    EVENT_DATE = EVENT_YMD.y + '. ' + EVENT_YMD.m + '. ' + EVENT_YMD.d + '.(' + WEEK[wd] + ')';
+  } else { EVENT_YMD = null; EVENT_DATE = ''; }
+  if (!PROGRAMS.some(p=>p.key===F.program)) F.program = '';
+  if (SLOT_TIMES.indexOf(F.time) === -1) F.time = '';
+}
 
 let seq = 0;
 function call(params, timeoutMs){
   return new Promise((resolve,reject)=>{
+    if (!apiReady()) { reject(new Error('예약 서버 주소가 아직 설정되지 않았습니다.')); return; }
     const cb='__rv'+(++seq)+'_'+Date.now();
     const url=new URL(API_URL);
     Object.keys(params).forEach(k=>{ if(params[k]!==undefined && params[k]!=='') url.searchParams.set(k,params[k]); });
@@ -204,8 +216,9 @@ function call(params, timeoutMs){
   });
 }
 
-/* 행사 당일 기준으로 지난 회차를 판정한다 (시작 + 30분이 지나면 종료) */
+/* 행사 당일 기준으로 지난 회차를 판정한다 (시작 + 회차 길이가 지나면 종료) */
 function isPast(time){
+  if (!EVENT_YMD) return false;
   const now = new Date(new Date().getTime() +
               (new Date().getTimezoneOffset()*60000) + 9*3600000);   // KST
   const today = now.getFullYear()*10000 + (now.getMonth()+1)*100 + now.getDate();
@@ -213,12 +226,9 @@ function isPast(time){
   if (today < event) return false;
   if (today > event) return true;
   const p = time.split(':');
-  return now.getHours()*60 + now.getMinutes() >= Number(p[0])*60 + Number(p[1]) + 30;
+  return now.getHours()*60 + now.getMinutes() >= Number(p[0])*60 + Number(p[1]) + SLOT_MIN;
 }
 
-/* 프로그램 구분이 있고 계획된 회차인 응답만 잔여로 인정한다.
-   하나도 없으면 구버전 배포본이 응답한 것이므로 잔여를 비워 두고(live=false)
-   접수를 막는다. 옛 예약 수가 이 행사 회차의 '마감'으로 둔갑하면 안 된다. */
 function normalize(apiSlots){
   const byKey = {};
   live = false;
@@ -230,54 +240,70 @@ function normalize(apiSlots){
     byKey[s.program+'|'+t] = s;
     live = true;
   });
-
   const out = [];
   PROGRAMS.forEach(p=>SLOT_TIMES.forEach(t=>{
     const s = byKey[p.key+'|'+t];
-    out.push({
-      program: p.key, time: t, past: isPast(t),
-      remain: s ? Math.max(0, Number(s.remain)||0) : (live ? p.capacity : null)
-    });
+    out.push({ program: p.key, time: t, past: isPast(t),
+      remain: s ? Math.max(0, Number(s.remain)||0) : (live ? p.capacity : null) });
   }));
   return out;
 }
 
 async function load(){
-  /* 행사장 LTE 가 느려 한 번에 못 받아오는 일이 있다. 시간을 넉넉히 주고 두 번 더 시도한다. */
   for (let attempt = 0; attempt < 3; attempt++){
     try{
       const d = await call({}, 15000);
+      applyConfig(d.config);
       slots = normalize(d.slots);
       stock = {};
       (d.sheetStock||[]).forEach(s=>{ stock[s.key]=s.remain; });
       loaded = true; render();
       return;
     }catch(e){
-      if (attempt === 0){ slots = normalize(null); loaded = true; render(); }  // 화면부터 띄우고
+      if (attempt === 0){ slots = normalize(null); loaded = true; render(); }
       await new Promise(r=>setTimeout(r, 1500));
     }
   }
   loaded = true; render();
 }
 
-function slotsFor(program){
-  return slots.filter(s=>s.program===program);
+function slotsFor(program){ return slots.filter(s=>s.program===program); }
+
+function timeRange(){
+  if (!SLOT_TIMES.length) return '';
+  const last = SLOT_TIMES[SLOT_TIMES.length-1].split(':');
+  const endMin = Number(last[0])*60 + Number(last[1]) + SLOT_MIN;
+  const end = String(Math.floor(endMin/60)).padStart(2,'0') + ':' + String(endMin%60).padStart(2,'0');
+  return SLOT_TIMES[0] + ' ~ ' + end + ' · ' + SLOT_MIN + '분 ' + SLOT_TIMES.length + '회차';
 }
 
 function render(){
+  /* 시트에 일정이 없거나 접수를 닫아 둔 경우 */
+  if (cfgLoaded && (!EVENT_DATE || !OPEN || !SLOT_TIMES.length)) {
+    root.innerHTML = '<header><h1>체험 예약</h1></header>' +
+      '<div class="notice"><b>' + (!EVENT_DATE ? '지금은 예정된 체험 일정이 없습니다.' : '지금은 예약을 받고 있지 않습니다.') + '</b><br>' +
+      '다음 일정이 열리면 이 화면에서 예약하실 수 있어요.</div>' +
+      '<div class="pane"><a class="again" href="index.html">사이트로 돌아가기</a></div>';
+    return;
+  }
+
   const prog = PROGRAMS.filter(p=>p.key===F.program)[0];
   const list = F.program ? slotsFor(F.program) : [];
   const ready = F.program && F.time && F.name.trim() && F.tel.trim();
 
-  let h = '<header><h1>체험 예약</h1>' +
-    '<div class="when">' + EVENT_DATE + ' · 수봉산 폭포 앞<br>13:00 ~ 18:30 · 30분 11회차</div></header>' +
+  let h = '<header><h1>' + esc(TITLE || '체험 예약') + '</h1>' +
+    '<div class="when">' + (cfgLoaded
+        ? esc(EVENT_DATE) + (PLACE ? ' · ' + esc(PLACE) : '') + '<br>' + esc(timeRange())
+        : '일정을 불러오는 중...') + '</div></header>' +
     '<div class="err" id="err"></div>';
 
-  if (loaded && !live) {
+  if (loaded && !live && cfgLoaded) {
     h += '<div class="notice"><b>지금 잔여 인원을 불러오지 못했습니다.</b><br>' +
-         '현장 통신 상태 때문입니다. <b>예약은 그대로 하실 수 있고</b>, 자리가 없으면 ' +
-         '접수할 때 알려드립니다. 회차는 예정대로 ' + EVENT_DATE + ' 13:00~18:30 · 30분 11회차로 운영합니다.' +
+         '<b>예약은 그대로 하실 수 있고</b>, 자리가 없으면 접수할 때 알려드립니다.' +
          '<br><button type="button" class="retry" id="retry">잔여 인원 다시 불러오기</button></div>';
+  } else if (loaded && !cfgLoaded) {
+    h += '<div class="notice"><b>예약 정보를 불러오지 못했습니다.</b><br>잠시 후 다시 시도해 주세요.' +
+         '<br><button type="button" class="retry" id="retry">다시 불러오기</button></div>';
   }
 
   h += '<div class="pane">';
@@ -292,7 +318,7 @@ function render(){
   h += '<h2>예약 시간</h2>';
   if (!F.program){
     h += '<div class="card"><p class="hint" style="margin:0;">프로그램을 먼저 선택해 주세요.</p></div>';
-  } else if (!loaded){
+  } else if (!loaded || !cfgLoaded){
     h += '<div class="card"><p class="hint" style="margin:0;">잔여 현황을 불러오는 중...</p></div>';
   } else if (!list.length){
     h += '<div class="card"><p class="hint" style="margin:0;">잔여 현황을 불러오지 못했습니다. 새로고침해 주세요.</p></div>';
@@ -301,9 +327,7 @@ function render(){
     list.forEach(s=>{
       const pending = (s.remain === null);
       const off = s.past || pending || s.remain<=0;
-      const label = s.past ? '지난 회차'
-                  : pending ? '확인 중'
-                  : (s.remain<=0 ? '마감' : '잔여 '+s.remain);
+      const label = s.past ? '지난 회차' : pending ? '확인 중' : (s.remain<=0 ? '마감' : '잔여 '+s.remain);
       h += '<button class="time'+(F.time===s.time?' on':'')+(!off&&s.remain<=2?' low':'')+'" type="button"' +
            ' data-time="'+esc(s.time)+'"'+(off?' disabled':'')+'>' +
            '<span class="t">'+esc(s.time)+'</span><span class="r">'+label+'</span></button>';
@@ -318,15 +342,17 @@ function render(){
     '<input id="fTel" type="tel" inputmode="numeric" maxlength="15" placeholder="010-0000-0000" value="'+esc(F.tel)+'">' +
     '<p class="hint">예약 확인 안내를 보내드립니다.</p></div></div>';
 
-  h += '<h2>희망 도안 <span style="font-weight:400;letter-spacing:0;">(선택)</span></h2><div class="designs">';
-  DESIGNS.forEach(d=>{
-    const left = stock[d];
-    const out = (left !== undefined && left <= 0);
-    h += '<button class="design'+(F.design===d?' on':'')+'" type="button" data-design="'+esc(d)+'"'+(out?' disabled':'')+'>' +
-         '<span class="n">'+esc(d)+'</span>' +
-         '<span class="r">'+(left===undefined?'':(out?'품절':'잔여 '+left))+'</span></button>';
-  });
-  h += '</div><p class="hint">고르지 않으셔도 현장에서 남은 도안 중 선택하실 수 있습니다.</p>';
+  if (DESIGNS.length) {
+    h += '<h2>희망 도안 <span style="font-weight:400;letter-spacing:0;">(선택)</span></h2><div class="designs">';
+    DESIGNS.forEach(d=>{
+      const left = stock[d];
+      const out = (left !== undefined && left <= 0);
+      h += '<button class="design'+(F.design===d?' on':'')+'" type="button" data-design="'+esc(d)+'"'+(out?' disabled':'')+'>' +
+           '<span class="n">'+esc(d)+'</span>' +
+           '<span class="r">'+(left===undefined?'':(out?'품절':'잔여 '+left))+'</span></button>';
+    });
+    h += '</div><p class="hint">고르지 않으셔도 현장에서 남은 도안 중 선택하실 수 있습니다.</p>';
+  }
 
   h += '<h2>개인정보 수집·이용 안내</h2><div class="card pv">' +
     '<p class="lead">아래 내용을 확인하신 뒤 <b>예약하기</b>를 누르시면 ' +
@@ -340,7 +366,7 @@ function render(){
       '<p><b>동의를 거부할 권리</b> 귀하는 개인정보 수집·이용 동의를 거부하실 권리가 있으며, ' +
         '거부에 따른 불이익은 없습니다. 다만 위 항목은 <b>체험 회차 배정과 현장 본인 확인에 ' +
         '반드시 필요한 사항</b>이므로, 동의하지 않으시면 사전 예약이 어렵습니다. ' +
-        '이 경우 현장 부스에서 잔여 인원에 한해 접수하실 수 있습니다.</p>' +
+        '이 경우 현장에서 잔여 인원에 한해 접수하실 수 있습니다.</p>' +
       '<p><b>개인정보의 제공</b> 제공하신 정보는 관광두레 파일럿사업의 운영 실적 보고 목적으로 ' +
         '<b>한국관광공사</b>에 제공될 수 있습니다.</p>' +
       '<p><b>제3자 제공 및 목적 외 이용</b> 동의하신 내용 외의 다른 목적으로는 활용하지 않으며, ' +
@@ -353,13 +379,9 @@ function render(){
   h += '</div>';
 
   h += '<div class="bar">' +
-    '<div class="sum">' + (loaded && !live
-      ? (F.program && F.time
-          ? '<b>'+esc(prog.name)+' '+esc(F.time)+'</b> 회차로 예약합니다 (잔여 확인 불가)'
-          : '프로그램과 시간을 선택해 주세요')
-      : (F.program && F.time
-        ? '<b>'+esc(prog.name)+' '+esc(F.time)+'</b> 회차로 예약합니다'
-        : '프로그램과 시간을 선택해 주세요')) + '</div>' +
+    '<div class="sum">' + (F.program && F.time
+        ? '<b>'+esc(prog.name)+' '+esc(F.time)+'</b> 회차로 예약합니다' + (loaded && !live ? ' (잔여 확인 불가)' : '')
+        : '프로그램과 시간을 선택해 주세요') + '</div>' +
     '<p class="consent"><b>예약하기</b>를 누르면 위 개인정보 수집·이용에 동의한 것으로 봅니다.</p>' +
     '<button type="button" id="submit"'+(ready?'':' disabled')+'>예약하기</button></div>';
 
@@ -411,46 +433,45 @@ async function submit(){
     err.classList.add('on');
     b.disabled=false; b.textContent='예약하기';
     window.scrollTo({top:0,behavior:'smooth'});
-    load();                                   // 마감됐을 수 있으니 잔여를 다시 읽는다
+    load();
   }
 }
 
 function done(r){
-  const prog = PROGRAMS.filter(p=>p.key===r.program)[0] || {name:r.program};
-  const fee  = (r.program === '바인더') ? '30,000원 (현장 결제)' : '무료';
+  const prog = PROGRAMS.filter(p=>p.key===r.program)[0] || {name:r.program, fee:''};
 
-  saveBooking(r, prog);          // 사이트 첫 화면에서도 예약 내역을 보여주기 위해 저장
+  saveBooking(r, prog);
 
   root.innerHTML =
     '<div class="done"><div class="mark"></div>' +
     '<h1>' + (r.duplicate ? '이미 예약되어 있습니다' : '예약이 완료되었습니다') + '</h1>' +
     '<p>' + esc(F.name) + ' 님, 예약이 정상 접수되었습니다.<br>' +
-    EVENT_DATE + ' 수봉산 폭포 앞에서 뵙겠습니다.</p>' +
+    esc(EVENT_DATE) + (PLACE ? ' ' + esc(PLACE) + '에서' : '') + ' 뵙겠습니다.</p>' +
     '<span class="keep">이 화면을 캡처해 두세요</span>' +
 
     '<div class="ticket"><div class="l">예약 회차</div>' +
       '<div class="v">' + esc(r.time) + '</div>' +
       '<div class="d">' + esc(prog.name) + '</div>' +
-      '<div class="row"><span>일시</span><span>' + EVENT_DATE + '</span></div>' +
-      '<div class="row"><span>장소</span><span>수봉산 폭포 앞</span></div>' +
+      '<div class="row"><span>일시</span><span>' + esc(EVENT_DATE) + '</span></div>' +
+      (PLACE ? '<div class="row"><span>장소</span><span>' + esc(PLACE) + '</span></div>' : '') +
       '<div class="row"><span>예약자</span><span>' + esc(F.name) + '</span></div>' +
       '<div class="row"><span>연락처</span><span>' + esc(F.tel) + '</span></div>' +
       (F.design ? '<div class="row"><span>희망 도안</span><span>' + esc(F.design) + '</span></div>' : '') +
-      '<div class="row"><span>참가비</span><span>' + fee + '</span></div>' +
+      (prog.fee ? '<div class="row"><span>참가비</span><span>' + esc(prog.fee) + '</span></div>' : '') +
     '</div>' +
 
     '<ul class="guide">' +
-      '<li>시작 <b>5분 전</b>까지 부스로 와주세요. 늦으시면 다음 회차로 안내될 수 있습니다.</li>' +
+      '<li>시작 <b>5분 전</b>까지 와주세요. 늦으시면 다음 회차로 안내될 수 있습니다.</li>' +
       '<li>현장에서 <b>이름</b>을 말씀해 주시면 예약 확인됩니다. 따로 문자는 보내지 않습니다.</li>' +
-      '<li>체험 후 <b>설문 작성</b>을 부탁드립니다. 작품은 설문 완료 화면을 보여주시면 봉투에 담아 드려요.</li>' +
-      '<li>예약 변경·취소는 현장 부스로 문의해 주세요.</li>' +
+      '<li>체험 후 <b>만족도 설문</b>을 부탁드립니다.</li>' +
+      '<li>예약 변경·취소는 현장 또는 문의처로 연락해 주세요.</li>' +
     '</ul>' +
 
     '<a class="again" href="index.html">사이트로 돌아가기</a></div>';
   window.scrollTo(0,0);
 }
 
-/* 예약 내역을 브라우저에 남겨 둔다. 사이트 첫 화면 상단에 "예약 완료"로 뜬다. */
+/* 예약 내역을 브라우저에 남겨 둔다 */
 function saveBooking(r, prog){
   try{
     localStorage.setItem('hm_booking', JSON.stringify({

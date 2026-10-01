@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hello Michu – Watercolor Coloring Experience</title>
-<meta name="description" content="Hello Michu watercolor coloring experience – Haksan Madanggeuk Nolrae 2026">
+<title>Hello Michu – Sea Scent Blending Experience</title>
+<meta name="description" content="Hello Michu Sea Scent blending experience — 2026 Incheon Wondosaje (Sat, Oct 24)">
 
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Fonts load without blocking first paint; system fonts show immediately. -->
+<!-- 폰트는 렌더링을 막지 않게 나중에 적용한다. 네트워크가 느려도
+     시스템 폰트로 화면이 먼저 뜬다. -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap"
       onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap"></noscript>
@@ -34,9 +35,9 @@
   @keyframes floatUp { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
   .brand-wrap { margin-bottom: 0.3rem; }
   .brand { display: block; width: auto; max-width: 560px; height: 4.8rem; margin: 0 auto; object-fit: contain; }
-  .tagline { font-size: 0.85rem; color: var(--ink-soft); font-weight: 300; letter-spacing: 0.04em; margin-bottom: 0.8rem; }
+  .tagline { font-size: 0.85rem; color: var(--ink-soft); font-weight: 300; letter-spacing: 0.08em; margin-bottom: 0.8rem; }
 
-  /* 언어 전환 */
+  /* 언어 전환 버튼 */
   .lang-switch-wrap { margin-bottom: 1.4rem; display: flex; justify-content: center; }
   .lang-switch-btn {
     display: inline-flex; align-items: center; gap: 0.4rem;
@@ -54,129 +55,28 @@
     text-decoration: none;
   }
   .lang-switch-btn:hover { background: var(--brush-teal); color: white; }
+  .lang-switch-btn .lang-icon { font-size: 1rem; }
 
   /* 탭 */
   .tabs { display: flex; gap: 0.4rem; margin-bottom: 1.4rem; background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 12px; padding: 0.3rem; }
-  .tab-btn { flex: 1; padding: 0.55rem 0; border: none; border-radius: 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; font-weight: 500; cursor: pointer; background: transparent; color: var(--ink-soft); transition: all 0.2s ease; }
+  .tab-btn { flex: 1; padding: 0.55rem 0; border: none; border-radius: 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; background: transparent; color: var(--ink-soft); transition: all 0.2s ease; }
   .tab-btn.active { background: var(--brush-teal); color: white; }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
-  /* 이벤트 정보 */
-  .event-info { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 16px; padding: 1.4rem 1.6rem; margin-bottom: 1.4rem; text-align: left; }
-  .event-row { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.55rem; }
-  .event-row:last-child { margin-bottom: 0; }
-  .event-label { font-size: 0.72rem; color: var(--brush-teal); font-weight: 500; letter-spacing: 0.06em; min-width: 52px; }
-  .event-value { font-size: 0.87rem; color: var(--ink); font-weight: 400; line-height: 1.4; }
+  /* 홈 버튼 */
+  .home-intro { text-align: left; margin-bottom: 1.4rem; }
   .cta-btn { display: block; width: 100%; padding: 1rem 1.5rem; border: none; border-radius: 12px; font-family: 'Noto Sans KR', sans-serif; font-size: 1rem; font-weight: 500; letter-spacing: 0.02em; cursor: pointer; text-decoration: none; transition: transform 0.15s ease, background 0.15s ease; margin-bottom: 0.8rem; }
   .cta-btn:hover { transform: translateY(-1px); }
+  .cta-btn:active { transform: translateY(0); }
   .cta-btn--reserve { background: #3d8a7a; color: white; }
   .cta-btn--reserve:hover { background: #347a6c; }
-
-  /* Time-slot booking */
-  .slot-row { display: flex; align-items: center; width: 100%; padding: 0.65rem 1rem; border: none; border-bottom: 1px solid rgba(74,156,140,0.08); gap: 0.6rem; background: none; font-family: inherit; text-align: left; }
-  button.slot-row { cursor: pointer; }
-  button.slot-row:disabled { cursor: not-allowed; opacity: 0.45; }
-  button.slot-row.picked { background: rgba(74,156,140,0.12); }
-  button.slot-row.picked .slot-time { color: var(--brush-teal); font-weight: 700; }
-  .slot-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid rgba(74,156,140,0.35); flex-shrink: 0; position: relative; }
-  button.slot-row.picked .slot-check { border-color: var(--brush-teal); background: var(--brush-teal); }
-  button.slot-row.picked .slot-check::after { content: ''; position: absolute; left: 5px; top: 2px; width: 4px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
-  button.slot-row:disabled .slot-check { border-style: dashed; }
-  .reserve-cta { margin-top: 0.8rem; }
-  .reserve-cta:disabled { background: rgba(74,156,140,0.25); color: #fff; cursor: not-allowed; transform: none; }
-  .slot-row:last-child { border-bottom: none; }
-  .slot-row.past { opacity: 0.35; }
-  .slot-time { font-size: 0.88rem; font-weight: 500; color: var(--ink); min-width: 46px; }
-  .slot-bar-wrap { flex: 1; height: 6px; background: rgba(74,156,140,0.1); border-radius: 3px; overflow: hidden; }
-  .slot-bar { height: 100%; border-radius: 3px; background: var(--brush-teal); transition: width 0.4s ease; }
-  .slot-bar.full { background: var(--brush-pink); }
-  .slot-remain { font-size: 0.78rem; font-weight: 500; min-width: 56px; text-align: right; }
-  .slot-remain.ok { color: var(--brush-teal); }
-  .slot-remain.low { color: var(--brush-amber); }
-  .slot-remain.full { color: var(--brush-pink); }
-  .slot-book-btn { padding: 0.28rem 0.65rem; background: var(--brush-teal); color: white; border: none; border-radius: 6px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.72rem; font-weight: 500; cursor: pointer; white-space: nowrap; text-decoration: none; display: inline-block; transition: background 0.15s, transform 0.1s; }
-  .slot-book-btn:hover { background: #347a6c; transform: translateY(-1px); }
-  .slot-book-btn.disabled { background: rgba(74,156,140,0.2); color: var(--ink-soft); pointer-events: none; }
-  .slot-book-btn.full { background: rgba(200,120,120,0.15); color: var(--brush-pink); pointer-events: none; }
-  .reserve-slot-section { background: white; border: 1px solid rgba(74,156,140,0.25); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.9rem; text-align: left; }
-  .reserve-slot-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
-  .reserve-slot-title { font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--ink); }
-  .slot-refresh-btn { padding: 0.22rem 0.6rem; background: transparent; border: 1px solid rgba(74,156,140,0.35); border-radius: 6px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.7rem; color: var(--brush-teal); cursor: pointer; }
-  .reserve-slot-list { border: 1px solid rgba(74,156,140,0.15); border-radius: 10px; overflow: hidden; }
-  .reserve-slot-note { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; color: var(--ink-soft); line-height: 1.6; margin-top: 0.55rem; }
-  .slot-notice { background: rgba(212,132,58,0.09); border: 1px solid rgba(212,132,58,0.28);
-                 border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 0.8rem;
-                 font-size: 0.76rem; line-height: 1.55; color: var(--ink-soft); }
-  .slot-notice b { color: var(--brush-amber); }
-  .slot-empty { text-align: center; padding: 1.4rem 1rem; font-size: 0.8rem; color: var(--brush-pink); font-weight: 500; line-height: 1.6; }
-  .prog-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.7rem; }
-  .prog-tab {
-    flex: 1; padding: 0.55rem 0.5rem; border-radius: 9px; cursor: pointer;
-    background: var(--paper); border: 1.5px solid rgba(90,78,66,0.14);
-    font-family: 'Noto Sans KR', sans-serif; text-align: center; line-height: 1.35;
-    transition: border-color 0.15s, background 0.15s;
-  }
-  .prog-tab .pn { display: block; font-size: 0.79rem; font-weight: 700; color: var(--ink); }
-  .prog-tab .pm { display: block; font-size: 0.64rem; color: var(--ink-soft); margin-top: 0.1rem; }
-  .prog-tab.active { border-color: var(--brush-teal); background: rgba(74,156,140,0.08); }
-  .prog-tab.active .pn { color: var(--brush-teal); }
-  .prog-tab.paid.active { border-color: var(--brush-blue); background: rgba(90,126,184,0.08); }
-  .prog-tab.paid.active .pn { color: var(--brush-blue); }
-  .prog-tab.soldout { opacity: 0.5; }
-
-  .goods-name { flex: 1; font-size: 0.82rem; color: var(--ink); font-weight: 500; line-height: 1.35; }
-  .goods-price { display: block; font-size: 0.68rem; color: var(--ink-soft); font-weight: 400; }
-
-  .journey { background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 0.7rem; text-align: left; }
-  .journey-title { font-family: 'Noto Sans KR', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; color: var(--ink-soft); margin-bottom: 0.6rem; }
-  .journey-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.42rem; }
-  .journey-steps li { display: flex; align-items: center; gap: 0.55rem; }
-  .jn { flex-shrink: 0; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: rgba(90,78,66,0.1); color: var(--ink-soft); font-size: 0.66rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-  .jn.cur { background: var(--brush-amber); color: white; }
-  .jt { font-family: 'Noto Sans KR', sans-serif; font-size: 0.76rem; color: var(--ink-soft); }
-  .jt b { color: var(--brush-amber); font-weight: 700; }
-  .jt .opt { font-size: 0.66rem; opacity: 0.7; }
-
-  .cta-btn--sns { background: var(--brush-blue); color: white; }
-  .cta-btn--sns:hover { background: #4d6ea3; }
-
-  /* 설문이 아직 제대로 저장되지 않아 손님에게는 감춰둔다.
-     주소 끝에 ?k=0919 (또는 ?test=1) 를 붙이면 보인다 — 테스트용. */
-  [data-testonly] { display: none; }
-  .testonly-note { font-family:'Noto Sans KR',sans-serif; font-size:.7rem; color:#8a6520;
-                   background:#fff3e0; border:1px solid #e0b184; border-radius:8px;
-                   padding:.5rem .7rem; margin-bottom:.7rem; text-align:left; }
-  .survey-box { background: white; border: 1px solid rgba(245,174,188,0.55); border-radius: 12px; padding: 0.9rem 1rem 0.6rem; margin-bottom: 0.7rem; text-align: left; }
-  .gift-pill { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; font-weight: 700; padding: 0.18rem 0.55rem; border-radius: 10px; background: rgba(212,132,58,0.14); color: var(--brush-amber); white-space: nowrap; }
-  .survey-sub { font-family: 'Noto Sans KR', sans-serif; font-size: 0.72rem; color: var(--ink-soft); line-height: 1.65; margin: 0.1rem 0 0.5rem; }
-  .survey-sub b { color: var(--brush-amber); }
-  .survey-buys { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 0.7rem; }
-  .buy-btn { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.75rem 0.9rem;
-             border: 1.5px solid rgba(212,132,58,0.4); border-radius: 10px; background: #fffaf3; text-decoration: none;
-             font-family: 'Noto Sans KR', sans-serif; transition: background 0.15s ease; }
-  .buy-btn:hover { background: #fdf1e2; }
-  .buy-btn .bt { font-size: 0.85rem; font-weight: 700; color: var(--ink); }
-  .buy-btn .bg { font-size: 0.66rem; font-weight: 700; color: var(--brush-amber); white-space: nowrap; }
-
-  .sns-box { background: white; border: 1px solid rgba(90,126,184,0.28); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.7rem; text-align: left; }
-  .sns-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
-  .sns-title { font-family: 'Noto Sans KR', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--ink); }
-  .frame-pill { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; font-weight: 700; padding: 0.18rem 0.55rem; border-radius: 10px; background: rgba(90,126,184,0.12); color: var(--brush-blue); white-space: nowrap; }
-  .frame-pill.low { background: rgba(212,132,58,0.14); color: var(--brush-amber); }
-  .frame-pill.out { background: rgba(200,120,120,0.14); color: var(--brush-pink); }
-  .sns-steps { margin: 0 0 0.8rem; padding-left: 1.1rem; }
-  .sns-steps li { font-family: 'Noto Sans KR', sans-serif; font-size: 0.74rem; color: var(--ink-soft); line-height: 1.65; margin-bottom: 0.3rem; }
-  .sns-steps b { color: var(--ink); font-weight: 700; }
-  .sns-note { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; color: var(--ink-soft); line-height: 1.6; margin-top: 0.5rem; text-align: center; }
-  #slotToast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(12px); max-width: 90%; background: #b8484f; color: #fff; font-family: 'Noto Sans KR', sans-serif; font-size: 0.8rem; line-height: 1.5; padding: 0.7rem 1rem; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.18); opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; z-index: 999; text-align: center; }
-  #slotToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .cta-btn--survey { background: #f5aebc; color: var(--ink); }
   .cta-btn--survey:hover { background: #eca0b0; }
-  .note { font-size: 0.75rem; color: var(--ink-soft); line-height: 1.7; }
+  .note { font-size: 0.75rem; color: var(--ink-soft); line-height: 1.6; }
   .note strong { color: var(--brush-amber); font-weight: 500; }
 
-  /* 도안 재고 섹션 */
+  /* 도안 재고 현황 섹션 */
   .stock-section { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 16px; padding: 1.2rem 1.4rem; margin-bottom: 1.2rem; text-align: left; }
   .stock-section-title { font-size: 0.72rem; color: var(--brush-teal); font-weight: 600; letter-spacing: 0.08em; margin-bottom: 0.9rem; }
   .stock-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(74,156,140,0.07); }
@@ -189,38 +89,61 @@
   .stock-badge.low { background: rgba(212,132,58,0.12); color: var(--brush-amber); }
   .stock-badge.soldout { background: rgba(200,120,120,0.12); color: var(--brush-pink); }
   .stock-count { font-size: 0.7rem; color: var(--ink-soft); min-width: 28px; text-align: right; }
+  .goods-name { flex: 1; font-size: 0.82rem; color: var(--ink); font-weight: 500; line-height: 1.35; }
+  .goods-price { display: block; font-size: 0.68rem; color: var(--ink-soft); font-weight: 400; }
 
-  /* 폼 가이드 섹션 */
-  .form-guide { background: rgba(74,156,140,0.05); border: 1px solid rgba(74,156,140,0.2); border-radius: 14px; padding: 1.2rem 1.4rem; margin-bottom: 1.2rem; text-align: left; }
-  .form-guide-title { font-size: 0.72rem; color: var(--brush-teal); font-weight: 700; letter-spacing: 0.08em; margin-bottom: 1rem; }
-  .form-field { margin-bottom: 0.9rem; padding-bottom: 0.9rem; border-bottom: 1px solid rgba(74,156,140,0.1); }
-  .form-field:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-  .form-field-label { font-size: 0.8rem; font-weight: 600; color: var(--ink); margin-bottom: 0.25rem; }
-  .form-field-en { font-size: 0.73rem; color: var(--brush-teal); font-weight: 500; margin-bottom: 0.3rem; }
-  .form-field-desc { font-size: 0.72rem; color: var(--ink-soft); line-height: 1.6; }
-  .form-field-example { font-size: 0.7rem; color: var(--brush-amber); margin-top: 0.2rem; }
-  .form-field-options { font-size: 0.71rem; color: var(--ink-soft); margin-top: 0.3rem; line-height: 1.7; }
+  /* 현황 패널 */
+  .status-panel { text-align: left; }
+  .status-date-label { font-size: 0.78rem; font-weight: 500; color: var(--brush-teal); letter-spacing: 0.06em; margin-bottom: 0.6rem; padding-left: 0.2rem; }
+  .status-summary { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 12px; padding: 0.9rem 1.2rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; }
+  .summary-text { font-size: 0.82rem; color: var(--ink-soft); }
+  .summary-num { font-size: 1.3rem; font-weight: 700; color: var(--brush-teal); }
+  .summary-num span { font-size: 0.8rem; font-weight: 400; color: var(--ink-soft); }
+  .slot-list { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 12px; overflow: hidden; margin-bottom: 1.2rem; }
+  .slot-row { display: flex; align-items: center; width: 100%; padding: 0.65rem 1rem; border: none; border-bottom: 1px solid rgba(74,156,140,0.08); gap: 0.6rem; background: none; font-family: inherit; text-align: left; }
+  .slot-row:last-child { border-bottom: none; }
+  .slot-row.past { opacity: 0.35; }
+  .slot-time { font-size: 0.88rem; font-weight: 500; color: var(--ink); min-width: 46px; }
+  .slot-bar-wrap { flex: 1; height: 6px; background: rgba(74,156,140,0.1); border-radius: 3px; overflow: hidden; }
+  .slot-bar { height: 100%; border-radius: 3px; background: var(--brush-teal); transition: width 0.4s ease; }
+  .slot-bar.full { background: var(--brush-pink); }
+  .slot-remain { font-size: 0.78rem; font-weight: 500; min-width: 52px; text-align: right; }
+  .slot-remain.ok { color: var(--brush-teal); }
+  .slot-remain.low { color: var(--brush-amber); }
+  .slot-remain.full { color: var(--brush-pink); }
+  .slot-notice { background: rgba(212,132,58,0.09); border: 1px solid rgba(212,132,58,0.28);
+                 border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 0.8rem;
+                 font-size: 0.76rem; line-height: 1.55; color: var(--ink-soft); }
+  .slot-notice b { color: var(--brush-amber); }
 
-  /* about 패널 */
+  /* 안내 토스트 */
+  #slotToast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(12px); max-width: 90%; background: #b8484f; color: #fff; font-family: 'Noto Sans KR', sans-serif; font-size: 0.8rem; line-height: 1.5; padding: 0.7rem 1rem; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.18); opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; z-index: 999; text-align: center; }
+  #slotToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .status-loading { text-align: center; padding: 2rem; color: var(--ink-soft); font-size: 0.85rem; }
+  .status-updated { font-size: 0.7rem; color: rgba(90,78,66,0.4); text-align: right; margin-top: 0.3rem; }
+  .footer { margin-top: 2rem; font-size: 0.7rem; color: rgba(90,78,66,0.45); letter-spacing: 0.04em; text-align: center; }
+
+  /* ── 헬로미추 소개 패널 ── */
   .about-panel { text-align: left; }
   .about-section { margin-bottom: 1.6rem; }
   .about-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; color: var(--brush-teal); }
   .about-title { font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-top: 0.3rem; line-height: 1.3; }
   .about-line { width: 24px; height: 2px; background: var(--brush-teal); margin: 0.5rem 0 0.8rem; border-radius: 1px; }
-  .about-body { font-size: 0.83rem; color: var(--ink-soft); line-height: 1.8; }
+  .about-body { font-size: 0.83rem; color: var(--ink-soft); line-height: 1.75; }
   .about-body strong { color: var(--ink); font-weight: 600; }
 
   .sheet-cards { display: flex; flex-direction: column; gap: 0.6rem; }
-  .sheet-card { display: flex; flex-direction: column; background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 10px; overflow: hidden; }
+  .sheet-card { display: flex; flex-direction: column; gap: 0; background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 10px; overflow: hidden; }
   .sheet-thumb-img { display: block; width: 100%; height: auto; background-color: rgba(74,156,140,0.08); }
-  .sheet-card-info { padding: 0.7rem 0.9rem 0.8rem; display: flex; flex-direction: column; gap: 0.2rem; }
-  .sheet-num-badge { min-width: 28px; height: 28px; background: var(--brush-teal); color: white; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; align-self: flex-start; margin-bottom: 0.2rem; }
-  .sheet-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.2rem; }
-  .sheet-card-title { font-size: 0.88rem; font-weight: 600; color: var(--ink); }
-  .sheet-card-title-en { font-size: 0.72rem; color: var(--ink-soft); }
+  .sheet-card .sheet-card-info { padding: 0.7rem 0.9rem 0.8rem; display: flex; flex-direction: column; gap: 0.2rem; }
+  .sheet-card .sheet-num-badge { align-self: flex-start; margin-bottom: 0.2rem; }
+  .sheet-num-badge { min-width: 28px; height: 28px; background: var(--brush-teal); color: white; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .sheet-card-title { font-size: 0.88rem; font-weight: 600; color: var(--ink); margin-bottom: 0.2rem; }
   .sheet-card-desc { font-size: 0.76rem; color: var(--ink-soft); line-height: 1.5; margin-bottom: 0.3rem; }
   .sheet-card-tags { font-size: 0.68rem; color: var(--brush-teal); }
-  .sheet-stock-badge { font-size: 0.68rem; font-weight: 600; padding: 0.18rem 0.5rem; border-radius: 8px; white-space: nowrap; flex-shrink: 0; }
+  .sheet-stock-row { display: flex; align-items: center; justify-content: space-between; margin-top: 0.3rem; }
+  .sheet-stock-badge { font-size: 0.68rem; font-weight: 600; padding: 0.18rem 0.5rem; border-radius: 8px; }
   .sheet-stock-badge.available { background: rgba(74,156,140,0.12); color: var(--brush-teal); }
   .sheet-stock-badge.low { background: rgba(212,132,58,0.12); color: var(--brush-amber); }
   .sheet-stock-badge.soldout { background: rgba(200,120,120,0.12); color: var(--brush-pink); }
@@ -228,13 +151,39 @@
   .exp-item { display: flex; gap: 0.8rem; align-items: flex-start; margin-bottom: 0.9rem; }
   .exp-icon-wrap { font-size: 1.4rem; min-width: 32px; text-align: center; }
   .exp-item-title { font-size: 0.88rem; font-weight: 600; color: var(--ink); margin-bottom: 0.2rem; }
-  .exp-item-desc { font-size: 0.76rem; color: var(--ink-soft); line-height: 1.6; }
+  .exp-item-desc { font-size: 0.76rem; color: var(--ink-soft); line-height: 1.5; }
 
   .about-contact { background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 10px; padding: 0.9rem 1rem; }
   .contact-row { display: flex; gap: 0.8rem; font-size: 0.78rem; color: var(--ink-soft); margin-bottom: 0.4rem; }
   .contact-row:last-child { margin-bottom: 0; }
-  .contact-key { min-width: 64px; font-weight: 500; color: var(--brush-teal); }
-  .footer { margin-top: 2rem; font-size: 0.7rem; color: rgba(90,78,66,0.45); letter-spacing: 0.04em; text-align: center; }
+  .contact-key { min-width: 52px; font-weight: 500; color: var(--brush-teal); }
+
+  /* ── 원도사제 행사 정보 ── */
+  .event-info { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 16px; padding: 1.3rem 1.4rem; margin-bottom: 1.2rem; text-align: left; }
+  .event-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; color: var(--brush-teal); margin-bottom: 0.7rem; }
+  .event-row { display: flex; align-items: baseline; gap: 0.7rem; margin-bottom: 0.5rem; }
+  .event-row:last-child { margin-bottom: 0; }
+  .event-label { font-size: 0.72rem; color: var(--brush-teal); font-weight: 600; min-width: 34px; flex-shrink: 0; }
+  .event-value { font-size: 0.88rem; color: var(--ink); line-height: 1.5; }
+  .sec-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; color: var(--ink-soft); text-align: left; margin: 1.3rem 0 0.6rem; }
+  .exp-card { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 0.6rem; text-align: left; }
+  .exp-card .num { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--brush-teal); color: #fff; font-size: 0.68rem; font-weight: 700; margin-right: 0.4rem; }
+  .exp-card.key .num { background: var(--brush-blue); }
+  .exp-card h3 { display: flex; align-items: center; font-size: 0.95rem; font-weight: 700; color: var(--ink); }
+  .exp-card .meta { font-size: 0.72rem; font-weight: 600; color: var(--brush-teal); margin: 0.3rem 0 0.4rem; }
+  .exp-card.key .meta { color: var(--brush-blue); }
+  .exp-card p { font-size: 0.78rem; color: var(--ink-soft); line-height: 1.65; }
+  .steps { list-style: none; background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 12px; padding: 0.85rem 1rem; text-align: left; display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.2rem; }
+  .steps li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.78rem; color: var(--ink-soft); line-height: 1.5; }
+  .steps .jn { flex-shrink: 0; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: rgba(90,78,66,0.1); color: var(--ink-soft); font-size: 0.66rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 0.05rem; }
+  .steps .jn.req { background: var(--brush-amber); color: #fff; }
+  .steps b { color: var(--ink); }
+  .info-box { background: #f5f3ee; border: 1px solid rgba(90,78,66,0.15); border-radius: 12px; padding: 0.85rem 1rem; margin-top: 0.8rem; text-align: left; }
+  .info-box .t { font-size: 0.74rem; font-weight: 700; color: var(--ink-soft); margin-bottom: 0.35rem; }
+  .info-box p, .info-box li { font-size: 0.74rem; color: var(--ink-soft); line-height: 1.7; }
+  .info-box ul { padding-left: 1rem; }
+  .info-box b { color: var(--ink); }
+  .tag { color: var(--brush-blue); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -244,185 +193,95 @@
   <h1 class="brand-wrap">
     <img src="img/logo2.png" class="brand" alt="Hello Michu">
   </h1>
-  <p class="tagline">Haksan Madanggeuk Nolrae 2026 · Watercolor Coloring</p>
+  <p class="tagline">2026 Incheon Wondosaje · Sea Scent Blending</p>
 
-  <!-- 언어 전환 -->
+  <!-- 언어 전환 버튼 -->
   <div class="lang-switch-wrap">
     <a href="index.html" class="lang-switch-btn">
-      <span>🌐</span>
+      <span class="lang-icon">🌐</span>
       한국어로 보기
     </a>
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('reserve')">Book & Survey</button>
+    <button class="tab-btn active" onclick="switchTab('reserve')">Home</button>
     <button class="tab-btn" onclick="switchTab('status')">Availability</button>
     <button class="tab-btn" onclick="switchTab('about')">About</button>
   </div>
 
-  <!-- Book / Survey panel -->
+  <!-- 홈 패널 : 소개 + 예약 + 설문 -->
   <div class="tab-panel active" id="panel-reserve">
     <div class="event-info">
-      <div class="event-row">
-        <span class="event-label">DATE</span>
-        <span class="event-value">Saturday, September 19, 2026</span>
-      </div>
-      <div class="event-row">
-        <span class="event-label">VENUE</span>
-        <span class="event-value">Subongsan Waterfall, Michuhol-gu, Incheon</span>
-      </div>
-      <div class="event-row">
-        <span class="event-label">HOURS</span>
-        <span class="event-value">13:00 – 18:30 · eleven 30-min sessions</span>
-      </div>
-      <div class="event-row">
-        <span class="event-label">EVENT</span>
-        <span class="event-value">Haksan Madanggeuk Nolrae 2026</span>
-      </div>
-      <div class="event-row">
-        <span class="event-label">ENTRY</span>
-        <span class="event-value">Coloring free · Binder ₩30,000</span>
-      </div>
+      <div class="event-title">2026 INCHEON WONDOSAJE · PROGRAM</div>
+      <div class="event-row"><span class="event-label">DATE</span><span class="event-value">Saturday, October 24, 2026</span></div>
+      <div class="event-row"><span class="event-label">VENUE</span><span class="event-value">Incheon Wondosaje festival grounds<br>(Yonghyeon-dong, Michuhol-gu)</span></div>
+      <div class="event-row"><span class="event-label">HOURS</span><span class="event-value">12:00 — 18:00 · twelve 30-min sessions<br>8 seats per session (booking, walk-ins welcome)</span></div>
+      <div class="event-row"><span class="event-label">ENTRY</span><span class="event-value">Free (please complete a short survey afterwards)</span></div>
     </div>
 
-    <div class="reserve-slot-section">
-      <div class="reserve-slot-head">
-        <span class="reserve-slot-title">Book a session</span>
-        <button class="slot-refresh-btn" type="button" onclick="refreshSlots()">Refresh</button>
-      </div>
-
-      <div class="prog-tabs" id="progTabs"><!-- rendered by JS --></div>
-
-      <div id="reserveSlots">
-        <div style="text-align:center;padding:1.2rem 0;color:var(--ink-soft);font-size:0.85rem;">Loading available time slots…</div>
-      </div>
-      <p class="reserve-slot-note">
-        <strong>Tap a session first</strong>, then tap the <strong style="color:var(--brush-teal);">Book</strong> button below.<br>
-        Each session takes up to <strong id="slotCapacityLabel">6</strong> people;
-        sessions marked <strong style="color:var(--brush-pink);">Full</strong> cannot be selected.
-      </p>
+    <div class="sec-title">EXPERIENCES</div>
+    <div class="exp-card">
+      <h3><span class="num">1</span>Sea Scent Card Set</h3>
+      <div class="meta">30 min · Free (₩25,000 value · event only)</div>
+      <p>Blend your own scent inspired by Michuhol's sea, tidal flats and coastline, add it to a letterpress scent card, and take it home with a matching scented coloring sheet. Open the envelope at home and color while you enjoy the scent.</p>
     </div>
-    <div id="reserveFallback" style="display:none;">
-      <a class="cta-btn cta-btn--reserve" href="reserve.html">
-        Book Your Session →
-      </a>
-      <p class="reserve-slot-note" style="text-align:center;margin-bottom:0.7rem;">
-        Live availability could not be loaded. Please pick your time slot inside the form.
-      </p>
-    </div>
-    <div class="journey">
-      <div class="journey-title">HOW IT WORKS</div>
-      <ol class="journey-steps">
-        <li><span class="jn">1</span><span class="jt">Book a session</span></li>
-        <li><span class="jn">2</span><span class="jt">30-minute session</span></li>
-        <li><span class="jn cur">3</span><span class="jt">Survey — <b>required</b></span></li>
-        <li><span class="jn">4</span><span class="jt">Share on social <span class="opt">optional</span></span></li>
-        <li><span class="jn">5</span><span class="jt">Verify your post → framed artwork</span></li>
-      </ol>
+    <div class="exp-card key">
+      <h3><span class="num">2</span>Sea Scent Keyring Set</h3>
+      <div class="meta">30 min · Free (₩21,000 value · event only)</div>
+      <p>Blend 2–3 scents onto a mini plaster seashell and seal it in a sea-diorama glass bottle keyring. Comes with a scented coloring sheet.</p>
     </div>
 
-    <div style="background:#fff3e0;border:1.5px solid #d4843a;border-radius:10px;padding:0.7rem 1rem;margin-bottom:0.7rem;display:flex;align-items:flex-start;gap:0.5rem;">
-      <span style="font-size:1.1rem;flex-shrink:0;">⚠️</span>
-      <div>
-        <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.82rem;font-weight:700;color:#b85c00;margin-bottom:0.2rem;">The survey is how you pay for a free session</div>
-        <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.72rem;color:#7a5000;line-height:1.5;">
-          A coloring session normally costs ₩25,000. It is free at this event in exchange for
-          <strong>your feedback afterwards</strong>.<br>
-          Show us your completed survey screen and we will pack your artwork in a postcard sleeve.
-        </div>
-      </div>
+    <div class="sec-title">HOW IT WORKS</div>
+    <ol class="steps">
+      <li><span class="jn">1</span><span><b>Book</b> — choose an experience and a time</span></li>
+      <li><span class="jn">2</span><span><b>30-min blending</b> — smell → blend 2–3 scents → apply → seal & pack</span></li>
+      <li><span class="jn req">3</span><span><b>Survey</b> (required for the free experience)</span></li>
+      <li><span class="jn">4</span><span><b>Social media review</b> (optional) — receive a scented coloring sheet</span></li>
+    </ol>
+
+    <a class="cta-btn cta-btn--reserve" href="reserve.html">Book a session (Korean)</a>
+    <a class="cta-btn cta-btn--survey" id="classSurveyBtn" href="survey.html">Take the survey (Korean)</a>
+
+    <div class="info-box">
+      <div class="t">On-site sales</div>
+      <ul>
+        <li>Sea Scent Coloring Book Set (scent card) <b>₩30,000</b></li>
+        <li>Sea Scent Coloring Book Set (keyring) <b>₩35,000</b></li>
+      </ul>
+    </div>
+    <div class="info-box">
+      <div class="t">Review event (first 28 people)</div>
+      <p>Post a review on Instagram or other social media with <span class="tag">#헬로미추</span> <span class="tag">#미추홀바다향기</span>. Show it at the booth to receive a scented coloring sheet. (While supplies last)</p>
+    </div>
+    <div class="info-box">
+      <div class="t">Please note</div>
+      <p>If you are sensitive to scents, pregnant, or visiting with an infant, please tell our staff before starting. An <b>unscented option</b> is available.</p>
     </div>
 
-    <div class="survey-box" data-testonly>
-      <div class="sns-head">
-        <span class="sns-title">① Surveys</span>
-        <span class="gift-pill">Free sticker for paid entries</span>
-      </div>
-
-      <a class="cta-btn cta-btn--survey" id="surveyBtn" href="survey.html">
-        Complete the session survey
-      </a>
-      <p class="sns-note" id="surveyHint" style="display:none;margin:-0.45rem 0 0.7rem;"></p>
-
-      <p class="survey-sub">Bought something? Please fill in the matching survey — you get a <b>free deco sticker</b>.</p>
-      <div class="survey-buys">
-        <a class="buy-btn" href="survey.html?t=binder_buy">
-          <span class="bt">Mother-of-pearl binder purchase</span>
-          <span class="bg">Free sticker</span>
-        </a>
-        <a class="buy-btn" href="survey.html?t=sticker">
-          <span class="bt">Deco sticker purchase</span>
-          <span class="bg">Free sticker</span>
-        </a>
-      </div>
-    </div>
-
-    <div class="sns-box" data-testonly>
-      <div class="sns-head">
-        <span class="sns-title">② Verify your post &amp; get it framed</span>
-        <span class="frame-pill" id="framePill">28 frames</span>
-      </div>
-      <ol class="sns-steps">
-        <li>Post about your session on Instagram with both hashtags: <b>#헬로미추</b> <b>#수채화컬러링</b>.</li>
-        <li>Open the <b>verification form</b> below and add the post <b>link (URL)</b> and a <b>screenshot</b>.</li>
-        <li>Once our team confirms it, we frame your artwork and hand it to you on the spot.</li>
-      </ol>
-      <a class="cta-btn cta-btn--sns" id="snsBtn" href="survey.html?t=sns">
-        Open the verification form
-      </a>
-      <p class="sns-note">
-        First <strong>28</strong> participants only · while frames last<br>
-        Uploading a screenshot requires a Google sign-in. If that is a problem, just show us at the booth.
-      </p>
-    </div>
-
-    <p class="note">
-      You will see a <strong>confirmation screen</strong> after booking. No text message is sent —<br>
-      please screenshot it and give your name at the booth.
-    </p>
-
-    <div style="background:#f5f3ee;border:1px solid rgba(90,78,66,0.15);border-radius:10px;padding:0.8rem 1rem;margin-top:0.4rem;">
-      <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.75rem;font-weight:700;color:var(--ink-soft);letter-spacing:0.05em;margin-bottom:0.4rem;">📌 On-site Notice</div>
-      <p style="font-family:'Noto Sans KR',sans-serif;font-size:0.72rem;color:var(--ink-soft);line-height:1.85;">
-        Session times may vary depending on on-site conditions.<br>
-        Seating order is assigned based on <strong style="color:var(--ink);">Google Form submission time</strong> within your chosen slot —
-        please select your preferred time carefully when booking.<br><br>
-        Our team attends to many visitors each day and cannot track individual inquiries.
-        <strong style="color:var(--ink);">Bookings are managed by the system only</strong> — please register in advance rather than asking on-site.<br><br>
-        Watercolor needs time to dry. While you wait for it, scan the QR code on your table and
-        fill in the survey — then you can pick up your artwork and go.<br><br>
-        <strong style="color:#c0392b;">No-shows forfeit their reserved slot.</strong> Unattended slots will be reassigned to walk-in visitors.
+    <div class="about-section home-intro" style="margin-top:1.6rem;">
+      <span class="about-label">HELLO MICHU</span>
+      <h2 class="about-title">Add color with Hello Michu</h2>
+      <div class="about-line"></div>
+      <p class="about-body">
+        <strong>Hello Michu</strong> is a resident-led tourism business (Tourism Dure) based in Michuhol-gu, Incheon.<br>
+        We capture Michuhol's history and nature — the story of Soseono, Munhaksan, tidal flats and old alleys — in watercolor coloring.<br>
+        We invite you to slow down, add color, and discover the texture of this city anew.
       </p>
     </div>
   </div>
 
-  <!-- Availability panel -->
+  <!-- 현황 패널 -->
   <div class="tab-panel" id="panel-status">
-    <div class="status-panel" style="text-align:left;">
-      <!-- Coloring sheet stock — top -->
-      <div class="stock-section" style="margin-bottom:1.2rem;">
-        <div class="stock-section-title">COLORING SHEET AVAILABILITY</div>
-        <div id="stockList">
-          <div class="status-loading" style="padding:1rem 0;">Loading…</div>
-        </div>
-        <div class="stock-section-title" style="margin-top:1.3rem;">GOODS &amp; FRAMES</div>
-        <div id="goodsList">
-          <div class="status-loading" style="padding:1rem 0;">Loading…</div>
-        </div>
-        <p style="font-size:0.68rem;color:var(--ink-soft);margin-top:0.8rem;line-height:1.6;">
-          * Stock may change depending on on-site conditions.<br>
-          * You can pick your sheet on the booking form. If you skip it, you may choose from the remaining stock on the day.
-        </p>
-      </div>
-      <!-- Slot availability -->
+    <div class="status-panel">
+      <!-- 슬롯 현황 -->
       <div id="statusContent">
-        <div class="status-loading">Loading availability…<br><span style="font-size:0.75rem;opacity:0.6;">Please wait a moment</span></div>
+        <div class="status-loading">Loading availability...<br><span style="font-size:0.75rem;opacity:0.6;">Please wait</span></div>
       </div>
       <p class="status-updated" id="updatedAt"></p>
     </div>
   </div>
 
-  <!-- About panel -->
+  <!-- 헬로미추 소개 패널 -->
   <div class="tab-panel" id="panel-about">
     <div class="about-panel">
 
@@ -431,9 +290,9 @@
         <h2 class="about-title">What is Hello Michu?</h2>
         <div class="about-line"></div>
         <p class="about-body">
-          <strong>Hello Michu (헬로미추)</strong> is a community-run tourism business based in Michuhol-gu, Incheon.<br>
-          We translate the history and nature of Michuhol — the legend of Soseono, Munhak Mountain, tidal flats, and neighborhood streetscapes — into watercolor coloring experiences.<br>
-          We invite you to slow down, pick up a brush, and rediscover this city one colour at a time.
+          <strong>Hello Michu</strong> is a resident-led tourism business (Tourism Dure) based in Michuhol-gu, Incheon.<br>
+          We capture Michuhol's history and nature — the story of Soseono, Munhaksan, tidal flats and old alleys — in watercolor coloring.<br>
+          We invite you to slow down, add color, and discover the texture of this city anew.
         </p>
       </div>
 
@@ -442,140 +301,132 @@
         <h2 class="about-title">Watercolor Coloring Kit</h2>
         <div class="about-line"></div>
         <p class="about-body" style="margin-bottom:0.8rem;">
-          Four scenes from Michuhol, printed with Artable watercolor paints.
-          The front is yours to paint; the back is a postcard carrying the story behind the scene.
+          A kit with four scenes of Michuhol and Artable watercolor paints.<br>
+          The front is for painting, the back is a postcard, with the story behind each scene.
         </p>
-        <div class="sheet-cards" id="aboutSheetCards"></div>
+        <div class="sheet-cards" id="aboutSheetCards">
+          <!-- JS로 재고 배지 포함 렌더링 -->
+        </div>
       </div>
 
       <div class="about-section">
         <span class="about-label">EXPERIENCE</span>
-        <h2 class="about-title">At Haksan Madanggeuk Nolrae</h2>
+        <h2 class="about-title">Sea Scent Experiences & Sets</h2>
         <div class="about-line"></div>
         <div class="exp-item">
-          <div class="exp-icon-wrap">🎨</div>
+          <div class="exp-icon-wrap">💌</div>
           <div>
-            <div class="exp-item-title">On-site Coloring Session</div>
-            <div class="exp-item-desc">44 watercolor paints, brushes, all materials provided · Choose one of five sheets<br><span style="color:var(--brush-teal);font-weight:500;">30 min · Free (normally ₩25,000)</span></div>
+            <div class="exp-item-title">Sea Scent Card Set</div>
+            <div class="exp-item-desc">Your own blend on a letterpress scent card, with a scented coloring sheet<br><span style="color:var(--brush-teal);font-weight:500;">30 min · Free (₩25,000 value)</span></div>
+          </div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-icon-wrap">🐚</div>
+          <div>
+            <div class="exp-item-title">Sea Scent Keyring Set</div>
+            <div class="exp-item-desc">A scented mini plaster shell sealed in a sea-diorama glass keyring<br><span style="color:var(--brush-blue);font-weight:500;">30 min · Free (₩21,000 value)</span></div>
           </div>
         </div>
         <div class="exp-item">
           <div class="exp-icon-wrap">🛍️</div>
           <div>
-            <div class="exp-item-title">Traditional Binder Workshop</div>
-            <div class="exp-item-desc">Decorate a black binder with mother-of-pearl and resin<br><span style="color:var(--brush-blue);font-weight:500;">30 min · ₩30,000 (paid on site)</span></div>
-          </div>
-        </div>
-        <div class="exp-item">
-          <div class="exp-icon-wrap">🛍️</div>
-          <div>
-            <div class="exp-item-title">On-site Shop</div>
-            <div class="exp-item-desc">Finished traditional binder ₩20,000 · Deco stickers ₩2,500<br><span style="color:var(--ink-soft);">Free sticker when you complete a survey after purchase</span></div>
+            <div class="exp-item-title">Sea Scent Coloring Book Sets</div>
+            <div class="exp-item-desc">Scent card ₩30,000 · Keyring ₩35,000<br><span style="color:var(--ink-soft);">Finished sets with scent oil refill + scented coloring sheet</span></div>
           </div>
         </div>
       </div>
 
       <div class="about-contact">
         <div class="contact-row"><span class="contact-key">Instagram</span><span>@arternallyy</span></div>
-        <div class="contact-row"><span class="contact-key">Email</span><span>nswer@naver.com</span></div>
-        <div class="contact-row" style="margin-top:0.3rem;"><span class="contact-key">Organiser</span><span>Michuhol-gu Tourism Dure Community Business</span></div>
+        <div class="contact-row"><span class="contact-key">Contact</span><span>nswer@naver.com</span></div>
+        <div class="contact-row" style="margin-top:0.3rem;"><span class="contact-key">Run by</span><span>Michuhol-gu Tourism Dure resident business</span></div>
       </div>
 
     </div>
   </div>
 
-</div></br></br>
+</div>
 
-<p class="status-updated" id="globalUpdatedAt" style="text-align:center;margin-top:1.2rem;"></p>
 <a href="https://smartstore.naver.com/funnyshow/category/96fc3451b09743599b090450ae605b83?cp=1"
    target="_blank"
-   style="display:flex;align-items:center;justify-content:center;gap:0.5rem;margin:0.6rem auto 0.6rem;max-width:400px;width:100%;padding:0.75rem 1rem;background:white;border:1.5px solid rgba(74,156,140,0.3);border-radius:12px;text-decoration:none;color:var(--ink);">
+   style="display:flex;align-items:center;justify-content:center;gap:0.5rem;margin:1.6rem auto 0.6rem;max-width:400px;width:100%;padding:0.75rem 1rem;background:white;border:1.5px solid rgba(74,156,140,0.3);border-radius:12px;text-decoration:none;color:var(--ink);transition:border-color 0.2s;position:relative;z-index:1;">
   <span style="font-size:1rem;">🛍️</span>
   <div style="text-align:left;">
-    <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.82rem;font-weight:600;color:var(--ink);">Artable Watercolor Diary — Buy Online</div>
-    <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.7rem;color:var(--brush-teal);">Naver Smartstore →</div>
+    <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.82rem;font-weight:600;color:var(--ink);">Shop the Artable Watercolor Diary</div>
+    <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.7rem;color:var(--brush-teal);">Go to Smartstore →</div>
   </div>
 </a>
-<p class="footer">Hello Michu Co., Ltd. · 헬로미추 2026</p>
+<p class="footer">Hello Michu Co., Ltd. · 헬로미추</p>
 
+<script src="config.js"></script>
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
-// Legacy Google booking form question IDs — booking now runs on reserve.html.
-// const ENTRY_PROGRAM = 'entry.1189251627';
-// const ENTRY_TIME    = 'entry.520138299';
+/* API_URL 은 config.js — 예약·만족도 모두 '헬로미추-원도사재' 시트로 간다 */
 
-// Surveys are collected by this site's own survey.html, not a Google Form.
-// The booked session rides along so answers link back to the right slot.
-const SURVEY_PAGE = 'survey.html';
+/* 첫 화면(홈)은 소개 + 예약 버튼 + 수업 만족도 설문 버튼만 둔다.
+   예약은 reserve.html, 설문은 survey.html(수업 만족도 — 별도 시트)에서 받는다.
+   아래 코드는 '예약 현황' 탭과 '헬로미추' 탭의 도안 카드를 그린다. */
 
-// SNS review verification also runs here; screenshots are stored in Google Drive.
+// ── 예약 일정 (시트 '예약설정'·'예약프로그램' 값으로 덮어쓴다) ──
+let EVENT_DATE = '';
+let SLOT_MIN = 30;
 
-function surveyLink() {
-  const last = getLastSelection();
-  const p = new URLSearchParams();
-  if (last) {
-    p.set('t', last.program === '바인더' ? 'binder' : 'coloring');
-    p.set('slot', last.program + ' ' + last.time);
-  }
-  const q = p.toString();
-  return SURVEY_PAGE + (q ? '?' + q : '');
-}
-// Legacy Google booking form (kept for reference only).
-// const FORM_BASE = 'https://docs.google.com/forms/d/e/1FAIpQLScvLvrppxjadzctUW2HHTvMI789QlbTPXDV4CxZ7gB2tiAKZw/viewform';
-
-// ── Event constants ──
-const EVENT_DATE  = '9월 19일 (토)';           // key used by the API
-const EVENT_LABEL = 'Saturday, September 19';
-
-// ── Bookable programs (same ten sessions, separate capacity) ──
-const PROGRAMS = [
-  /* dayLimit = seats available for the whole day.
-     Coloring 66 = 11 slots x 6 seats (100 sheets on hand, so seats are the cap, not paper) */
-  { key: '컬러링', name: 'Coloring',       meta: 'Free · 30 min · 6 seats',     capacity: 6, dayLimit: 66, paid: false },
-  { key: '바인더', name: 'Binder',         meta: '\u20A930,000 · 30 min · 5 seats', capacity: 5, dayLimit: 50, paid: true  },
+let PROGRAMS = [
+  { key: '컬러링', name: '컬러링 체험', meta: '무료 · 30분 · 6명',     capacity: 6, dayLimit: 66, paid: false },
+  { key: '바인더', name: '바인더 체험', meta: '30,000원 · 30분 · 5명', capacity: 5, dayLimit: 50, paid: true  },
 ];
-let activeProgram = PROGRAMS[0].key;
 
-/* Session grid: eleven 30-minute sessions, 13:00–18:30, run back to back.
-   Rendered from this list rather than from the API response, so a stale
-   deployment serving an older 20-minute grid cannot distort the page. */
-const SLOT_TIMES = ['13:00','13:30','14:00','14:30','15:00','15:30',
-                    '16:00','16:30','17:00','17:30','18:00'];
-const EVENT_YMD  = { y: 2026, m: 9, d: 19 };
+let SLOT_TIMES = [];
+let EVENT_YMD  = null;   // 지난 회차 판정 기준일
+
+function applyConfig(c) {
+  if (!c) return;
+  if (Array.isArray(c.programs) && c.programs.length) PROGRAMS = c.programs;
+  SLOT_TIMES = Array.isArray(c.times) ? c.times : [];
+  SLOT_MIN = Number(c.slotMin) || 30;
+  const EN = { '센트카드': ['Sea Scent Card Set', '30 min · free · 7 sessions × 8'], '키링': ['Sea Scent Keyring Set', '30 min · free · 5 sessions × 8'] };
+  PROGRAMS = PROGRAMS.map(p => EN[p.key] ? Object.assign({}, p, { name: EN[p.key][0], meta: EN[p.key][1] }) : p);
+  const m = String(c.date || '').match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) {
+    EVENT_YMD = { y: +m[1], m: +m[2], d: +m[3] };
+    const d = new Date(EVENT_YMD.y, EVENT_YMD.m - 1, EVENT_YMD.d);
+    EVENT_DATE = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + ' · Wondosaje festival grounds';
+  } else { EVENT_YMD = null; EVENT_DATE = ''; }
+  window._resOpen = c.open !== false && !!EVENT_YMD && SLOT_TIMES.length > 0;
+}
 
 function programOf(key) {
   return PROGRAMS.find(p => p.key === key) || PROGRAMS[0];
 }
 
+// ── 도안 데이터 ──
 const SHEETS_META = [
-  { num:'01', key:'01 소서노',     name:'Soseono Arrives',   img:'img/sheet_sosuno2.jpg',      desc:'Soseono pointing out to sea beside a moored sailboat, with the Munhaksan ridge behind — the moment the journey south ends', tags:'# Soseono # Legend # Founding' },
-  { num:'02', key:'02 문학산성',   name:'Munhak Fortress',   img:'img/sheet_munhak2.jpg',      desc:'The stone ring fortress crowning the summit, its halls inside, and the sea and islands as they reached the hill before reclamation',  tags:'# Fortress # History # SeaView' },
-  { num:'03', key:'03 갯벌',       name:'Michuhol Tidal Flat', img:'img/sheet_tidal3.jpg',     desc:'Ripple marks, crab burrows and tidal channels, with ghost crabs, mudskippers and shell beds of the West Sea',            tags:'# TidalFlat # Ecology # WestSea' },
-  { num:'04', key:'04 수봉폭포',   name:'Subong Waterfall',  img:'img/sheet_subong_fall.jpg', desc:'Water falling between rock faces into a round pond, framed by wooden steps and dense summer woods',                    tags:'# Subongsan # Waterfall # Nature' },
+  { num:'01', key:'01 소서노',   name:'Soseono Settles in Michuhol', img:'img/sheet_sosuno2.jpg',      desc:'Soseono pointing to the sea with a sailboat moored at the shore, set against the Munhaksan ridge', tags:'# Soseono # Legend' },
+  { num:'02', key:'02 문학산성', name:'Munhaksan Fortress of Old',   img:'img/sheet_munhak2.jpg',      desc:'A stone mountaintop fortress, from the days when the sea and islands came right up to the hill', tags:'# Munhaksan # History' },
+  { num:'03', key:'03 갯벌',     name:'Michuhol Tidal Flats',       img:'img/sheet_tidal3.jpg',       desc:'Ripple marks, crab holes and tidal creeks — West Sea wildlife with crabs, mudskippers and shells', tags:'# Tidal flats # Ecology' },
+  { num:'04', key:'04 수봉폭포', name:'Subong Waterfall',         img:'img/sheet_subong_fall.jpg', desc:'A waterfall pouring between rocks into a round pond, with wooden steps and lush summer forest', tags:'# Subongsan # Nature' },
 ];
+const STOCK_FALLBACK = { '01 소서노':30, '02 문학산성':30, '03 갯벌':30, '04 수봉폭포':10 };
 
-// 60 sheets in total — 12 of each design
-const STOCK_FALLBACK = {
-  '01 소서노':30, '02 문학산성':30, '03 갯벌':30, '04 수봉폭포':10
-};
-
-// ── Goods and frames (not bookable — stock display only) ──
 const GOODS_META = [
-  { key:'바인더 체험',   name:'Binder workshop',   note:'\u20A930,000' },
-  { key:'바인더 완성품', name:'Finished binder',   note:'\u20A920,000' },
-  { key:'스티커',       name:'Deco stickers',     note:'\u20A92,500' },
-  { key:'액자',         name:'Frames for posts',  note:'while they last' },
+  { key:'바인더 체험',   name:'바인더 체험',       note:'30,000원' },
+  { key:'바인더 완성품', name:'바인더 완성품 판매', note:'20,000원' },
+  { key:'스티커',       name:'데코 스티커',       note:'2,500원' },
+  { key:'액자',         name:'SNS 후기 액자',     note:'선착순 증정' },
 ];
 const GOODS_FALLBACK = { '바인더 체험':50, '바인더 완성품':50, '스티커':100, '액자':28 };
 
-/* Pass total and the "low" line becomes 30% of it (min 3) — sheet counts
-   differ per design (30 / 30 / 30 / 10), so a flat 10 would flag an untouched
-   10-sheet design as low. Without total, the old flat 10 applies. */
 function getStockInfo(remain, total) {
   const lowAt = total ? Math.max(3, Math.ceil(total * 0.3)) : 10;
-  if (remain === 0)      return { cls:'soldout',   label:'Sold Out',  countLabel:'0' };
-  if (remain <= lowAt)   return { cls:'low',       label:'Low Stock', countLabel:`${remain} left` };
-  return                   { cls:'available', label:'Available',  countLabel:`${remain} left` };
+  if (remain === 0)    return { cls:'soldout',   label:'Sold out', countLabel:'0' };
+  if (remain <= lowAt) return { cls:'low',       label:'Few left', countLabel:`${remain}` };
+  return                 { cls:'available', label:'Available', countLabel:`${remain}` };
+}
+
+function buildStockMap(arr) {
+  if (!Array.isArray(arr) || !arr.length) return null;
+  const map = {};
+  arr.forEach(item => { map[item.key] = item.remain; });
+  return map;
 }
 
 function renderStockList(stockMap) {
@@ -605,17 +456,14 @@ function renderAboutSheets(stockMap) {
     const info = getStockInfo(remain, STOCK_FALLBACK[s.key]);
     html += `
       <div class="sheet-card">
-        <img class="sheet-thumb-img" src="${s.img}" alt="${s.name} coloring sheet" loading="lazy" decoding="async">
+        <img class="sheet-thumb-img" src="${s.img}" alt="${s.name} sheet" loading="lazy" decoding="async">
         <div class="sheet-card-info">
           <div class="sheet-num-badge">${s.num}</div>
-          <div class="sheet-title-row">
-            <div>
-              <div class="sheet-card-title">${s.name}</div>
-              <div class="sheet-card-title-en">${s.nameKo}</div>
-            </div>
-            <span class="sheet-stock-badge ${info.cls}">${info.label} · ${info.countLabel}</span>
+          <div class="sheet-stock-row">
+            <div class="sheet-card-title">${s.name}</div>
+            ${stockMap ? `<span class="sheet-stock-badge ${info.cls}">${info.label} · ${info.countLabel}</span>` : ''}
           </div>
-          <div class="sheet-card-desc">${s.descEn}</div>
+          <div class="sheet-card-desc">${s.desc}</div>
           <div class="sheet-card-tags">${s.tags}</div>
         </div>
       </div>`;
@@ -623,7 +471,7 @@ function renderAboutSheets(stockMap) {
   el.innerHTML = html;
 }
 
-// Booking happens on this site's reserve.html, not a Google Form.
+// ── 예약 화면 주소 ──
 function makeReserveUrl(program, time) {
   const params = new URLSearchParams();
   params.set('program', program);
@@ -650,36 +498,6 @@ function getLastSelection() {
   return null;
 }
 
-function withSlotPrefill(base, entryProgram, entryTime) {
-  const last = getLastSelection();
-  if (!last || !entryProgram || !entryTime) return base;
-  const params = new URLSearchParams();
-  params.set(entryProgram, last.program);
-  params.set(entryTime, last.time);
-  return base + (base.indexOf('?') === -1 ? '?' : '&') + params.toString();
-}
-
-function applySurveyPrefill() {
-  const last = getLastSelection();
-  const sBtn = document.getElementById('surveyBtn');
-  const nBtn = document.getElementById('snsBtn');
-  if (sBtn) sBtn.href = surveyLink();
-  if (nBtn) {
-    const q = new URLSearchParams({ t: 'sns' });
-    if (last) q.set('slot', last.program + ' ' + last.time);
-    nBtn.href = 'survey.html?' + q.toString();
-  }
-
-  const hint = document.getElementById('surveyHint');
-  if (hint) {
-    hint.innerHTML = last
-      ? 'Your <strong style="color:var(--brush-teal);">' + programOf(last.program).name + ' ' + last.time +
-        '</strong> session is filled in for you.'
-      : '';
-    hint.style.display = last ? 'block' : 'none';
-  }
-}
-
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
     b.classList.toggle('active',
@@ -700,44 +518,67 @@ function getKST() {
   return new Date(utc + (9 * 60 * 60 * 1000));
 }
 
-function getActiveDate() {
-  return EVENT_DATE;   // single-day event
-}
-
-function getActiveDateLabel() {
-  return EVENT_LABEL;
-}
-
 function isPast(timeStr) {
+  if (!EVENT_YMD) return false;
   const kst   = getKST();
   const today = kst.getFullYear() * 10000 + (kst.getMonth() + 1) * 100 + kst.getDate();
   const event = EVENT_YMD.y * 10000 + EVENT_YMD.m * 100 + EVENT_YMD.d;
-  if (today < event) return false;   // nothing has ended before the event day
-  if (today > event) return true;    // everything has ended after it
-
+  if (today < event) return false;
+  if (today > event) return true;
   const [h, m] = timeStr.split(':').map(Number);
-  const endTotal = h * 60 + m + 30;
+  const endTotal = h * 60 + m + SLOT_MIN;
   const nowTotal = kst.getHours() * 60 + kst.getMinutes();
   return nowTotal >= endTotal;
 }
 
-// ── Slot cache (TTL) ──
+// ── 슬롯 데이터 캐시 ──
 const SLOT_TTL_MS = 60 * 1000;
-const DEFAULT_CAPACITY = 10;   // API가 capacity를 안 주면 사용하는 기본 정원
+const DEFAULT_CAPACITY = 10;
 let _fetchedAt = 0;
 let _inflight = null;
+
+const SLOT_CACHE_KEY = 'hm_slots_cache';
+const SLOT_CACHE_MAX = 6 * 60 * 60 * 1000;
+
+function saveSlotCache(data) {
+  try {
+    localStorage.setItem(SLOT_CACHE_KEY, JSON.stringify({
+      at: Date.now(), slots: window._cachedSlots,
+      sheetStock: data.sheetStock, goods: data.goods
+    }));
+  } catch (e) {}
+}
+
+function readSlotCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(SLOT_CACHE_KEY) || 'null');
+    if (!c || !Array.isArray(c.slots) || (Date.now() - c.at) > SLOT_CACHE_MAX) return null;
+    return c;
+  } catch (e) { return null; }
+}
+
+function paintFromCache() {
+  const c = readSlotCache();
+  if (!c) return false;
+  window._cachedSlots = normalizeSlots(c.slots);
+  window._cachedStock = buildStockMap(c.sheetStock);
+  window._cachedGoods = buildGoodsMap(c.goods);
+  renderStockList(window._cachedStock);
+  renderGoodsList(window._cachedGoods);
+  renderAboutSheets(window._cachedStock);
+  return true;
+}
 
 function fetchData(force) {
   if (!force && window._cachedSlots && (Date.now() - _fetchedAt) < SLOT_TTL_MS) {
     return Promise.resolve({ slots: window._cachedSlots, sheetStock: window._cachedStockArr });
   }
   if (_inflight) return _inflight;
-  /* 주소에 매번 다른 값을 붙이고 캐시를 끈다.
-     안 그러면 브라우저가 예전 응답을 그대로 내주어, 시트를 고쳐도
-     새로고침을 여러 번 해야 반영되는 것처럼 보인다. */
+  if (!apiReady()) return Promise.reject(new Error('no api'));
   _inflight = fetch(API_URL + '?t=' + Date.now(), { cache: 'no-store' })
     .then(r => r.json())
     .then(data => {
+      applyConfig(data.config);
       window._cachedSlots    = normalizeSlots(data.slots);
       data.slots             = window._cachedSlots;
       window._cachedStockArr = data.sheetStock;
@@ -745,19 +586,22 @@ function fetchData(force) {
       window._cachedGoods    = buildGoodsMap(data.goods);
       _fetchedAt = Date.now();
       _inflight = null;
+      saveSlotCache(data);
       return data;
     })
     .catch(err => { _inflight = null; throw err; });
   return _inflight;
 }
 
-/* Keep only entries that name a program and a planned session time.
-   If none qualify the deployment is stale (window._slotsLive = false), so seats
-   are left unknown instead of showing another event's bookings as "Full". */
+/* 체험별 운영 회차 — 키는 시트 '예약프로그램' 탭의 '키'와 같아야 함 (비우면 모든 회차) */
+function timesOf(key) {
+  const m = (typeof PROGRAM_TIMES !== 'undefined' && PROGRAM_TIMES[key]) || null;
+  return (m && m.length) ? SLOT_TIMES.filter(t => m.indexOf(t) > -1) : SLOT_TIMES;
+}
+
 function normalizeSlots(apiSlots) {
   const byKey = {};
   let live = false;
-
   (Array.isArray(apiSlots) ? apiSlots : []).forEach(s => {
     if (!s || !s.program) return;
     const time = String(s.time || '').trim();
@@ -766,10 +610,9 @@ function normalizeSlots(apiSlots) {
     byKey[s.program + '|' + time] = s;
     live = true;
   });
-
   const out = [];
   PROGRAMS.forEach(p => {
-    SLOT_TIMES.forEach(time => {
+    timesOf(p.key).forEach(time => {
       const s = byKey[p.key + '|' + time];
       if (s) {
         out.push({ program: p.key, time: time,
@@ -781,7 +624,6 @@ function normalizeSlots(apiSlots) {
       }
     });
   });
-
   window._slotsLive = live;
   return out;
 }
@@ -794,21 +636,17 @@ function slotState(s) {
   const full     = !past && !pending && remain <= 0;
   const pct      = (pending || capacity <= 0) ? 0
                  : Math.min(100, Math.round((capacity - remain) / capacity * 100));
-
   let label, cls;
-  if (past)              { label = 'Ended';   cls = 'full'; }
+  if (past)              { label = 'Ended'; cls = 'full'; }
   else if (pending)      { label = 'Checking'; cls = ''; }
-  else if (full)         { label = 'Full';    cls = 'full'; }
-  else if (remain === 1) { label = '1 left';  cls = 'low'; }
-  else                   { label = remain + ' left'; cls = 'ok'; }
-
+  else if (full)         { label = 'Full'; cls = 'full'; }
+  else if (remain === 1) { label = '1 seat left'; cls = 'low'; }
+  else                   { label = remain + ' seats left'; cls = 'ok'; }
   return { capacity, remain, past, full, pending, pct, label, cls,
            bookable: !past && !pending && !full };
 }
 
-function slotProgram(s) {
-  return s.program || PROGRAMS[0].key;   // older API payloads had no program field
-}
+function slotProgram(s) { return s.program || PROGRAMS[0].key; }
 
 function findSlot(slots, program, time) {
   return (slots || []).find(x => slotProgram(x) === program && x.time === time) || null;
@@ -825,222 +663,83 @@ function slotsOf(slots, program) {
 
 function showToast(msg) {
   let el = document.getElementById('slotToast');
-  if (!el) { el = document.createElement('div'); el.id = 'slotToast'; document.body.appendChild(el); }
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'slotToast';
+    document.body.appendChild(el);
+  }
   el.innerHTML = msg;
   el.classList.add('show');
   clearTimeout(window._toastTimer);
   window._toastTimer = setTimeout(() => el.classList.remove('show'), 3800);
 }
 
-/* selectable = the whole row is the picker; one large Book button sits below the list */
-function slotRowsHtml(slots, selectable, hidePast) {
+function slotRowsHtml(slots) {
   let html = '';
   slots.forEach(s => {
-    const st   = slotState(s);
-    const prog = slotProgram(s);
-    if (hidePast && st.past) return;
-
-    const inner =
-      (selectable ? '<span class="slot-check"></span>' : '') +
-      '<span class="slot-time">' + s.time + '</span>' +
-      '<div class="slot-bar-wrap">' +
-        '<div class="slot-bar ' + ((st.full || st.past) ? 'full' : '') +
-        '" style="width:' + (st.past ? 100 : st.pct) + '%"></div>' +
-      '</div>' +
-      '<span class="slot-remain ' + st.cls + '">' + st.label + '</span>';
-
-    if (!selectable) {
-      html += '<div class="slot-row ' + (st.past ? 'past' : '') + '">' + inner + '</div>';
-      return;
-    }
-
-    const picked = (activeProgram === prog && pickedTime() === s.time);
-    html += '<button type="button" class="slot-row' + (st.past ? ' past' : '') +
-              (picked ? ' picked' : '') + '"' + (st.bookable ? '' : ' disabled') +
-              ' onclick="pickSlot(\'' + prog + '\',\'' + s.time + '\')">' + inner + '</button>';
+    const st = slotState(s);
+    html += '<div class="slot-row ' + (st.past ? 'past' : '') + '">' +
+              '<span class="slot-time">' + s.time + '</span>' +
+              '<div class="slot-bar-wrap">' +
+                '<div class="slot-bar ' + ((st.full || st.past) ? 'full' : '') +
+                '" style="width:' + (st.past ? 100 : st.pct) + '%"></div>' +
+              '</div>' +
+              '<span class="slot-remain ' + st.cls + '">' + st.label + '</span>' +
+            '</div>';
   });
   return html;
-}
-
-// ── Picked session, kept per program ──
-const _picked = {};
-function pickedTime() { return _picked[activeProgram] || ''; }
-
-function pickSlot(program, time) {
-  activeProgram = program;
-  _picked[program] = (_picked[program] === time) ? '' : time;
-  renderAllSlotViews();
-}
-
-function goReserveCta() {
-  const time = pickedTime();
-  if (!time) { showToast('Please choose a session first.'); return; }
-  bookSlot(activeProgram, time);
-}
-
-/* Seats left — capped by the materials available for the day */
-function openSeats(progSlots, prog) {
-  let remain = 0, used = 0;
-  progSlots.forEach(s => {
-    const st = slotState(s);
-    if (st.pending) return;
-    if (st.bookable) remain += st.remain;
-    used += (st.capacity - st.remain);
-  });
-  if (!prog.dayLimit) return remain;
-  return Math.min(remain, Math.max(0, prog.dayLimit - used));
-}
-
-function renderProgramTabs(slots) {
-  const el = document.getElementById('progTabs');
-  if (!el) return;
-  el.innerHTML = PROGRAMS.map(p => {
-    const list = slotsOf(slots, p.key);
-    const open = list.filter(x => slotState(x).bookable).length;
-    const cls  = ['prog-tab', p.paid ? 'paid' : '', p.key === activeProgram ? 'active' : '',
-                  (list.length && !open) ? 'soldout' : ''].filter(Boolean).join(' ');
-    return '<button type="button" class="' + cls + '" onclick="selectProgram(\'' + p.key + '\')">' +
-             '<span class="pn">' + p.name + '</span>' +
-             '<span class="pm">' + p.meta + '</span>' +
-           '</button>';
-  }).join('');
-}
-
-function selectProgram(key) {
-  activeProgram = key;
-  if (window._cachedSlots) renderReserveSlots(window._cachedSlots);
-}
-
-function renderReserveSlots(slots) {
-  const el = document.getElementById('reserveSlots');
-  if (!el) return;
-  const fb = document.getElementById('reserveFallback');
-
-  if (!Array.isArray(slots)) {
-    el.innerHTML = '<div style="text-align:center;padding:1.2rem 0;color:var(--ink-soft);font-size:0.85rem;">Could not load availability.</div>';
-    if (fb) fb.style.display = 'block';
-    return;
-  }
-  if (fb) fb.style.display = 'none';
-
-  renderProgramTabs(slots);
-
-  const prog      = programOf(activeProgram);
-  const progSlots = slotsOf(slots, activeProgram);
-  const openSlots = progSlots.filter(s => slotState(s).bookable);
-
-  const capLabel = document.getElementById('slotCapacityLabel');
-  if (capLabel) {
-    capLabel.textContent = progSlots.length ? slotState(progSlots[0]).capacity : prog.capacity;
-  }
-
-  if (!progSlots.length) {
-    el.innerHTML = '<div class="slot-empty" style="color:var(--ink-soft);">No ' + prog.name + ' schedule available.</div>';
-    return;
-  }
-  const live = window._slotsLive !== false;
-
-  if (live && !openSlots.length) {
-    el.innerHTML = '<div class="slot-empty">All ' + prog.name + ' sessions<br>are fully booked.</div>';
-    return;
-  }
-
-  const head = live
-    ? '<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">' +
-      getActiveDateLabel() + ' · ' + openSeats(progSlots, prog) + ' seats left</p>'
-    : '<div class="slot-notice"><b>The booking service is being updated.</b><br>' +
-      'Sessions run as planned on ' + getActiveDateLabel() + ', 13:00–18:30 (eleven 30-minute sessions), ' +
-      'but live seat counts are unavailable right now. Please ask at the booth.</div>' +
-      '<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">' +
-      getActiveDateLabel() + ' · ' + prog.name + ' · eleven 30-min sessions</p>';
-
-  const time = pickedTime();
-  const cta  = '<button type="button" class="cta-btn cta-btn--reserve reserve-cta"' +
-               (time ? '' : ' disabled') + ' onclick="goReserveCta()">' +
-               (time ? 'Book ' + prog.name + ' at ' + time : 'Choose a session above') +
-               '</button>';
-
-  el.innerHTML = head + '<div class="reserve-slot-list">' + slotRowsHtml(progSlots, true, true) + '</div>' + cta;
 }
 
 function bookSlot(program, time) {
   const cached = window._cachedSlots;
   const label  = programOf(program).name + ' ' + time;
-
   if (window._slotsLive === false) {
-    showToast('The booking service is being updated.<br>Please try again shortly.');
+    showToast('Booking server is under maintenance.<br>Please try again shortly.');
     return;
   }
   if (cached && !isSlotBookable(cached, program, time)) {
-    showToast('The <strong>' + label + '</strong> session is fully booked.<br>Please choose another time.');
-    renderAllSlotViews();
+    showToast('<strong>' + label + '</strong> is full.<br>Please choose another time.');
     return;
   }
-
-  // Same-site page — no popup to open, and no popup blocker to fight.
-  // The final capacity check runs server-side on the booking page.
-  goReserve(program, time);
-}
-
-function goReserve(program, time) {
   saveLastSelection(program, time);
-  applySurveyPrefill();
   location.href = makeReserveUrl(program, time);
-}
-
-function renderAllSlotViews() {
-  if (!window._cachedSlots) return;
-  renderReserveSlots(window._cachedSlots);
-  if (document.getElementById('panel-status').classList.contains('active')) {
-    renderStatus(window._cachedSlots);
-  }
-}
-
-function refreshSlots() {
-  fetchData(true)
-    .then(data => {
-      renderReserveSlots(data.slots);
-      renderStockList(window._cachedStock);
-      renderGoodsList(window._cachedGoods);
-      renderAboutSheets(window._cachedStock);
-      if (document.getElementById('panel-status').classList.contains('active')) {
-        renderStatus(data.slots);
-      }
-    })
-    .catch(() => renderReserveSlots(null));
 }
 
 function renderStatus(slots) {
   const last = getLastSelection();
   let html = '';
 
+  if (!window._resOpen) {
+    document.getElementById('statusContent').innerHTML =
+      '<div class="status-loading">No upcoming sessions right now.<br><span style="font-size:0.75rem;opacity:0.6;">Availability will appear here when the next event opens.</span></div>';
+    document.getElementById('updatedAt').textContent = '';
+    return;
+  }
+
   if (last && isSlotBookable(slots, last.program, last.time)) {
     html += '<div style="background:rgba(74,156,140,0.08);border:1px solid rgba(74,156,140,0.25);border-radius:10px;padding:0.7rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">' +
-              '<span style="font-size:0.78rem;color:var(--ink-soft);line-height:1.4;">You were looking at <strong style="color:var(--brush-teal);">' +
-                programOf(last.program).name + ' ' + last.time + '</strong></span>' +
+              '<span style="font-size:0.78rem;color:var(--ink-soft);line-height:1.4;">You picked <strong style="color:var(--brush-teal);">' +
+                programOf(last.program).name + ' ' + last.time + '</strong> earlier</span>' +
               '<button type="button" onclick="bookSlot(\'' + last.program + '\',\'' + last.time + '\')" ' +
                 'style="padding:0.3rem 0.7rem;background:var(--brush-teal);color:white;border:none;border-radius:6px;font-family:\'Noto Sans KR\',sans-serif;font-size:0.72rem;font-weight:500;cursor:pointer;white-space:nowrap;">' +
-                'Resume</button>' +
+                'Continue</button>' +
             '</div>';
   }
 
   if (window._slotsLive === false) {
-    html += '<div class="slot-notice"><b>The booking service is being updated.</b><br>' +
-            'The sessions below follow the event plan (eleven 30-minute sessions); ' +
-            'live seat counts will appear shortly.</div>';
+    html += '<div class="slot-notice"><b>Booking server is under maintenance.</b><br>' +
+            'Live availability will appear shortly.</div>';
   }
 
-  html += '<p style="font-size:0.78rem;font-weight:500;color:var(--brush-teal);letter-spacing:0.06em;margin-bottom:0.6rem;padding-left:0.2rem;">' +
-          getActiveDateLabel() + '</p>';
+  html += '<p class="status-date-label">' + EVENT_DATE + '</p>';
 
   const totalRemain = PROGRAMS.reduce((sum, p) =>
     sum + slotsOf(slots, p.key).filter(x => slotState(x).bookable)
                                .reduce((a, x) => a + slotState(x).remain, 0), 0);
 
-  html += '<div style="background:white;border:1px solid rgba(74,156,140,0.2);border-radius:12px;padding:0.9rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;">' +
-            '<span style="font-size:0.82rem;color:var(--ink-soft);">Seats available now</span>' +
-            '<span style="font-size:1.3rem;font-weight:700;color:var(--brush-teal);">' + totalRemain +
-              '<span style="font-size:0.8rem;font-weight:400;color:var(--ink-soft);"> remaining</span></span>' +
+  html += '<div class="status-summary">' +
+            '<span class="summary-text">Seats available now</span>' +
+            '<span class="summary-num">' + totalRemain + '<span> seats</span></span>' +
           '</div>';
 
   PROGRAMS.forEach(p => {
@@ -1048,23 +747,20 @@ function renderStatus(slots) {
     if (!list.length) return;
     const open = list.filter(x => slotState(x).bookable)
                      .reduce((a, x) => a + slotState(x).remain, 0);
-    html += '<p style="font-size:0.78rem;font-weight:500;letter-spacing:0.06em;margin:0.9rem 0 0.6rem;padding-left:0.2rem;color:' +
+    html += '<p class="status-date-label" style="margin-top:0.9rem;color:' +
               (p.paid ? 'var(--brush-blue)' : 'var(--brush-teal)') + ';">' +
               p.name + ' · ' + p.meta + ' · ' + open + ' left</p>' +
-            '<div style="background:white;border:1px solid rgba(74,156,140,0.2);border-radius:12px;overflow:hidden;margin-bottom:0.4rem;">' +
-              slotRowsHtml(list, false, false) + '</div>';
+            '<div class="slot-list">' + slotRowsHtml(list) + '</div>';
   });
 
   document.getElementById('statusContent').innerHTML = html;
 
   const kst = getKST();
-  const timeStr = 'Updated at ' + kst.getHours() + ':' + String(kst.getMinutes()).padStart(2,'0') + ' KST';
-  document.getElementById('updatedAt').textContent = timeStr;
-  const g = document.getElementById('globalUpdatedAt');
-  if (g) g.textContent = timeStr;
+  document.getElementById('updatedAt').textContent =
+    kst.getHours() + ':' + String(kst.getMinutes()).padStart(2,'0') + ' (KST)';
 }
 
-// ── Goods and frames ──
+// ── 굿즈 · 액자 잔여 ──
 function buildGoodsMap(arr) {
   if (!Array.isArray(arr)) return null;
   const map = {};
@@ -1087,128 +783,50 @@ function renderGoodsList(goodsMap) {
                '<span class="goods-price">' + g.note + '</span>' +
              '</div>' +
              '<span class="stock-badge ' + info.cls + '">' + info.label + '</span>' +
-             '<span class="stock-count">' + info.countLabel + '</span>' +
+             '<span class="stock-count">' + info.countLabel.replace('장', '개') + '</span>' +
            '</div>';
   }).join('');
-  renderFramePill(goodsMap);
-}
-
-// Frames are a single first-come counter, not a per-session capacity
-function renderFramePill(goodsMap) {
-  const el = document.getElementById('framePill');
-  if (!el) return;
-  const remain = goodsRemain(goodsMap, '액자');
-  el.classList.remove('low', 'out');
-  if (remain === 0) {
-    el.textContent = 'Frames gone';
-    el.classList.add('out');
-  } else {
-    el.textContent = remain + ' frames left';
-    if (remain <= 5) el.classList.add('low');
-  }
-  const btn = document.getElementById('snsBtn');
-  if (btn) {
-    btn.style.opacity = remain === 0 ? '0.5' : '';
-    btn.textContent = remain === 0
-      ? 'Frames are gone — posts still welcome'
-      : 'Open the verification form';
-  }
-}
-
-function buildStockMap(sheetStockArr) {
-  if (!Array.isArray(sheetStockArr)) return null;
-  const map = {};
-  sheetStockArr.forEach(item => { map[item.key] = item.remain; });
-  return map;
-}
-
-function loadAllData() {
-  renderStockList(null);
-  renderGoodsList(null);
-  renderAboutSheets(null);
-  fetchData(true)
-    .then(data => {
-      renderStockList(window._cachedStock);
-      renderGoodsList(window._cachedGoods);
-      renderAboutSheets(window._cachedStock);
-      renderReserveSlots(data.slots);
-    })
-    .catch(() => { renderReserveSlots(null); });
 }
 
 function loadStatus() {
-  document.getElementById('statusContent').innerHTML =
-    '<div style="text-align:center;padding:2rem;color:var(--ink-soft);font-size:0.85rem;">Loading availability…<br><span style="font-size:0.75rem;opacity:0.6;">Please wait</span></div>';
+  if (window._cachedSlots) {
+    renderStatus(window._cachedSlots);
+  } else if (!paintFromCache()) {
+    document.getElementById('statusContent').innerHTML =
+      '<div class="status-loading">Loading availability...<br><span style="font-size:0.75rem;opacity:0.6;">Please wait</span></div>';
+  } else {
+    renderStatus(window._cachedSlots);
+  }
   fetchData(false)
     .then(data => {
+      renderStatus(data.slots);
       renderStockList(window._cachedStock);
       renderGoodsList(window._cachedGoods);
       renderAboutSheets(window._cachedStock);
-      renderStatus(data.slots);
-      renderReserveSlots(data.slots);
     })
     .catch(() => {
+      if (window._cachedSlots) return;
       document.getElementById('statusContent').innerHTML =
-        '<div style="text-align:center;padding:2rem;color:var(--ink-soft);font-size:0.85rem;">Could not load availability.<br>Please try again shortly.</div>';
+        '<div class="status-loading">Could not load availability.<br>Please try again shortly.</div>';
     });
 }
 
 window.addEventListener('load', () => {
-  loadAllData();
-  applySurveyPrefill();
-  const kst = getKST();
-  const g = document.getElementById('globalUpdatedAt');
-  if (g) g.textContent = `Updated at ${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} KST`;
-
-  setInterval(() => {
-    if (document.hidden) return;
-    fetchData(true)
-      .then(data => {
-        renderReserveSlots(data.slots);
-        if (document.getElementById('panel-status').classList.contains('active')) {
-          renderStatus(data.slots);
-          renderStockList(window._cachedStock);
-          renderGoodsList(window._cachedGoods);
-        }
-      })
-      .catch(() => {});
-  }, 60000);
-});
-
-/* 설문 영역은 기본으로 감춰두고, 테스트할 때만 연다.
-   주소에 k=0919 또는 test=1 이 있으면 보이고, 설문 링크에도 그 값을 넘겨준다. */
-(function () {
-  var q, on;
-  try {
-    q  = new URLSearchParams(location.search);
-    on = q.get('test') === '1' || q.get('k') === '0919';
-  } catch (e) { return; }
-  if (!on) return;
-
-  function open_() {
-    document.querySelectorAll('[data-testonly]').forEach(function (el) {
-      /* 인라인 스타일로는 스타일시트의 display:none 을 못 이긴다. 속성을 떼어 규칙에서 벗어난다. */
-      el.removeAttribute('data-testonly');
-      if (!el.querySelector('.testonly-note')) {
-        var note = document.createElement('p');
-        note.className = 'testonly-note';
-        note.textContent = '테스트 전용 — 손님 화면에는 보이지 않습니다.';
-        el.insertBefore(note, el.firstChild);
-      }
-    });
-    /* 이 페이지의 본 스크립트가 나중에 설문 버튼의 주소를 다시 쓴다. 그 뒤에 한 번 더 붙인다. */
-    document.querySelectorAll('a[href*="survey.html"]').forEach(function (a) {
-      if (a.href.indexOf('test=1') === -1) {
-        a.href += (a.href.indexOf('?') === -1 ? '?' : '&') + 'test=1';
-      }
-    });
+  renderStockList(null);
+  renderGoodsList(null);
+  renderAboutSheets(null);
+  paintFromCache();
+  fetchData(true)
+    .then(() => {
+      renderAboutSheets(window._cachedStock);
+      renderStockList(window._cachedStock);
+      renderGoodsList(window._cachedGoods);
+    })
+    .catch(() => {});
+  if (getLastSelection()) {
+    document.querySelector('.tab-btn:nth-child(2)').textContent = 'Availability •';
   }
-
-  open_();
-  window.addEventListener('load', open_);
-  setTimeout(open_, 1500);
-})();
+});
 </script>
-
 </body>
 </html>

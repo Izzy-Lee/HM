@@ -591,6 +591,12 @@ function fetchData(force) {
   return _inflight;
 }
 
+/* 체험별 운영 회차 — 키는 시트 '예약프로그램' 탭의 '키'와 같아야 함 (비우면 모든 회차) */
+function timesOf(key) {
+  const m = (typeof PROGRAM_TIMES !== 'undefined' && PROGRAM_TIMES[key]) || null;
+  return (m && m.length) ? SLOT_TIMES.filter(t => m.indexOf(t) > -1) : SLOT_TIMES;
+}
+
 function normalizeSlots(apiSlots) {
   const byKey = {};
   let live = false;
@@ -604,7 +610,7 @@ function normalizeSlots(apiSlots) {
   });
   const out = [];
   PROGRAMS.forEach(p => {
-    SLOT_TIMES.forEach(time => {
+    timesOf(p.key).forEach(time => {
       const s = byKey[p.key + '|' + time];
       if (s) {
         out.push({ program: p.key, time: time,

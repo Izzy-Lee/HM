@@ -1,1050 +1,277 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>헬로미추 체험 설문</title>
-<meta name="robots" content="noindex">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- 폰트는 렌더링을 막지 않게 나중에 적용한다. 부스 네트워크가 느려도
-     시스템 폰트로 화면이 먼저 뜬다. -->
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap"
-      onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap"></noscript>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>수업 만족도 설문 · 헬로미추</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
-  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-  :root{
-    --ink:#14100b; --soft:#5f5346; --faint:#8b7f70;
-    --paper:#f6f2ea; --surface:#fff; --sunk:#efe9de;
-    --teal:#14796a; --teal-bg:#e4f0ec; --amber:#b8620f; --red:#b23838;
-    --rule:#ddd4c6;
-  }
-  body{
-    background:var(--paper); color:var(--ink);
-    font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;
-    font-size:15px; line-height:1.7; padding:0 0 7rem; max-width:560px; margin:0 auto;
-    -webkit-text-size-adjust:100%;
-  }
-
-  /* 진행률 */
-  .top{ position:sticky; top:0; z-index:20; background:var(--paper); padding:.9rem .95rem .5rem; }
-  .top .row{ display:flex; align-items:baseline; justify-content:space-between; gap:.6rem; margin-bottom:.45rem; }
-  .top .who{ font-size:.72rem; font-weight:700; color:var(--teal); letter-spacing:.04em; }
-  .top .cnt{ font-size:.7rem; color:var(--faint); font-variant-numeric:tabular-nums; }
-  .prog{ height:5px; background:var(--sunk); border-radius:3px; overflow:hidden; }
-  .prog i{ display:block; height:100%; background:var(--teal); border-radius:3px; width:0; transition:width .35s ease; }
-
-  .pane{ padding:.6rem .95rem 0; }
-  h1{ font-family:'Nanum Myeongjo',serif; font-size:1.4rem; font-weight:800; line-height:1.35; margin-bottom:.5rem; }
-  h2{ font-family:'Nanum Myeongjo',serif; font-size:1.15rem; font-weight:700; margin:.2rem 0 .25rem; }
-  .sdesc{ font-size:.82rem; color:var(--soft); margin-bottom:1.1rem; }
-
-  .q{ background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:.95rem 1rem; margin-bottom:.75rem; }
-  .q > .label{ font-size:.92rem; font-weight:700; line-height:1.55; margin-bottom:.65rem; }
-  .q .req{ color:var(--red); font-weight:700; margin-left:.15rem; }
-  .q.miss{ border-color:var(--red); background:#fdf3f2; }
-  .hint{ font-size:.75rem; color:var(--faint); font-weight:400; display:block; margin-top:.15rem; }
-
-  .opts{ display:flex; flex-direction:column; gap:.45rem; }
-  .opts.grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(104px,1fr)); }
-  .opt{
-    display:flex; align-items:center; gap:.55rem; min-height:50px; padding:.5rem .75rem;
-    border:1.5px solid var(--rule); border-radius:9px; background:var(--paper);
-    font-size:.87rem; cursor:pointer; line-height:1.45; user-select:none;
-  }
-  .opt .box{
-    flex:none; width:21px; height:21px; border:2px solid var(--rule); background:#fff;
-    border-radius:50%; position:relative;
-  }
-  .opt.multi .box{ border-radius:5px; }
-  .opt.on{ border-color:var(--teal); background:var(--teal-bg); font-weight:700; }
-  .opt.on .box{ border-color:var(--teal); background:var(--teal); }
-  .opt.on .box::after{
-    content:''; position:absolute; left:50%; top:47%; transform:translate(-50%,-50%) rotate(-45deg);
-    width:9px; height:5px; border:2px solid #fff; border-top:0; border-right:0;
-  }
-  input[type=text], input[type=email], textarea{
-    width:100%; font-family:inherit; font-size:.88rem; color:var(--ink);
-    background:var(--paper); border:1.5px solid var(--rule); border-radius:9px;
-    padding:.6rem .7rem; margin-top:.5rem; line-height:1.6;
-  }
-  textarea{ min-height:82px; resize:vertical; }
-  input:focus, textarea:focus{ outline:2px solid var(--teal); outline-offset:1px; border-color:var(--teal); }
-  .count{ font-size:.7rem; color:var(--faint); text-align:right; margin-top:.2rem; font-variant-numeric:tabular-nums; }
-
-  .photo-btn{
-    width:100%; min-height:56px; border:2px dashed var(--teal); background:var(--teal-bg);
-    border-radius:11px; font-family:inherit; font-size:.92rem; font-weight:700; color:var(--teal); cursor:pointer;
-  }
-  .photo-btn.on{ border-style:solid; }
-  .photo-state{ font-size:.75rem; color:var(--soft); margin-top:.4rem; text-align:center; min-height:1.2em; }
-  .photo-prev{ display:block; width:100%; max-height:260px; object-fit:contain; margin-top:.6rem;
-               border:1px solid var(--rule); border-radius:9px; background:var(--paper); }
-
-  /* 5점 척도 */
-  .mrow{ padding:.6rem 0; border-bottom:1px solid rgba(90,78,66,.09); }
-  .mrow:last-child{ border-bottom:none; padding-bottom:0; }
-  .mrow .mlabel{ font-size:.85rem; font-weight:500; margin-bottom:.45rem; }
-  .scale{ display:grid; grid-template-columns:repeat(5,1fr); gap:.3rem; }
-  .scale button{
-    min-height:52px; border:1.5px solid var(--rule); background:var(--paper); border-radius:8px;
-    font-family:inherit; font-size:.66rem; font-weight:500; color:var(--soft); cursor:pointer;
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.15rem; padding:.2rem .1rem;
-    line-height:1.25;
-  }
-  .scale button .dot{ font-size:.95rem; font-weight:700; }
-  .scale button.on{ border-color:var(--teal); background:var(--teal); color:#fff; font-weight:700; }
-
-  /* 하단 이동 */
-  .nav{
-    position:fixed; left:0; right:0; bottom:0; z-index:30; max-width:560px; margin:0 auto;
-    display:flex; gap:.6rem; padding:.7rem .95rem calc(.7rem + env(safe-area-inset-bottom));
-    background:rgba(246,242,234,.97); border-top:1px solid var(--rule);
-  }
-  .nav button{
-    min-height:56px; border-radius:11px; font-family:inherit; font-size:1rem; font-weight:700; cursor:pointer;
-    border:2px solid var(--teal);
-  }
-  .nav .prev{ flex:none; padding:0 1.1rem; background:var(--surface); color:var(--teal); }
-  .nav .next{ flex:1; background:var(--teal); color:#fff; }
-  .nav button:disabled{ opacity:.45; }
-
-  /* 완료 */
-  .done{ padding:2.5rem 1.2rem; text-align:center; }
-  .done .mark{ font-size:2.6rem; line-height:1; margin-bottom:.7rem; }
-  .done h1{ margin-bottom:.5rem; }
-  .done p{ font-size:.88rem; color:var(--soft); line-height:1.8; }
-  .code{
-    margin:1.4rem auto 0; max-width:340px; background:var(--surface);
-    border:2px dashed var(--teal); border-radius:14px; padding:1.2rem 1rem;
-  }
-  .code .cl{ font-size:.72rem; font-weight:700; color:var(--teal); letter-spacing:.1em; }
-  .code .cv{
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:2.1rem; font-weight:700;
-    letter-spacing:.06em; margin:.35rem 0 .3rem;
-  }
-  .code .cd{ font-size:.8rem; color:var(--soft); line-height:1.65; }
-  .pend{ background:#fff3e0; border:1px solid #e0b184; color:#7a5000; border-radius:9px;
-         padding:.7rem .85rem; font-size:.78rem; margin-top:1rem; line-height:1.6; }
-  /* 전송이 안 될 때 캡처 한 장으로 원인을 알 수 있게, 진짜 사유를 그대로 적는다 */
-  .pend .why{ margin-top:.5rem; padding-top:.5rem; border-top:1px dashed #e0b184;
-              font-size:.7rem; color:#8a6520; word-break:break-all; }
-  .foot .bld{ opacity:.55; }
-
-  .pick{ padding:1.4rem .95rem; }
-  .pick .pb{
-    display:block; width:100%; text-align:left; background:var(--surface); border:1.5px solid var(--rule);
-    border-radius:12px; padding:1rem 1.05rem; margin-bottom:.65rem; font-family:inherit; cursor:pointer; color:var(--ink);
-  }
-  .pick .pb .t{ font-size:1rem; font-weight:700; }
-  .pick .pb .d{ font-size:.78rem; color:var(--soft); margin-top:.15rem; }
-  .pick .pb .g{ font-size:.72rem; color:var(--amber); font-weight:700; margin-top:.3rem; }
-
-  .err{ background:#fdecea; border:1px solid var(--red); color:var(--red); border-radius:9px;
-        padding:.7rem .85rem; font-size:.8rem; margin:0 .95rem .8rem; line-height:1.6; display:none; }
-  .err.on{ display:block; }
-  .foot{ font-size:.7rem; color:var(--faint); text-align:center; padding:1.6rem .95rem 0; line-height:1.7; }
+:root{
+  --pink:#F4B8C8; --pink-soft:#FCE9EE; --pink-deep:#E8859F;
+  --ink:#141414; --ink-2:#555; --line:#E7E2E3; --bg:#FFFBFC; --white:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:Pretendard,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;padding:0 16px 80px}
+.wrap{max-width:640px;margin:0 auto}
+header.top{display:flex;align-items:center;justify-content:space-between;padding:18px 0 10px}
+.logo{font-weight:800;letter-spacing:-.02em;font-size:15px}
+.logo img{height:26px;display:block}
+.logo span{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--pink);margin-right:6px;vertical-align:1px}
+.progress{height:4px;background:var(--pink-soft);border-radius:4px;overflow:hidden;margin-bottom:22px}
+.progress i{display:block;height:100%;width:0;background:var(--ink);transition:width .35s}
+.hero{background:var(--ink);color:#fff;border-radius:22px;padding:28px 24px;margin-bottom:18px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:var(--pink);opacity:.9}
+.hero small{display:block;color:var(--pink);font-weight:700;font-size:13px;margin-bottom:10px;position:relative;z-index:1}
+.hero h1{font-size:24px;line-height:1.35;letter-spacing:-.03em;position:relative;z-index:1;max-width:85%}
+.hero p{margin-top:12px;color:#ddd;font-size:14px;position:relative;z-index:1}
+.card{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:22px 20px;margin-bottom:14px}
+.card h2{font-size:18px;letter-spacing:-.02em;margin-bottom:6px}
+.muted{color:var(--ink-2);font-size:14px;line-height:1.6}
+label.f{display:block;font-size:13px;font-weight:700;margin:14px 0 6px}
+input[type=text],input[type=date],textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
+input:focus,textarea:focus{outline:none;border-color:var(--ink)}
+textarea{min-height:92px;resize:vertical;line-height:1.55}
+.types{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.type{border:1.5px solid var(--line);background:#fff;border-radius:16px;padding:18px 14px;text-align:left;font:inherit;cursor:pointer;transition:.15s}
+.type b{display:block;font-size:16px;margin-bottom:4px}
+.type span{font-size:12.5px;color:var(--ink-2)}
+.type:hover{border-color:var(--pink-deep)}
+.type.on{border-color:var(--ink);background:var(--pink-soft);box-shadow:inset 0 0 0 1px var(--ink)}
+.q{padding:20px 0;border-top:1px solid var(--line)}
+.q:first-of-type{border-top:0;padding-top:4px}
+.q .t{font-weight:700;font-size:16px;line-height:1.45;margin-bottom:12px}
+.q .t em{font-style:normal;color:var(--pink-deep);margin-right:6px}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.scale button{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 2px 8px;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:64px;transition:.12s}
+.scale button .n{font-size:17px;font-weight:800}
+.scale button .face{font-size:26px;line-height:1}
+.scale button .l{font-size:10.5px;color:var(--ink-2);line-height:1.25;text-align:center;word-break:keep-all}
+.scale button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.scale button.on .l{color:var(--pink)}
+.q.miss .t{color:#C0392B}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:17px;font:inherit;font-size:16px;font-weight:800;cursor:pointer;background:var(--ink);color:#fff;margin-top:8px}
+.btn:disabled{opacity:.35;cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line);font-weight:700}
+.row{display:flex;gap:8px}
+.row .btn{flex:1}
+.step{display:none}
+.step.on{display:block;animation:up .3s ease}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.notice{background:#FFF4D6;border:1px solid #F1D98A;color:#6B5310;border-radius:12px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+.done{text-align:center;padding:40px 20px}
+.done .dot{width:72px;height:72px;border-radius:50%;background:var(--pink);margin:0 auto 18px;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900}
+.err{color:#C0392B;font-size:13px;margin-top:10px;min-height:18px}
+.classLine{display:none;font-size:13px;color:var(--ink-2);margin:0 4px 10px}
+.classLine b{color:var(--ink);font-size:16px;display:block;margin-top:2px;letter-spacing:-.02em}
+footer{text-align:center;color:#999;font-size:12px;margin-top:30px}
+@media (min-width:600px){ .types{grid-template-columns:1fr 1fr} .hero h1{font-size:28px} }
 </style>
 </head>
 <body>
+<div class="wrap">
+  <header class="top"><div class="logo" id="logo"><span></span>Artable</div><div class="muted" id="stepLabel" style="font-size:12px"></div></header>
+  <div class="progress"><i id="bar"></i></div>
+  <div class="notice" id="demoNotice">미리보기 모드예요. config.js에 Apps Script 주소를 넣기 전에는 응답이 저장되지 않아요.</div>
 
-<div id="root"></div>
-<div class="foot" id="foot">
-  수집된 정보는 상품 개발 및 마케팅 목적으로만 활용됩니다.<br>주식회사 헬로미추
-  <br><span class="bld" id="bld"></span>
+  <!-- STEP 0 : 인트로 -->
+  <section class="step on" id="s0">
+    <div class="hero">
+      <small id="heroOrg">수업 만족도 설문</small>
+      <h1 id="heroTitle">오늘 수업은 어떠셨나요?</h1>
+      <p id="heroDate">1분이면 끝나요. 솔직한 이야기가 다음 수업을 더 좋게 만들어요.</p>
+    </div>
+    <div class="card" id="manualClass" style="display:none">
+      <h2>수업 정보</h2>
+      <p class="muted">참여하신 수업 이름을 적어 주세요.</p>
+      <label class="f" for="inClassName">수업명</label>
+      <input type="text" id="inClassName" placeholder="예: 수채화 원데이 클래스">
+      <label class="f" for="inClassDate">수업일</label>
+      <input type="date" id="inClassDate">
+    </div>
+    <div class="card" id="typeCard">
+      <h2>누가 응답하나요?</h2>
+      <p class="muted">해당하는 것을 하나 골라 주세요.</p>
+      <div class="types" id="typeBox"></div>
+    </div>
+    <button class="btn" id="startBtn" disabled>시작하기</button>
+    <div class="err" id="err0"></div>
+  </section>
+
+  <!-- STEP 1 : 점수 문항 -->
+  <section class="step" id="sLoad"><div class="card" style="text-align:center;padding:60px 20px"><p class="muted">수업 정보를 불러오는 중…</p></div></section>
+
+  <section class="step" id="s1">
+    <div class="classLine" id="classLine"></div>
+    <div class="card" id="qBox"></div>
+    <div class="row"><button class="btn ghost" data-go="0" id="back1">이전</button><button class="btn" id="next1">다음</button></div>
+    <div class="err" id="err1"></div>
+  </section>
+
+  <!-- STEP 2 : 서술 문항 -->
+  <section class="step" id="s2">
+    <div class="card" id="oBox"></div>
+    <div class="row"><button class="btn ghost" data-go="1">이전</button><button class="btn" id="submitBtn">제출하기</button></div>
+    <div class="err" id="err2"></div>
+  </section>
+
+  <!-- STEP 3 : 완료 -->
+  <section class="step" id="s3">
+    <div class="card done">
+      <div class="dot">✓</div>
+      <h2 id="doneTitle">소중한 의견 고마워요!</h2>
+      <p class="muted" style="margin-top:8px" id="doneMsg">남겨주신 이야기는 다음 수업 준비에 꼭 반영할게요.</p>
+      <button class="btn ghost" style="margin-top:24px" id="againBtn">다른 사람도 응답하기</button>
+    </div>
+  </section>
+
+  <footer id="foot">주식회사 헬로미추 · Hello Michu</footer>
 </div>
 
+<script src="config.js"></script>
 <script>
-'use strict';
+(function(){
+  var P = new URLSearchParams(location.search);
+  var S = { cls: (P.get('cls')||'').trim(), className:'', classDate:'', type:'', ans:{} };
+  var $ = function(id){ return document.getElementById(id); };
+  var FACES = ['😣','🙁','😐','🙂','😍'];
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
+  if (!apiReady()) $('demoNotice').style.display = 'block';
+  /* 브랜드 */
+  document.title = '수업 만족도 설문 · ' + BRAND.name;
+  if (BRAND.logoImg) { $('logo').innerHTML = '<img alt="">'; $('logo').firstChild.src = BRAND.logoImg; $('logo').firstChild.alt = BRAND.name; }
+  else $('logo').lastChild.textContent = BRAND.logoText || BRAND.name;
+  $('foot').textContent = BRAND.footer || BRAND.name;
 
-const QS   = new URLSearchParams(location.search);
-const SLOT = QS.get('slot') || '';
-const NAME = QS.get('name') || '';
-
-/* ── 공통 문항 ─────────────────────────────────────────────── */
-const SCALE5 = ['매우 만족','만족','보통','불만족','매우 불만족'];
-
-const PART0 = {
-  title:'응답자 기본 정보', desc:'네 가지만 여쭙겠습니다.',
-  items:[
-    { k:'Q1 성별', t:'radio', grid:true, req:true, o:['남성','여성','기타/미응답'] },
-    { k:'Q2 연령대', t:'radio', grid:true, req:true, o:['10대','20대','30대','40대','50대 이상'] },
-    { k:'Q3 거주 지역', t:'radio', grid:true, req:true, o:['서울','경기/인천','기타 수도권','비수도권','외국인 관광객'] },
-    { k:'Q4 참여 경로', t:'radio', req:true, o:['지인 추천','SNS 홍보','현장 안내','관광두레 홍보물'], etc:true }
-  ]
-};
-
-const PRODUCT_WISH = { k:'추가되면 좋을 상품', t:'multi', o:[
-  '인천 여행지 컬러링북 세트','어린이용 수채화 체험 키트','여행지 데코스티커 세트',
-  '엽서·포스터 아트프린트','지역 한정 굿즈 (머그, 파우치 등)','온라인 컬러링 클래스'] };
-const PRODUCT_IDEA  = { k:'원하는 상품 아이디어', t:'text', ph:'자유롭게 적어주세요' };
-const BRAND_IMPRESS = { k:'브랜드 전반적 인상', t:'radio', req:true, grid:true, o:['매우 긍정적','긍정적','보통','부정적'] };
-const NEWS = { k:'소식 수신 동의', t:'radio', o:['예','아니오'], follow:{ on:'예', k:'연락처 또는 이메일', ph:'휴대폰 번호 또는 이메일' } };
-const GIFT_SITUATION = { k:'선물하기 적합한 상황', t:'multi', o:[
-  '여행 기념품','지인 생일 선물','어린이 선물','관광지 기념품','명절·행사 선물'], etc:true };
-const AWARENESS = { k:'A-1 헬로미추 사전 인지도', t:'radio', req:true, o:[
-  '오늘 처음 알게 됐다','이름은 들어봤지만 자세히는 몰랐다','알고 있었다'] };
-const REGION_INTEREST = { k:'A-3 인천·미추홀 관심도', t:'radio', grid:true, req:true, o:[
-  '매우 관심 있음','어느 정도 관심 있음','보통','별로 관심 없음'] };
-const PRICE4 = ['매우 저렴하다','적절하다','조금 비싼 편이다','많이 비싸다'];
-const PRICE5 = PRICE4.concat(['매우 비싸다']);
-
-/* ── 설문 4종 ──────────────────────────────────────────────── */
-const SURVEYS = {
-
-  coloring: {
-    name:'컬러링 체험', head:'수채화 컬러링키트 체험 설문',
-    lead:'오늘 체험해 주셔서 감사합니다. 약 5분이면 끝납니다.',
-    sections:[
-      PART0,
-      { title:'체험 전 인식', desc:'체험하시기 전 상황을 여쭙겠습니다.', items:[
-        AWARENESS,
-        { k:'A-2 수채화·컬러링 경험', t:'radio', req:true, o:['자주 한다 (월 1회 이상)','가끔 한다','오늘이 처음이다'] },
-        REGION_INTEREST ]},
-      { title:'체험 만족도', desc:'컬러링키트를 직접 체험하신 후 평가해 주세요.', items:[
-        { k:'B-1', t:'matrix', label:'체험 운영 및 키트 구성', scale:SCALE5, req:true, rows:[
-          '키트 사용 편리성 (바인더·팔레트·붓)','체험 도안(그림 주제)의 매력도','체험 시간의 적절성',
-          '부스 공간 분위기 및 스태프 안내','전반적인 체험 만족도'] },
-        { k:'B-1a 인상 깊었던 점', t:'text', ph:'가장 인상 깊었던 점은 무엇인가요?' },
-        { k:'B-1b 개선했으면 하는 점', t:'text', ph:'불편하거나 개선되었으면 하는 점' },
-        { k:'B-2 도안 스토리텔링 공감도', t:'radio', req:true, o:['매우 공감','공감함','보통','별로 공감 안 됨','전혀 공감 안 됨'],
-          label:'체험한 도안에 담긴 인천·미추홀 이야기가 얼마나 공감되셨나요?' },
-        { k:'B-2a 원하는 인천 장소·이야기', t:'text', ph:'예: 차이나타운, 자유공원, 소래포구' } ]},
-      { title:'상품 인식 및 구매 의향', desc:'체험하신 컬러링키트 상품에 대한 의견입니다.', items:[
-        { k:'C-1', t:'matrix', label:'상품 심미적 매력도', scale:SCALE5, req:true, rows:[
-          '전체적인 디자인과 일러스트','색감 및 인쇄·제작 품질','인천 여행지 테마 표현도',
-          '패키지(박스·파우치) 디자인','기념품·선물용으로서의 완성도'] },
-        { k:'C-1a 디자인 좋았던 점·아쉬운 점', t:'text', ph:'각각 적어주세요' },
-        { k:'C-2 구매 의향', t:'radio', req:true, o:[
-          '지금 바로 구매하고 싶다','목적이 생기면 구매하고 싶다','잘 모르겠다','구매 의향 없다'] },
-        { k:'C-2a 구매 고려 이유', t:'multi', o:[
-          '디자인이 예쁘다','인천 여행지 테마가 마음에 든다','사용이 간편하다','선물용으로 좋다',
-          '휴대하기 좋다','직접 색칠하는 재미'], etc:true },
-        { k:'C-2b 구매 의향이 없는 이유', t:'text', ph:'있다면 적어주세요' },
-        { k:'C-3 상품 가격 적정성', t:'radio', req:true, o:PRICE5, label:'상품 가격 적정성 <span class="hint">컬러링 체험은 무료로 운영됩니다. 키트를 상품으로 판매한다면 어떨지 답해 주세요.</span>' },
-        { k:'C-3a 그렇게 생각한 이유·적정 가격대', t:'text', ph:'적정하다고 느끼는 가격대가 있다면' },
-        GIFT_SITUATION,
-        { k:'C-5 타 기념품 대비 차별점', t:'multi', o:[
-          '직접 체험·참여할 수 있는 콘텐츠','인천 지역 스토리가 담긴 테마','휴대·보관이 편리한 구성',
-          '감각적인 일러스트 디자인','어른·아이 모두 즐길 수 있음','정교한 제작과 예술적 가치'] },
-        { k:'C-5a 차별화 아이디어', t:'text', ph:'권하고 싶은 아이디어가 있다면' } ]},
-      { title:'향후 상품 개발 의견', desc:'헬로미추의 다음 상품을 함께 만들어 주세요.', items:[
-        PRODUCT_WISH, PRODUCT_IDEA,
-        { k:'D-2 재참여 의향', t:'radio', grid:true, req:true, o:['매우 긍정적','긍정적','보통','부정적'] },
-        NEWS ]},
-      { title:'종합 의견', desc:'마지막입니다.', items:[
-        BRAND_IMPRESS,
-        { k:'E-1a 브랜드에 바라는 점', t:'text', ph:'바라는 점이나 상품 아이디어' },
-        { k:'E-1b 자유 의견', t:'text', ph:'오늘 체험 전반에 대한 자유 의견' } ]}
-    ]
-  },
-
-  binder: {
-    name:'자개바인더 체험', head:'자개바인더 체험 설문',
-    lead:'오늘 체험해 주셔서 감사합니다. 약 5분이면 끝납니다.',
-    sections:[
-      PART0,
-      { title:'체험 전 인식', desc:'체험하시기 전 상황을 여쭙겠습니다.', items:[
-        AWARENESS,
-        { k:'A-2 자개공예·만들기 경험', t:'radio', req:true, o:['자주 한다 (월 1회 이상)','가끔 한다','오늘이 처음이다'] },
-        REGION_INTEREST ]},
-      { title:'자개바인더 체험 만족도', desc:'직접 체험하신 후 평가해 주세요.', items:[
-        { k:'B-1', t:'matrix', label:'체험 만족도', scale:SCALE5, req:true, rows:[
-          '자개 패턴 및 디자인 매력도','체험 난이도 적절성','체험 시간(30분)의 적절성',
-          '재료(자개·레진) 품질','완성품(바인더)의 만족도'] },
-        { k:'B-1a 인상 깊었던 점', t:'text', ph:'가장 인상 깊었던 점은 무엇인가요?' },
-        { k:'B-1b 개선했으면 하는 점', t:'text', ph:'불편하거나 개선되었으면 하는 점' } ]},
-      { title:'가격 및 구매 의향', desc:'체험과 상품에 대한 의견입니다.', items:[
-        { k:'C-1 체험 가격 적정성', t:'radio', req:true, o:PRICE4, label:'자개바인더 체험 가격 적정성 <span class="hint">체험가 30,000원</span>' },
-        { k:'C-1a 적정 가격대', t:'short', ph:'예: 15,000원' },
-        { k:'C-2 완성품 구매 의향', t:'radio', req:true, o:[
-          '지금 바로 구매하고 싶다','목적이 생기면 구매하고 싶다','잘 모르겠다','구매 의향 없다'] },
-        { k:'C-2a 구매 고려 이유', t:'multi', o:[
-          '자개 디자인이 아름답다','인천·미추홀 테마가 마음에 든다','직접 만드는 재미',
-          '선물용으로 좋다','실용적이다'], etc:true },
-        { k:'C-2b 구매 의향이 없는 이유', t:'text', ph:'있다면 적어주세요' },
-        GIFT_SITUATION ]},
-      { title:'향후 상품 개발 의견', desc:'헬로미추의 다음 상품을 함께 만들어 주세요.', items:[
-        PRODUCT_WISH, PRODUCT_IDEA,
-        { k:'D-2 재참여 의향', t:'radio', grid:true, req:true, o:['매우 긍정적','긍정적','보통','부정적'] },
-        NEWS ]},
-      { title:'종합 의견', desc:'마지막입니다.', items:[
-        BRAND_IMPRESS,
-        { k:'E-1a 브랜드에 바라는 점', t:'text', ph:'바라는 점이나 상품 아이디어' },
-        { k:'E-1b 자유 의견', t:'text', ph:'오늘 체험 전반에 대한 자유 의견' } ]}
-    ]
-  },
-
-  binder_buy: {
-    name:'자개바인더 구매', head:'자개바인더 구매 설문',
-    lead:'구매해 주셔서 감사합니다. 약 3분이면 끝납니다.',
-    sections:[
-      PART0,
-      { title:'구매 정보', desc:'오늘 구매하신 자개바인더에 대해 알려주세요.', items:[
-        AWARENESS,
-        { k:'A-2 구매 이유', t:'multi', req:true, o:[
-          '자개 디자인이 아름답다','인천·미추홀 테마가 마음에 든다','품질이 좋아 보인다',
-          '선물용으로 좋다','실용적이다 (다이어리·팔레트 활용)'], etc:true },
-        { k:'A-3 주 사용 목적', t:'radio', req:true, grid:true, o:['본인 사용','선물용','소장·기념용','기타'] } ]},
-      { title:'상품 만족도', desc:'구매하신 상품을 평가해 주세요.', items:[
-        { k:'B-1', t:'matrix', label:'상품 심미적 매력도', scale:SCALE5, req:true, rows:[
-          '자개 패턴 및 디자인 매력도','재료(자개·레진) 및 제작 품질','인천·미추홀 테마 표현도',
-          '패키지 디자인','기념품·선물용으로서의 완성도'] },
-        { k:'B-1a 디자인 좋았던 점·아쉬운 점', t:'text', ph:'각각 적어주세요' },
-        { k:'B-2 가격 적정성', t:'radio', req:true, o:PRICE5, label:'상품 가격 적정성 <span class="hint">판매가 20,000원</span>' },
-        { k:'B-2a 그렇게 생각한 이유·적정 가격대', t:'text', ph:'적정하다고 느끼는 가격대가 있다면' },
-        GIFT_SITUATION,
-        { k:'B-4 타 기념품 대비 차별점', t:'multi', o:[
-          '전통 자개공예의 아름다움','인천 지역 스토리가 담긴 테마','실용적인 구성 (다이어리·팔레트)',
-          '감각적인 디자인','정교한 제작과 예술적 가치'], etc:true } ]},
-      { title:'향후 상품 개발 의견', desc:'헬로미추의 다음 상품을 함께 만들어 주세요.', items:[
-        PRODUCT_WISH, PRODUCT_IDEA, BRAND_IMPRESS, NEWS,
-        { k:'C-3a 자유 의견', t:'text', ph:'브랜드에 바라는 점이나 자유 의견' } ]}
-    ]
-  },
-
-  sns: {
-    name:'SNS 후기 인증', head:'SNS 후기 인증',
-    lead:'후기를 올려주셔서 감사합니다. 확인 후 완성 작품을 액자에 넣어 드립니다.',
-    sections:[
-      { title:'후기 인증', desc:'게시물 링크와 캡처 이미지를 올려주세요.', items:[
-        { k:'이름', t:'short', req:true, ph:'작품을 찾으실 이름', label:'이름 <span class="hint">작품을 찾아드릴 때 씁니다.</span>' },
-        { k:'게시물 링크', t:'short', req:true, ph:'https://instagram.com/p/...',
-          label:'게시물 링크(URL) <span class="hint">해시태그 #헬로미추 #수채화컬러링 2개가 들어가야 합니다.</span>' },
-        { k:'캡처 이미지', t:'photo', req:true, label:'게시물 캡처 이미지 <span class="hint">사진은 자동으로 줄여서 올립니다.</span>' },
-        { k:'플랫폼', t:'radio', grid:true, req:true, o:['인스타그램','블로그','페이스북','스레드','기타'] } ]},
-      { title:'후기 한마디', desc:'짧게라도 남겨주시면 큰 힘이 됩니다.', items:[
-        { k:'가장 좋았던 점', t:'text', ph:'자유롭게 적어주세요' },
-        BRAND_IMPRESS ]}
-    ]
-  },
-
-  sticker: {
-    name:'데코스티커 구매', head:'데코스티커 구매 설문',
-    lead:'구매해 주셔서 감사합니다. 약 2분이면 끝납니다.',
-    sections:[
-      PART0,
-      { title:'구매 정보', desc:'오늘 구매하신 데코스티커에 대해 알려주세요.', items:[
-        AWARENESS,
-        { k:'A-2 구매하신 스티커 종류', t:'multi', o:[
-          '01 소서노','02 문학산성','03 갯벌','04 수봉폭포'], etc:true },
-        { k:'A-3 구매 이유', t:'multi', req:true, o:[
-          '디자인이 예쁘다','인천·미추홀 테마가 마음에 든다','가격이 합리적이다',
-          '선물용으로 좋다','노트북·다이어리에 활용하기 좋다'], etc:true } ]},
-      { title:'만족도 및 가격', desc:'구매하신 스티커를 평가해 주세요.', items:[
-        { k:'B-1 디자인 만족도', t:'radio', req:true, o:SCALE5 },
-        { k:'B-2 가격 적정성', t:'radio', req:true, o:PRICE4, label:'스티커 가격 적정성 <span class="hint">판매가 2,500원</span>' },
-        { k:'B-2a 적정 가격대', t:'short', ph:'예: 1,500원' } ]},
-      { title:'콘텐츠 및 상품 의견', desc:'헬로미추의 다음 상품을 함께 만들어 주세요.', items:[
-        { k:'C 추가되었으면 하는 인천·미추홀 콘텐츠', t:'text', ph:'예: 차이나타운, 자유공원, 소래포구' },
-        PRODUCT_WISH, BRAND_IMPRESS, NEWS,
-        { k:'C-4 브랜드에 바라는 점', t:'text', ph:'자유롭게 적어주세요' } ]}
-    ]
-  }
-};
-
-/* ── 상태 ──────────────────────────────────────────────────── */
-let TYPE = QS.get('t') || '';
-let SPEC = SURVEYS[TYPE] || null;
-let step = 0;
-let A = {};                                   // 응답
-const DKEY = () => 'hm_survey_' + TYPE;
-
-const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const root = document.getElementById('root');
-
-function saveDraft(){ try{ localStorage.setItem(DKEY(), JSON.stringify({step,A})); }catch(e){} }
-function loadDraft(){
-  try{
-    const d = JSON.parse(localStorage.getItem(DKEY())||'null');
-    if (d && d.A){ A = d.A; step = Math.min(d.step||0, SPEC.sections.length-1); }
-  }catch(e){}
-}
-function clearDraft(){ try{ localStorage.removeItem(DKEY()); }catch(e){} }
-
-/* ── JSONP ── */
-let seq = 0;
-/* ── 보내는 길 두 가지 ─────────────────────────────────────────
-   POST: 본문에 담아 보낸다. 주소 길이 한계가 없고, 실패하면 응답 코드와
-         본문을 볼 수 있어 원인을 알 수 있다. 서버에 doPost 가 배포돼 있어야 한다.
-   JSONP(GET): 예전 방식. 어디서나 되지만 주소에 다 담아야 하고, 실패하면
-         '안 됐다' 만 알 수 있다.
-   POST 를 먼저 써보고, 안 되면 그 뒤로는 JSONP 만 쓴다. */
-let POST_OK = null;        // null = 아직 모름, true/false = 확인됨
-
-async function callPost(params){
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    /* text/plain 이라야 브라우저가 미리 확인 요청(preflight)을 안 보낸다 */
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(params)
+  /* 응답자 유형 카드 */
+  TYPES.forEach(function(t){
+    var b = document.createElement('button');
+    b.className = 'type'; b.type = 'button'; b.dataset.id = t.id;
+    b.innerHTML = '<b>'+t.label+'</b><span>'+t.sub+'</span>';
+    b.onclick = function(){
+      S.type = t.id;
+      [].forEach.call(document.querySelectorAll('.type'), function(x){ x.classList.toggle('on', x===b); });
+      checkStart();
+    };
+    $('typeBox').appendChild(b);
   });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const txt = await res.text();
-  let d;
-  try { d = JSON.parse(txt); }
-  catch(e){ throw new Error('응답을 읽지 못함: ' + txt.slice(0, 60)); }
-  /* 읽을 수 있는 답이 왔다는 것은 POST 가 되는 환경이라는 뜻이다.
-     내용이 거절이더라도 그것은 서버의 판단이지 길이 탓이 아니다. */
-  POST_OK = true;
-  if (d && d.ok === false) throw new Error(d.error || '오류');
-  return d;
-}
+  $('inClassDate').value = new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
+  $('inClassName').oninput = checkStart;
 
-async function call(params){
-  if (POST_OK !== false){
-    try {
-      const d = await callPost(params);
-      POST_OK = true;
-      return d;
-    } catch(e){
-      /* 서버가 거절한 것(오류 메시지가 온 것)은 길이 문제가 아니므로 그대로 알린다.
-         POST 자체가 안 되는 환경일 때만 예전 방식으로 내려간다. */
-      if (POST_OK === true) throw e;
-      POST_OK = false;
+  function checkStart(){
+    var nameOk = $('manualClass').style.display === 'none' || $('inClassName').value.trim();
+    $('startBtn').disabled = !(S.type && nameOk);
+  }
+
+  /* 수업 정보 불러오기 */
+  function manual(){ $('manualClass').style.display = 'block'; showTypes(); checkStart(); }
+  function showTypes(){ $('typeCard').style.display = 'block'; }
+  if (S.cls && apiReady()) {
+    $('typeCard').style.display = 'none';
+    $('heroDate').textContent = '수업 정보를 불러오는 중…';
+    jsonp({action:'class', cls:S.cls}).then(function(r){
+      if (r && r.ok) {
+        S.className = r.cls.name; S.classDate = r.cls.date;
+        $('heroOrg').textContent = [r.cls.org, '수업 만족도 설문'].filter(Boolean).join(' · ');
+        $('heroTitle').textContent = r.cls.name;
+        $('heroDate').textContent = (r.cls.date ? r.cls.date + ' · ' : '') + '1분이면 끝나요.';
+        if (r.cls.type && WORDING[r.cls.type]) {   // 강사가 시트에서 미리 지정한 응답자 유형 → 바로 문항부터
+          S.type = r.cls.type; SKIP = true;
+          $('classLine').innerHTML = (r.cls.org ? r.cls.org + ' · 수업 만족도 설문' : '수업 만족도 설문') + '<b></b>';
+          $('classLine').querySelector('b').textContent = r.cls.name;
+          $('classLine').style.display = 'block';
+          $('back1').style.display = 'none';
+          buildQuestions(); go(1); return;
+        }
+        showTypes(); go(0);
+        checkStart();
+      } else { $('heroDate').textContent = '등록되지 않은 수업코드예요. 수업명을 직접 적어 주세요.'; manual(); go(0); }
+    }).catch(function(){ $('heroDate').textContent = '1분이면 끝나요.'; manual(); go(0); });
+  } else if (!S.cls) { manual(); }
+
+  /* 단계 이동 */
+  var SKIP = false; // 응답자 유형이 미리 지정되면 첫 화면 생략
+  function go(n){
+    $('sLoad').classList.remove('on');
+    [0,1,2,3].forEach(function(i){ $('s'+i).classList.toggle('on', i===n); });
+    $('bar').style.width = (SKIP ? [0,45,80,100] : [8,40,75,100])[n] + '%';
+    $('stepLabel').textContent = n<3 ? (SKIP ? n+' / 2' : (n+1)+' / 3') : '';
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  [].forEach.call(document.querySelectorAll('[data-go]'), function(b){ b.onclick = function(){ go(+b.dataset.go); }; });
+  if (S.cls && apiReady()) { [0,1,2,3].forEach(function(i){ $('s'+i).classList.remove('on'); }); $('sLoad').classList.add('on'); }
+  else go(0);
+
+  $('startBtn').onclick = function(){
+    if ($('manualClass').style.display !== 'none') {
+      S.className = $('inClassName').value.trim(); S.classDate = $('inClassDate').value;
     }
-  }
-  return callJsonp(params);
-}
-
-function callJsonp(params){
-  return new Promise((resolve,reject)=>{
-    const cb = '__sv'+(++seq)+'_'+Date.now();
-    const url = new URL(API_URL);
-    Object.keys(params).forEach(k=>{ if(params[k]!==undefined && params[k]!=='') url.searchParams.set(k, params[k]); });
-    url.searchParams.set('cb', cb);
-    const s = document.createElement('script');
-    let done=false;
-    const clean=()=>{ delete window[cb]; s.remove(); clearTimeout(t); };
-    const len = url.toString().length;
-    const fail = m => { const e = new Error(m + ' (주소 ' + len + '자)'); e.len = len; return e; };
-    const t=setTimeout(()=>{ if(!done){done=true;clean();reject(fail('시간 초과'));} },12000);
-    window[cb]=d=>{ done=true; clean(); (d&&d.ok===false)?reject(new Error(d.error||'오류')):resolve(d); };
-    s.onerror=()=>{ if(!done){done=true;clean();reject(fail('요청이 닿지 않음'));} };
-    s.src=url.toString();
-    document.body.appendChild(s);
-  });
-}
-
-function b64url(str){
-  const bytes = new TextEncoder().encode(str);
-  let bin=''; bytes.forEach(b=>bin+=String.fromCharCode(b));
-  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-}
-function newSid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
-function newCode(){
-  const AL='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let s=''; for(let i=0;i<4;i++) s+=AL.charAt(Math.floor(Math.random()*AL.length));
-  return 'HM-'+s;
-}
-
-/* ── 한 통씩 저장 ─────────────────────────────────────────────
-   Apps Script 는 GET 주소가 2,000자쯤 넘으면 요청 자체를 받지 못한다.
-   그래서 예전에는 답변을 잘라 보내고 서버가 조각을 모아 합쳤는데,
-   조각 하나만 사라져도 설문 한 건이 통째로 없어졌다. 2026-09-19 현장에서
-   실제로 그렇게 됐고, 화면에는 '제출되었습니다' 가 그대로 떴다.
-
-   이제는 자르지 않는다. 문항을 몇 덩이로 나누되, 각 덩이를 그 자체로
-   완결된 설문 1건으로 보낸다. 서버가 합칠 것이 없으니 중간에 사라질 것도
-   없고, 보낸 즉시 시트에 줄이 남는다. 한 사람이 여러 줄이 되지만
-   이름·회차·분할번호로 다시 합칠 수 있다. 줄이 예뻐지는 것보다
-   줄이 남는 것이 중요하다. */
-const BUILD = '0920-e';   // 화면 판 번호. 캡처 한 장으로 어느 판인지 알 수 있게 한다.
-try { document.getElementById('bld').textContent = '화면 ' + BUILD; } catch(e){}
-const BUDGET_START = 120;   /* 처음에는 한 문항씩 보낸다. 주소가 400자 안팎이 되는데,
-                               예약 요청(300자대)이 온종일 들어갔으므로 같은 크기다.
-                               통하면 아래에서 점점 키운다. */   /* 처음 보낼 때의 크기. 예약(주소 300자대)은 온종일 잘 갔으므로
-                               그 언저리에서 시작한다. */
-const BUDGET_MAX   = 1400;  // 성공해도 이보다 크게는 안 키운다
-const BUDGET_MIN   = 60;    // 예약 요청(주소 300자대)보다도 작게까지 내려간다
-
-/* 한 통짜리(n=1)는 서버가 시트에 줄을 쓴 뒤에만 응답한다. 실패하면 ok:false 로 오고
-   전송 함수가 거절한다. 그러니 응답이 왔다는 것 자체가 저장됐다는 뜻이다. */
-const wrote = x => !!x && x.ok !== false;
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-/* 설문이 안 갔을 때, 그 자리에서 원인을 알아본다.
-   JSONP 는 실패해도 '안 됐다' 만 알려주고 응답 코드도 본문도 보여주지 않는다.
-   그래서 같은 주소를 fetch 로 한 번 더 불러 서버가 실제로 뭐라고 답하는지 적는다.
-   회차 조회는 대조군이다 — 이건 되는데 설문만 안 되면 서버가 설문만 거부하는 것이다. */
-async function diagnose(){
-  const lines = [];
-  /* 회차 조회는 캐시에 있으면 스프레드시트를 아예 안 읽고 그대로 돌려준다(Code.gs).
-     그래서 이것만으로는 서버가 시트를 쓸 수 있는지 알 수 없다.
-     집계 조회는 반드시 시트를 읽으므로, 둘을 나란히 봐야 어디가 막혔는지 갈린다. */
-  try { const r = await call({ action:'slots' });
-        lines.push('회차 조회(캐시 가능): ' + ((r && r.ok !== false) ? '정상' : '서버가 거절')); }
-  catch(e){ lines.push('회차 조회(캐시 가능): 실패 — ' + ((e && e.message) || e)); }
-
-  try { const r = await call({ action:'report' });
-        lines.push('집계 조회(시트 읽음): ' + ((r && r.ok !== false) ? '정상' : '서버가 거절 — ' + (r && r.error))); }
-  catch(e){ lines.push('집계 조회(시트 읽음): 실패 — ' + ((e && e.message) || e)); }
-
-  const mini = { action:'survey', t: TYPE || 'coloring', sid:'diag' + Date.now().toString(36),
-                 i:0, n:1, d: b64url(JSON.stringify({ '진단':'확인' })), name:'[진단]' };
-  try {
-    const u = new URL(API_URL);
-    Object.keys(mini).forEach(k => u.searchParams.set(k, mini[k]));
-    const res = await fetch(u.toString());
-    const txt = (await res.text()).replace(/\s+/g, ' ').slice(0, 150);
-    lines.push('설문 최소 전송: HTTP ' + res.status + ' · ' + (txt || '(빈 응답)'));
-  } catch(e){
-    lines.push('설문 최소 전송: 불러오기 실패 — ' + ((e && e.message) || e));
-  }
-  return lines.join(' / ');
-}
-
-/** 아직 못 보낸 답변에서, 지금 크기에 맞는 만큼 떼어 온다. 문항은 안 자른다. */
-function takeNext(st){
-  const part = {};
-  let n = 0;
-  for (const k of Object.keys(st.left)){
-    const t = Object.assign({}, part); t[k] = st.left[k];
-    if (n && b64url(JSON.stringify(t)).length > st.budget) break;
-    part[k] = st.left[k]; n++;
-  }
-  return part;                     // 한 문항이 혼자 크기를 넘어도 일단 하나는 담는다
-}
-
-async function submit(sub){
-  /* 오늘 이전에 큐에 쌓인 것은 답변 원본이 없다. 그건 옛 방식으로 보낸다. */
-  if (!sub.A) return sendChunked(sub);
-
-  /* ceiling — 한 번 막힌 크기 위로는 다시 안 키운다. 안 그러면 키웠다 막히고를
-     되풀이하며 손님만 기다리게 된다. */
-  const st = { seq: 0, first: null, left: Object.assign({}, sub.A),
-               budget: BUDGET_START, ceiling: BUDGET_MAX, lost: 0, fails: 0 };
-  try {
-    /* 한 조각이 끝내 안 가도 멈추지 않는다. 나머지는 계속 보내 될 것만이라도 쌓는다.
-       한 문항 때문에 설문 전체를 잃는 일은 없어야 한다. */
-    let guard = 0;
-    while (Object.keys(st.left).length && guard++ < 400){
-      const part = takeNext(st);
-      try { await sendPart(sub, part, st); }
-      catch (e) {
-        st.why = (e && e.message) || String(e);
-        Object.keys(part).forEach(k => { delete st.left[k]; });   // 무한 반복 방지
-        st.lost++;
-        /* 세 문항 연달아 끝내 안 가면 길이 막힌 것이다. 남은 문항을 붙들고
-           손님을 몇 분씩 기다리게 하지 않는다. 답변은 큐에 남아 나중에 다시 간다. */
-        if (st.lost >= 3 && st.seq === 0) break;
-      }
-    }
-  } finally {
-    /* 못 보낸 것만 남긴다. 큐에 쌓였다가 다시 보내도 이미 저장된 것은 중복으로 안 들어간다. */
-    sub.A = st.left;
-  }
-  if (!st.seq) throw new Error(st.why || '한 건도 저장되지 않았습니다.');
-  if (st.lost) window.__lost = st.lost;
-  return st.first;
-}
-
-/** 덩이 하나를 실제로 보낸다. 저장됐으면 true. */
-async function trySend(sub, body, st){
-  const idx = st.seq;
-  /* 둘째 줄부터는 이름 뒤에 표시를 붙인다. 증정 담당자 화면에서 같은 사람이
-     여러 번 떠도 어느 것이 본 줄인지 보이고, 합칠 때 떼면 된다. */
-  const nm = idx === 0 ? sub.name : sub.name + ' (이어짐 ' + (idx + 1) + ')';
-  const send = Object.assign({}, body);
-  if (idx > 0) send['분할'] = '이어짐 ' + (idx + 1);
-
-  const p = { action:'survey', t:sub.t, sid:sub.sid + 'g' + idx, i:0, n:1,
-              d: b64url(JSON.stringify(send)), slot:sub.slot, name:nm,
-              code: idx === 0 ? sub.code : '',
-              /* 링크·사진은 서버가 고정 칸에 덮어쓰므로 모든 줄에 같이 보낸다 */
-              link: sub.link, img: sub.img };
-
-  /* 한 번 안 갔다고 바로 포기하지 않는다. 잠깐 쉬었다 두 번 더 보낸다.
-     주소가 길어서가 아니라 잠시 막힌 것뿐인 경우가 있다. */
-  let r = null;
-  for (const wait of [0, 400, 1200]){
-    if (wait) await sleep(wait);
-    try { r = await call(p); } catch(e){ st.why = (e && e.message) || String(e); r = null; }
-    if (wrote(r)) break;
-    p.sid = p.sid.replace(/r[a-z0-9]*$/, '') + 'r' + Date.now().toString(36);
-  }
-  if (!wrote(r)) return false;
-  st.seq++;
-  if (idx === 0) st.first = r;
-  return true;
-}
-
-/**
- * 답변 한 덩이를 그 자체로 완결된 설문 1건으로 보낸다.
- *
- * Apps Script 는 요청을 다른 주소로 넘기면서 주소가 더 길어지고, 그 과정에서
- * 긴 주소가 잘린다. 진짜 한계가 얼마인지는 밖에서 알 수 없다. 그래서 정하지 않는다.
- * 통하면 다음 덩이를 키우고, 막히면 반으로 줄인다. 몇 번 오가면 그 폰·그 회선에서
- * 실제로 통하는 크기에 붙는다.
- */
-async function sendPart(sub, part, st){
-  const keys = Object.keys(part);
-
-  if (await trySend(sub, part, st)){
-    keys.forEach(k => { delete st.left[k]; });
-    st.budget = Math.min(st.ceiling, Math.round(st.budget * 1.6));   // 통했으니 조금 키운다
-    return;
-  }
-
-  st.ceiling = Math.max(BUDGET_MIN, Math.round(st.budget / 2));      // 이 위로는 다시 안 키운다
-  st.budget  = st.ceiling;
-
-  if (keys.length > 1){                                              // 문항 단위로 반씩 나눈다
-    const h = Math.ceil(keys.length / 2), a = {}, b = {};
-    keys.slice(0, h).forEach(k => { a[k] = part[k]; });
-    keys.slice(h).forEach(k => { b[k] = part[k]; });
-    await sendPart(sub, a, st);
-    await sendPart(sub, b, st);
-    return;
-  }
-
-  /* 문항이 하나인데도 막힌다면 그 답변 자체가 길어서다. 답을 앞에서부터 잘라
-     여러 줄에 나눠 담는다. 키 뒤 번호는 보낸 순서대로 붙으므로 합칠 때 그대로
-     이어붙이면 된다. 글자를 버리는 것이 아니라 여러 칸에 나눠 담는 것이다. */
-  const k0 = keys[0];
-  const base = k0.replace(/\s*\(이어 \d+\)$/, '');
-  let rest = String(part[k0] == null ? '' : part[k0]);
-  let size = Math.max(1, Math.ceil(rest.length / 2));
-  let n = 0;
-
-  while (rest.length){
-    const one = {};
-    one[n === 0 ? base : base + ' (이어 ' + (n + 1) + ')'] = rest.slice(0, size);
-    if (await trySend(sub, one, st)){ rest = rest.slice(size); n++; continue; }
-    size = Math.floor(size / 2);
-    if (size < 1) throw new Error('문항 "' + base + '" 전송 실패 — ' + (st.why || '응답 없음'));
-  }
-  delete st.left[k0];
-}
-
-/* 예전 방식(조각내 보내고 서버가 합치기). 오래된 큐를 비울 때만 쓴다. */
-const CHUNK = 1200;
-async function sendChunked(sub){
-  const parts = [];
-  for (let i=0; i<sub.d.length; i+=CHUNK) parts.push(sub.d.slice(i, i+CHUNK));
-  let last = null;
-  for (let i=0; i<parts.length; i++){
-    last = await call({ action:'survey', t:sub.t, sid:sub.sid, i:i, n:parts.length,
-                        d:parts[i], slot:sub.slot, name:sub.name, code:sub.code,
-                        link:sub.link, img:sub.img });
-  }
-  if (!last || last.done !== true) throw new Error('서버가 응답을 다 받지 못했습니다.');
-  return last;
-}
-
-/* 전송 실패한 설문은 통째로 쌓아뒀다가 재시도 */
-const QKEY='hm_survey_queue';
-const qGet=()=>{ try{ return JSON.parse(localStorage.getItem(QKEY)||'[]'); }catch(e){ return []; } };
-const qSet=v=>{ try{ localStorage.setItem(QKEY, JSON.stringify(v)); }catch(e){} };
-async function flushQueue(){
-  const q=qGet();
-  while(q.length){
-    try{ await submit(q[0]); q.shift(); qSet(q.slice()); }
-    catch(e){ qSet(q.slice()); return; }
-  }
-}
-
-/* ── 렌더 ──────────────────────────────────────────────────── */
-
-/* ── 진단 화면 ────────────────────────────────────────────────
-   survey.html?diag=1 로 열면 설문을 채우지 않고도 어디서 막히는지 본다.
-   같은 주소, 같은 순간에 어떤 요청은 되고 어떤 요청은 안 되는지 나란히 찍는다.
-   JSONP 는 실패해도 이유를 못 보여주므로, 같은 주소를 fetch 로도 한 번 더 불러
-   실제 응답 코드와 본문 앞부분을 그대로 적는다. 그래야 추측을 멈출 수 있다. */
-function diagUrl(params){
-  const u = new URL(API_URL);
-  Object.keys(params).forEach(k => { if (params[k] !== undefined && params[k] !== '') u.searchParams.set(k, params[k]); });
-  return u.toString();
-}
-
-async function diagFetch(params){
-  const url = diagUrl(params);
-  try {
-    const res = await fetch(url, { method:'GET' });
-    const txt = (await res.text()).replace(/\s+/g, ' ').slice(0, 160);
-    return { line: 'HTTP ' + res.status + ' · ' + (res.type || '-') + ' · ' + (txt || '(빈 응답)'), len: url.length };
-  } catch (e) {
-    return { line: '불러오기 실패 — ' + ((e && e.message) || e), len: url.length };
-  }
-}
-
-async function diagJsonp(params){
-  try { const r = await call(params); return (r && r.ok !== false) ? '정상' : ('서버 거절 — ' + (r && r.error)); }
-  catch (e) { return '실패 — ' + ((e && e.message) || e); }
-}
-
-async function renderDiag(){
-  const root = document.getElementById('root');
-  /* 로컬 테스트에서 '설문만 거부하는 서버' 를 만들어 보기 위한 스위치.
-     실제 배포 주소에서는 이 경로가 없으므로 아무 일도 일어나지 않는다. */
-  if (QS.get('block') === '1'){ try { await fetch('/_block?on=1'); } catch(e){} }
-  const mini = b64url(JSON.stringify({ '진단': '확인' }));
-  const svParams = { action:'survey', t:'coloring', sid:'diag' + Date.now().toString(36),
-                     i:0, n:1, d:mini, name:'[진단]' };
-
-  const rows = [];
-  const put = (k, v) => { rows.push([k, v]);
-    root.innerHTML = '<div class="pick"><h1 style="font-size:1.1rem;margin:.2rem 0 .8rem">전송 진단</h1>' +
-      rows.map(r => '<div class="pend" style="margin:0 0 .5rem"><b>' + esc(r[0]) + '</b>' +
-                    '<div class="why" style="border-top:none;padding-top:.3rem">' + esc(r[1]) + '</div></div>').join('') +
-      '<p class="sns-note" style="margin-top:.6rem">화면 ' + BUILD + '</p></div>';
+    buildQuestions(); go(1);
   };
 
-  put('1. 회차 조회 (JSONP · 캐시면 시트 안 읽음)', '확인 중…');
-  rows.pop(); put('1. 회차 조회 (JSONP · 캐시면 시트 안 읽음)', await diagJsonp({ action:'slots' }));
-
-  put('1-2. 집계 조회 (JSONP · 시트를 반드시 읽음)', '확인 중…');
-  rows.pop(); put('1-2. 집계 조회 (JSONP · 시트를 반드시 읽음)', await diagJsonp({ action:'report' }));
-
-  put('2. 설문 최소 전송 (JSONP)', '확인 중…');
-  rows.pop(); put('2. 설문 최소 전송 (JSONP) · 주소 ' + diagUrl(svParams).length + '자',
-                  await diagJsonp(svParams));
-
-  const f1 = await diagFetch({ action:'slots' });
-  put('3. 회차 조회 (fetch) · 주소 ' + f1.len + '자', f1.line);
-
-  const f2 = await diagFetch(svParams);
-  put('4. 설문 최소 전송 (fetch) · 주소 ' + f2.len + '자', f2.line);
-}
-
-function render(){
-  if (QS.get('diag') === '1') return renderDiag();
-  if (!SPEC) return renderPicker();
-  const sec = SPEC.sections[step];
-  const total = SPEC.sections.length;
-
-  let h = '<div class="top"><div class="row">' +
-    '<span class="who">'+esc(SPEC.name)+' 설문</span>' +
-    '<span class="cnt">'+(step+1)+' / '+total+'</span></div>' +
-    '<div class="prog"><i style="width:'+Math.round((step)/total*100)+'%"></i></div></div>';
-
-  h += '<div class="err" id="err"></div><div class="pane">';
-  if (step===0) h += '<h1>'+esc(SPEC.head)+'</h1><p class="sdesc">'+esc(SPEC.lead)+'</p>';
-  h += '<h2>'+esc(sec.title)+'</h2><p class="sdesc">'+esc(sec.desc)+'</p>';
-  sec.items.forEach((it,i)=> h += renderItem(it, i));
-  h += '</div>';
-
-  h += '<div class="nav">' +
-    (step>0 ? '<button class="prev" type="button" id="bPrev">이전</button>' : '') +
-    '<button class="next" type="button" id="bNext">'+(step===total-1?'제출하기':'다음')+'</button></div>';
-
-  root.innerHTML = h;
-  bind(sec);
-}
-
-/* 'B-1a 인상 깊었던 점' → '인상 깊었던 점'
-   코드는 시트 컬럼명으로만 남기고 화면에는 문장만 보여준다. */
-function pretty(k){ return String(k).replace(/^(Q\d+|[A-E](-\d+[a-z]?)?)\s+/, ''); }
-
-function renderItem(it, i){
-  const id = 'q'+i;
-  const label = it.label || pretty(it.k);
-  const req = it.req ? '<span class="req">*</span>' : '';
-  let inner = '';
-
-  if (it.t==='radio' || it.t==='multi'){
-    const multi = it.t==='multi';
-    const cur = A[it.k];
-    const on = v => multi ? (Array.isArray(cur)&&cur.indexOf(v)!==-1) : cur===v;
-    inner += '<div class="opts'+(it.grid?' grid':'')+'">';
-    it.o.forEach(v=>{
-      inner += '<div class="opt'+(multi?' multi':'')+(on(v)?' on':'')+'" data-k="'+esc(it.k)+'" data-v="'+esc(v)+'" data-m="'+(multi?1:0)+'">' +
-               '<span class="box"></span><span>'+esc(v)+'</span></div>';
+  function buildQuestions(){
+    var W = WORDING[S.type];
+    var h = '';
+    ITEMS.forEach(function(it, i){
+      h += '<div class="q" id="wrap_'+it.key+'"><div class="t"><em>'+(i+1)+'</em>'+W[it.key]+'</div><div class="scale" data-k="'+it.key+'">';
+      for (var v=1; v<=5; v++) {
+        var on = S.ans[it.key]===v ? ' on' : '';
+        h += '<button type="button" class="'+on.trim()+'" data-v="'+v+'" aria-label="'+W.scale[v-1]+'">' +
+             (W.faces ? '<span class="face">'+FACES[v-1]+'</span>' : '<span class="n">'+v+'</span>') +
+             '<span class="l">'+W.scale[v-1]+'</span></button>';
+      }
+      h += '</div></div>';
     });
-    if (it.etc){
-      const etcOn = on('기타');
-      inner += '<div class="opt'+(multi?' multi':'')+(etcOn?' on':'')+'" data-k="'+esc(it.k)+'" data-v="기타" data-m="'+(multi?1:0)+'">' +
-               '<span class="box"></span><span>기타</span></div>';
-      inner += '<input type="text" data-etc="'+esc(it.k)+'" placeholder="기타 내용" value="'+esc(A[it.k+' 기타']||'')+'"'+(etcOn?'':' hidden')+'>';
-    }
-    inner += '</div>';
-    if (it.follow){
-      const show = A[it.k]===it.follow.on;
-      inner += '<input type="text" data-follow="'+esc(it.follow.k)+'" placeholder="'+esc(it.follow.ph)+'" value="'+esc(A[it.follow.k]||'')+'"'+(show?'':' hidden')+'>';
-    }
-  }
-  else if (it.t==='matrix'){
-    inner += '<div>';
-    it.rows.forEach(row=>{
-      const key = it.k+' '+row;
-      inner += '<div class="mrow"><div class="mlabel">'+esc(row)+'</div><div class="scale">';
-      it.scale.forEach((sv,si)=>{
-        inner += '<button type="button" data-k="'+esc(key)+'" data-v="'+esc(sv)+'"'+(A[key]===sv?' class="on"':'')+'>' +
-                 '<span class="dot">'+(5-si)+'</span>'+esc(sv)+'</button>';
+    $('qBox').innerHTML = h;
+    [].forEach.call($('qBox').querySelectorAll('.scale'), function(sc){
+      sc.addEventListener('click', function(e){
+        var b = e.target.closest('button'); if(!b) return;
+        S.ans[sc.dataset.k] = +b.dataset.v;
+        [].forEach.call(sc.children, function(x){ x.classList.toggle('on', x===b); });
+        $('wrap_'+sc.dataset.k).classList.remove('miss');
+        if (!document.querySelector('.q.miss')) $('err1').textContent = '';
       });
-      inner += '</div></div>';
     });
-    inner += '</div>';
-  }
-  else if (it.t==='text'){
-    inner += '<textarea data-t="'+esc(it.k)+'" maxlength="300" placeholder="'+esc(it.ph||'')+'">'+esc(A[it.k]||'')+'</textarea>' +
-             '<div class="count"><span>'+(A[it.k]||'').length+'</span> / 300</div>';
-  }
-  else if (it.t==='short'){
-    inner += '<input type="text" data-t="'+esc(it.k)+'" maxlength="200" placeholder="'+esc(it.ph||'')+'" value="'+esc(A[it.k]||'')+'">';
-  }
-  else if (it.t==='photo'){
-    const done = !!A[it.k];
-    inner += '<input type="file" accept="image/*" id="photoInput" hidden>' +
-      '<button type="button" class="photo-btn'+(done?' on':'')+'" id="photoBtn">' +
-        (done ? '✓ 사진 첨부됨 — 다시 고르기' : '사진 고르기') + '</button>' +
-      '<div class="photo-state" id="photoState">' + (done ? '올리기 완료' : '') + '</div>' +
-      (PHOTO.preview ? '<img class="photo-prev" src="'+PHOTO.preview+'" alt="선택한 캡처 이미지">' : '');
+    var o = '';
+    OPENS.forEach(function(it){
+      o += '<label class="f" for="in_'+it.key+'">'+W[it.key]+'</label><textarea id="in_'+it.key+'" maxlength="1500"></textarea>';
+    });
+    o += '<label class="f" for="in_name">'+W.name+'</label><input type="text" id="in_name" maxlength="50">';
+    $('oBox').innerHTML = '<h2>'+(S.type==='kid'?'하고 싶은 이야기':'자유롭게 들려주세요')+'</h2><p class="muted">'+(S.type==='kid'?'쓰고 싶은 것만 써도 괜찮아요.':'모든 항목은 선택이에요.')+'</p>' + o;
   }
 
-  return '<div class="q" id="'+id+'" data-key="'+esc(it.k)+'"><div class="label">'+label+req+'</div>'+inner+'</div>';
-}
-
-/* ══ 캡처 이미지 ══
-   폰 사진은 2~4MB라 그대로는 못 보낸다. 화면에서 먼저 줄여 100KB 안팎으로 만든 뒤
-   설문과 같은 방식으로 조각내 올리고, 서버가 구글 드라이브에 저장한다. */
-const PHOTO = { preview:'', b64:'', busy:false };
-
-function shrinkImage(file, maxSide, quality){
-  return new Promise((resolve,reject)=>{
-    const fr = new FileReader();
-    fr.onerror = () => reject(new Error('사진을 읽지 못했습니다.'));
-    fr.onload = () => {
-      const im = new Image();
-      im.onerror = () => reject(new Error('사진 형식을 읽지 못했습니다.'));
-      im.onload = () => {
-        let { width:w, height:h } = im;
-        const scale = Math.min(1, maxSide / Math.max(w, h));
-        w = Math.round(w * scale); h = Math.round(h * scale);
-        const cv = document.createElement('canvas');
-        cv.width = w; cv.height = h;
-        const cx = cv.getContext('2d');
-        cx.fillStyle = '#fff'; cx.fillRect(0,0,w,h);       // 투명 PNG 대비
-        cx.drawImage(im, 0, 0, w, h);
-        resolve(cv.toDataURL('image/jpeg', quality));
-      };
-      im.src = fr.result;
-    };
-    fr.readAsDataURL(file);
-  });
-}
-
-async function uploadPhoto(){
-  const state = document.getElementById('photoState');
-  const say = t => { if (state) state.textContent = t; };
-  const sid = newSid();
-  const raw = PHOTO.b64;                                   // base64 (헤더 제외)
-  const b64u = raw.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-  const CH = 6000;
-  const parts = [];
-  for (let i=0;i<b64u.length;i+=CH) parts.push(b64u.slice(i,i+CH));
-
-  let last=null;
-  for (let i=0;i<parts.length;i++){
-    say('올리는 중... ' + Math.round((i+1)/parts.length*100) + '%');
-    last = await call({ action:'img', sid:sid, i:i, n:parts.length, d:parts[i], name:A['이름']||'' });
-  }
-  say('올리기 완료');
-  return last && last.url ? last.url : '';
-}
-
-function bindPhoto(){
-  const btn = document.getElementById('photoBtn');
-  const inp = document.getElementById('photoInput');
-  if (!btn || !inp) return;
-  btn.addEventListener('click', ()=>inp.click());
-  inp.addEventListener('change', async ()=>{
-    const f = inp.files && inp.files[0];
-    if (!f) return;
-    const state = document.getElementById('photoState');
-    if (state) state.textContent = '사진을 줄이는 중...';
-    let dataUrl = '';
-    try{
-      dataUrl = await shrinkImage(f, 900, 0.55);
-    }catch(e){
-      /* 아이폰 HEIC 등 캔버스로 못 줄이는 사진이 있다. 그럴 땐 원본 그대로 붙인다. */
-      try{
-        dataUrl = await new Promise((res,rej)=>{
-          const r=new FileReader();
-          r.onload=()=>res(String(r.result||''));
-          r.onerror=()=>rej(new Error('읽기 실패'));
-          r.readAsDataURL(f);
-        });
-      }catch(e2){ dataUrl=''; }
+  $('next1').onclick = function(){
+    var miss = ITEMS.filter(function(it){ return !S.ans[it.key]; });
+    [].forEach.call(document.querySelectorAll('.q'), function(q){ q.classList.remove('miss'); });
+    if (miss.length) {
+      miss.forEach(function(it){ $('wrap_'+it.key).classList.add('miss'); });
+      $('err1').textContent = '빠진 문항이 '+miss.length+'개 있어요.';
+      $('wrap_'+miss[0].key).scrollIntoView({behavior:'smooth', block:'center'});
+      return;
     }
-    if (dataUrl && dataUrl.indexOf(',')!==-1){
-      PHOTO.preview = dataUrl;
-      PHOTO.b64 = dataUrl.split(',')[1];
-      A['캡처 이미지'] = '첨부됨';
-      const kb = Math.round(PHOTO.b64.length * 0.75 / 1024);
-      saveDraft(); render();
-      const st2 = document.getElementById('photoState');
-      if (st2) st2.textContent = '첨부됨 · 약 ' + kb + 'KB (제출할 때 올립니다)';
-    } else {
-      A['캡처 이미지'] = '첨부 실패 — 현장 확인';
-      saveDraft(); render();
-      const st3 = document.getElementById('photoState');
-      if (st3) st3.textContent = '사진을 불러오지 못했습니다. 그대로 제출하시고 직원에게 화면을 보여주세요.';
-    }
-  });
-}
+    $('err1').textContent = ''; go(2);
+  };
 
-function bind(sec){
-  root.querySelectorAll('.opt').forEach(el=>el.addEventListener('click',()=>{
-    const k=el.dataset.k, v=el.dataset.v, multi=el.dataset.m==='1';
-    if (multi){
-      const cur = Array.isArray(A[k]) ? A[k].slice() : [];
-      const at = cur.indexOf(v);
-      if (at===-1) cur.push(v); else cur.splice(at,1);
-      A[k]=cur;
-    } else {
-      A[k] = (A[k]===v) ? '' : v;
-    }
-    saveDraft(); render();
-  }));
+  var sending = false;
+  $('submitBtn').onclick = function(){
+    if (sending) return; sending = true;
+    var btn = this; btn.disabled = true; btn.textContent = '보내는 중…';
+    var payload = { cls:S.cls, className:S.className, classDate:S.classDate, type:S.type, name:$('in_name').value.trim() };
+    ITEMS.forEach(function(it){ payload[it.key] = S.ans[it.key]; });
+    OPENS.forEach(function(it){ payload[it.key] = $('in_'+it.key).value.trim(); });
 
-  root.querySelectorAll('.scale button').forEach(el=>el.addEventListener('click',()=>{
-    const k=el.dataset.k;
-    A[k] = (A[k]===el.dataset.v) ? '' : el.dataset.v;
-    saveDraft();
-    el.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));
-    if (A[k]) el.classList.add('on');
-    const card = el.closest('.q'); if (card) card.classList.remove('miss');
-  }));
+    var p = apiReady() ? postData(payload) : new Promise(function(r){ setTimeout(r, 600); });
+    p.then(function(){
+      if (S.type==='kid') { $('doneTitle').textContent = '고마워요!'; $('doneMsg').textContent = '오늘 멋진 작품 만들어 줘서 고마워요. 또 만나요!'; }
+      go(3);
+    }).catch(function(){
+      $('err2').textContent = '전송에 실패했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.';
+      btn.disabled = false; btn.textContent = '제출하기'; sending = false;
+    });
+  };
 
-  root.querySelectorAll('[data-t]').forEach(el=>el.addEventListener('input',()=>{
-    A[el.dataset.t]=el.value; saveDraft();
-    const c = el.parentElement.querySelector('.count span'); if (c) c.textContent = el.value.length;
-  }));
-  root.querySelectorAll('[data-etc]').forEach(el=>el.addEventListener('input',()=>{
-    A[el.dataset.etc+' 기타']=el.value; saveDraft();
-  }));
-  root.querySelectorAll('[data-follow]').forEach(el=>el.addEventListener('input',()=>{
-    A[el.dataset.follow]=el.value; saveDraft();
-  }));
-
-  bindPhoto();
-
-  const p=document.getElementById('bPrev');
-  if (p) p.addEventListener('click',()=>{ step--; saveDraft(); render(); window.scrollTo(0,0); });
-  document.getElementById('bNext').addEventListener('click',()=>next(sec));
-}
-
-function next(sec){
-  const missing = [];
-  sec.items.forEach((it,i)=>{
-    if (!it.req) return;
-    if (it.t==='matrix'){
-      it.rows.forEach(r=>{ if(!A[it.k+' '+r]) missing.push('q'+i); });
-    } else if (it.t==='photo'){
-      /* 사진은 필수로 잡지 않는다 — 일부 기종에서 첨부가 인식되지 않아
-         손님이 아예 제출을 못 하는 일이 있었다. 현장에서 눈으로 확인한다. */
-    } else {
-      const v=A[it.k];
-      const empty = Array.isArray(v) ? v.length===0 : !v;
-      if (empty) missing.push('q'+i);
-    }
-  });
-
-  /* 현장에서는 막히는 것이 빈 칸보다 나쁘다.
-     안 채운 문항은 붉게 짚어만 주고, 넘어가는 것은 막지 않는다. */
-  const err=document.getElementById('err');
-  root.querySelectorAll('.q').forEach(q=>q.classList.remove('miss'));
-  if (missing.length){
-    missing.forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add('miss'); });
-    A['미응답 문항수'] = String((Number(A['미응답 문항수'])||0) + new Set(missing).size);
-  }
-  err.classList.remove('on');
-
-  if (step < SPEC.sections.length-1){ step++; saveDraft(); render(); window.scrollTo(0,0); }
-  else finish();
-}
-
-async function finish(){
-  const btn=document.getElementById('bNext');
-  btn.disabled=true; btn.textContent='보내는 중...';
-
-  // 사진이 있으면 먼저 드라이브에 올리고, 그 주소를 설문과 함께 기록한다
-  let imgUrl = '', imgFailed = false;
-  if (PHOTO.b64){
-    /* 사진이 안 올라가도 답변까지 날리지는 않는다. 사진만 포기하고 설문은 남긴다. */
-    try{ imgUrl = await uploadPhoto(); }
-    catch(e){ imgFailed = true; A['캡처 이미지'] = '업로드 실패 — 현장 확인'; }
-  }
-
-  const sub = { t:TYPE, sid:newSid(), slot:SLOT, name:A['이름']||NAME, code:newCode(),
-                link:A['게시물 링크']||'', img:imgUrl,
-                A:A, d:b64url(JSON.stringify(A)) };
-  window.__imgFailed = imgFailed;
-  let res=null, queued=false;
-  try{ res = await submit(sub); }
-  catch(e){ const q=qGet(); q.push(sub); qSet(q); queued=true;
-            window.__why = (e && e.message) || String(e);
-            /* 무엇이 막혔는지 화면에 남긴다 — 캡처 한 장으로 원인을 가릴 수 있게 */
-            window.__probe = await diagnose(); }
-
-  /* 시트에 들어간 것이 확인될 때만 임시저장을 지운다.
-     전송 대기 중이면 남겨둬서, 이 화면을 다시 열었을 때 되살릴 수 있게 한다. */
-  if (!queued) clearDraft();
-  renderDone(res, sub, queued);
-}
-
-function renderDone(res, sub, queued){
-  const gift = res ? !!res.gift : (['binder','binder_buy','sticker','sns'].indexOf(sub.t)!==-1);
-  const code = (res && res.code) ? res.code : sub.code;
-
-  let h = '<div class="done"><div class="mark">🎨</div>' +
-    '<h1>설문이 제출되었습니다</h1>' +
-    '<p>소중한 의견 감사드립니다.<br>남겨주신 내용은 다음 상품을 만드는 데 쓰입니다.</p>';
-
-  if (gift){
-    const isSns = sub.t === 'sns';
-    const what  = (res && res.giftLabel) ? res.giftLabel : (isSns ? '액자' : '데코 스티커');
-    h += '<div class="code"><div class="cl">' + (isSns ? '액자 증정 코드' : '스티커 증정 코드') + '</div>' +
-         '<div class="cv">'+esc(code)+'</div>' +
-         '<div class="cd">이 화면을 <b>부스 직원에게 보여주시면</b><br>' +
-         (isSns ? '완성 작품을 <b>액자에 넣어</b> 드립니다.' : esc(what) + ' 1개를 드립니다.') +
-         '</div></div>';
-  }
-  if (window.__imgFailed){
-    h += '<div class="pend">답변은 저장되었습니다. 다만 <b>사진이 올라가지 않았습니다.</b> ' +
-         '이 화면과 올리신 게시물을 직원에게 보여주시면 확인해 드립니다.</div>';
-  }
-  if (queued){
-    h += '<div class="pend"><b>전송 대기 중</b>입니다. ' +
-         '이 화면을 닫지 마시고 직원에게 보여주세요. 신호가 돌아오면 자동으로 전송됩니다.' +
-         '<div class="why">사유: ' + esc(window.__why || '알 수 없음') +
-         (window.__probe ? '<br>진단: <b>' + esc(window.__probe) + '</b>' : '') +
-         '<br>화면 ' + BUILD + '</div></div>';
-  }
-  h += '</div>';
-  root.innerHTML = h;
-  window.scrollTo(0,0);
-  if (queued) setTimeout(flushQueue, 3000);
-}
-
-function renderPicker(){
-  let h = '<div class="pick"><h1>헬로미추 설문</h1>' +
-    '<p class="sdesc">해당하는 설문을 골라 주세요.</p>';
-  Object.keys(SURVEYS).forEach(k=>{
-    const s=SURVEYS[k];
-    const gift = ['binder','binder_buy','sticker','sns'].indexOf(k)!==-1;
-    h += '<button class="pb" type="button" data-t="'+k+'">' +
-         '<div class="t">'+esc(s.name)+'</div>' +
-         '<div class="d">'+esc(s.lead)+'</div>' +
-         (gift?'<div class="g">'+(k==='sns'?'확인 후 액자를 드립니다':'작성하시면 데코스티커를 드립니다')+'</div>':'') +
-         '</button>';
-  });
-  h += '</div>';
-  root.innerHTML = h;
-  root.querySelectorAll('.pb').forEach(b=>b.addEventListener('click',()=>{
-    TYPE=b.dataset.t; SPEC=SURVEYS[TYPE]; step=0; A={};
-    loadDraft(); render(); window.scrollTo(0,0);
-  }));
-}
-
-if (SPEC) loadDraft();
-render();
-flushQueue();
-window.addEventListener('online', flushQueue);
+  $('againBtn').onclick = function(){ location.reload(); };
+})();
 </script>
-
 </body>
 </html>

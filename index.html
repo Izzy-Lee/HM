@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>헬로미추 수채화 컬러링 체험</title>
-<meta name="description" content="헬로미추 수채화 컬러링 체험 신청 - 2026 학산마당극 놀래">
+<title>헬로미추 · 수채화 컬러링 체험</title>
+<meta name="description" content="헬로미추 수채화 컬러링 체험 — 인천 미추홀">
 
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- 폰트는 렌더링을 막지 않게 나중에 적용한다. 부스 네트워크가 느려도
+<!-- 폰트는 렌더링을 막지 않게 나중에 적용한다. 네트워크가 느려도
      시스템 폰트로 화면이 먼저 뜬다. -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap"
       onload="this.onload=null;this.rel='stylesheet'">
@@ -64,12 +64,8 @@
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
-  /* 예약 패널 */
-  .event-info { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 16px; padding: 1.4rem 1.6rem; margin-bottom: 1.4rem; text-align: left; }
-  .event-row { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.55rem; }
-  .event-row:last-child { margin-bottom: 0; }
-  .event-label { font-size: 0.72rem; color: var(--brush-teal); font-weight: 500; letter-spacing: 0.06em; min-width: 40px; }
-  .event-value { font-size: 0.9rem; color: var(--ink); font-weight: 400; }
+  /* 홈 버튼 */
+  .home-intro { text-align: left; margin-bottom: 1.4rem; }
   .cta-btn { display: block; width: 100%; padding: 1rem 1.5rem; border: none; border-radius: 12px; font-family: 'Noto Sans KR', sans-serif; font-size: 1rem; font-weight: 500; letter-spacing: 0.02em; cursor: pointer; text-decoration: none; transition: transform 0.15s ease, background 0.15s ease; margin-bottom: 0.8rem; }
   .cta-btn:hover { transform: translateY(-1px); }
   .cta-btn:active { transform: translateY(0); }
@@ -105,17 +101,6 @@
   .summary-num span { font-size: 0.8rem; font-weight: 400; color: var(--ink-soft); }
   .slot-list { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 12px; overflow: hidden; margin-bottom: 1.2rem; }
   .slot-row { display: flex; align-items: center; width: 100%; padding: 0.65rem 1rem; border: none; border-bottom: 1px solid rgba(74,156,140,0.08); gap: 0.6rem; background: none; font-family: inherit; text-align: left; }
-  /* 회차 줄 자체를 누르는 방식 — 줄마다 작은 버튼을 두지 않는다 */
-  button.slot-row { cursor: pointer; }
-  button.slot-row:disabled { cursor: not-allowed; opacity: 0.45; }
-  button.slot-row.picked { background: rgba(74,156,140,0.12); }
-  button.slot-row.picked .slot-time { color: var(--brush-teal); font-weight: 700; }
-  .slot-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid rgba(74,156,140,0.35); flex-shrink: 0; position: relative; }
-  button.slot-row.picked .slot-check { border-color: var(--brush-teal); background: var(--brush-teal); }
-  button.slot-row.picked .slot-check::after { content: ''; position: absolute; left: 5px; top: 2px; width: 4px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
-  button.slot-row:disabled .slot-check { border-style: dashed; }
-  .reserve-cta { margin-top: 0.8rem; }
-  .reserve-cta:disabled { background: rgba(74,156,140,0.25); color: #fff; cursor: not-allowed; transform: none; }
   .slot-row:last-child { border-bottom: none; }
   .slot-row.past { opacity: 0.35; }
   .slot-time { font-size: 0.88rem; font-weight: 500; color: var(--ink); min-width: 46px; }
@@ -126,105 +111,12 @@
   .slot-remain.ok { color: var(--brush-teal); }
   .slot-remain.low { color: var(--brush-amber); }
   .slot-remain.full { color: var(--brush-pink); }
+  .slot-notice { background: rgba(212,132,58,0.09); border: 1px solid rgba(212,132,58,0.28);
+                 border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 0.8rem;
+                 font-size: 0.76rem; line-height: 1.55; color: var(--ink-soft); }
+  .slot-notice b { color: var(--brush-amber); }
 
-  /* 슬롯 예약 버튼 */
-  .slot-book-btn {
-    padding: 0.28rem 0.65rem;
-    background: var(--brush-teal);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.15s, transform 0.1s;
-    text-decoration: none;
-    display: inline-block;
-  }
-  .slot-book-btn:hover { background: #347a6c; transform: translateY(-1px); }
-  .slot-book-btn:active { transform: translateY(0); }
-  .slot-book-btn.disabled { background: rgba(74,156,140,0.2); color: var(--ink-soft); pointer-events: none; }
-  .slot-book-btn.full { background: rgba(200,120,120,0.15); color: var(--brush-pink); pointer-events: none; }
-
-  /* 시간대 선택 예약 박스 */
-  /* 예약 · 설문 · 후기 세 구역을 각자의 버튼 색 테두리로 묶는다 */
-  .reserve-slot-section { background: white; border: 2px solid #3d8a7a; border-radius: 14px; padding: 0.9rem 1rem; margin-bottom: 1.1rem; text-align: left; box-shadow: 0 2px 10px rgba(61,138,122,0.10); }
-  .step-badge { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-size: 0.7rem; font-weight: 700; color: #fff; margin-right: 0.35rem; flex-shrink: 0; }
-  .step-badge.teal { background: #3d8a7a; }
-  .step-badge.pink { background: #e8879d; }
-  .step-badge.blue { background: var(--brush-blue); }
-  .reserve-slot-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
-  .reserve-slot-title { display: inline-flex; align-items: center; font-family: 'Noto Sans KR', sans-serif; font-size: 0.86rem; font-weight: 700; color: var(--ink); }
-  .slot-refresh-btn { padding: 0.22rem 0.6rem; background: transparent; border: 1px solid rgba(74,156,140,0.35); border-radius: 6px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.7rem; color: var(--brush-teal); cursor: pointer; }
-  .slot-refresh-btn:active { background: rgba(74,156,140,0.08); }
-  /* 안쪽 스크롤을 두지 않는다 — 회차 목록과 예약 버튼이 한 흐름으로 보이게 */
-  .reserve-slot-list { border: 1px solid rgba(74,156,140,0.15); border-radius: 10px; overflow: hidden; }
-  .reserve-slot-note { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; color: var(--ink-soft); line-height: 1.6; margin-top: 0.55rem; }
-  .slot-empty { text-align: center; padding: 1.4rem 1rem; font-size: 0.8rem; color: var(--brush-pink); font-weight: 500; line-height: 1.6; }
-
-  /* 프로그램 선택 탭 */
-  .prog-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.7rem; }
-  .prog-tab {
-    flex: 1; padding: 0.55rem 0.5rem; border-radius: 9px; cursor: pointer;
-    background: var(--paper); border: 1.5px solid rgba(90,78,66,0.14);
-    font-family: 'Noto Sans KR', sans-serif; text-align: center; line-height: 1.35;
-    transition: border-color 0.15s, background 0.15s;
-  }
-  .prog-tab .pn { display: block; font-size: 0.79rem; font-weight: 700; color: var(--ink); }
-  .prog-tab .pm { display: block; font-size: 0.66rem; color: var(--ink-soft); margin-top: 0.1rem; }
-  .prog-tab.active { border-color: var(--brush-teal); background: rgba(74,156,140,0.08); }
-  .prog-tab.active .pn { color: var(--brush-teal); }
-  .prog-tab.paid.active { border-color: var(--brush-blue); background: rgba(90,126,184,0.08); }
-  .prog-tab.paid.active .pn { color: var(--brush-blue); }
-  .prog-tab.soldout { opacity: 0.5; }
-
-  /* 진행 순서 */
-  .journey { background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 0.7rem; text-align: left; }
-  .journey-title { font-family: 'Noto Sans KR', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; color: var(--ink-soft); margin-bottom: 0.6rem; }
-  .journey-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.42rem; }
-  .journey-steps li { display: flex; align-items: center; gap: 0.55rem; }
-  .jn { flex-shrink: 0; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: rgba(90,78,66,0.1); color: var(--ink-soft); font-size: 0.66rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-  .jn.cur { background: var(--brush-amber); color: white; }
-  .jt { font-family: 'Noto Sans KR', sans-serif; font-size: 0.76rem; color: var(--ink-soft); }
-  .jt b { color: var(--brush-amber); font-weight: 700; }
-  .jt .opt { font-size: 0.66rem; color: var(--ink-soft); opacity: 0.7; }
-
-  /* SNS 후기 인증 */
-  .cta-btn--sns { background: var(--brush-blue); color: white; }
-  .cta-btn--sns:hover { background: #4d6ea3; }
-
-  /* 설문이 아직 제대로 저장되지 않아 손님에게는 감춰둔다.
-     주소 끝에 ?k=0919 (또는 ?test=1) 를 붙이면 보인다 — 테스트용. */
-  [data-testonly] { display: none; }
-  .testonly-note { font-family:'Noto Sans KR',sans-serif; font-size:.7rem; color:#8a6520;
-                   background:#fff3e0; border:1px solid #e0b184; border-radius:8px;
-                   padding:.5rem .7rem; margin-bottom:.7rem; text-align:left; }
-  .survey-box { background: white; border: 2px solid #f5aebc; border-radius: 14px; padding: 0.9rem 1rem 0.6rem; margin-bottom: 1.1rem; text-align: left; box-shadow: 0 2px 10px rgba(232,135,157,0.12); }
-  .gift-pill { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; font-weight: 700; padding: 0.18rem 0.55rem; border-radius: 10px; background: rgba(212,132,58,0.14); color: var(--brush-amber); white-space: nowrap; }
-  .survey-sub { font-family: 'Noto Sans KR', sans-serif; font-size: 0.72rem; color: var(--ink-soft); line-height: 1.65; margin: 0.1rem 0 0.5rem; }
-  .survey-sub b { color: var(--brush-amber); }
-  .survey-buys { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 0.7rem; }
-  .buy-btn { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.75rem 0.9rem;
-             border: 1.5px solid rgba(212,132,58,0.4); border-radius: 10px; background: #fffaf3; text-decoration: none;
-             font-family: 'Noto Sans KR', sans-serif; transition: background 0.15s ease; }
-  .buy-btn:hover { background: #fdf1e2; }
-  .buy-btn .bt { font-size: 0.85rem; font-weight: 700; color: var(--ink); }
-  .buy-btn .bg { font-size: 0.66rem; font-weight: 700; color: var(--brush-amber); white-space: nowrap; }
-
-  .sns-box { background: white; border: 2px solid var(--brush-blue); border-radius: 14px; padding: 0.9rem 1rem; margin-bottom: 1.1rem; text-align: left; box-shadow: 0 2px 10px rgba(90,126,184,0.12); }
-  .sns-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
-  .sns-title { display: inline-flex; align-items: center; font-family: 'Noto Sans KR', sans-serif; font-size: 0.86rem; font-weight: 700; color: var(--ink); }
-  .frame-pill { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; font-weight: 700; padding: 0.18rem 0.55rem; border-radius: 10px; background: rgba(90,126,184,0.12); color: var(--brush-blue); white-space: nowrap; }
-  .frame-pill.low { background: rgba(212,132,58,0.14); color: var(--brush-amber); }
-  .frame-pill.out { background: rgba(200,120,120,0.14); color: var(--brush-pink); }
-  .sns-steps { margin: 0 0 0.8rem; padding-left: 1.1rem; }
-  .sns-steps li { font-family: 'Noto Sans KR', sans-serif; font-size: 0.74rem; color: var(--ink-soft); line-height: 1.65; margin-bottom: 0.3rem; }
-  .sns-steps b { color: var(--ink); font-weight: 700; }
-  .sns-note { font-family: 'Noto Sans KR', sans-serif; font-size: 0.68rem; color: var(--ink-soft); line-height: 1.6; margin-top: 0.5rem; text-align: center; }
-
-  /* 마감 안내 토스트 */
+  /* 안내 토스트 */
   #slotToast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(12px); max-width: 90%; background: #b8484f; color: #fff; font-family: 'Noto Sans KR', sans-serif; font-size: 0.8rem; line-height: 1.5; padding: 0.7rem 1rem; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.18); opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; z-index: 999; text-align: center; }
   #slotToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -246,12 +138,15 @@
   .sheet-thumb-img { display: block; width: 100%; height: auto; background-color: rgba(74,156,140,0.08); }
   .sheet-card .sheet-card-info { padding: 0.7rem 0.9rem 0.8rem; display: flex; flex-direction: column; gap: 0.2rem; }
   .sheet-card .sheet-num-badge { align-self: flex-start; margin-bottom: 0.2rem; }
-  .sheet-card:not(:has(.sheet-thumb-img)) { flex-direction: row; align-items: flex-start; padding: 0.8rem 1rem; }
-  .sheet-card:not(:has(.sheet-thumb-img)) .sheet-card-info { padding: 0; }
   .sheet-num-badge { min-width: 28px; height: 28px; background: var(--brush-teal); color: white; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
   .sheet-card-title { font-size: 0.88rem; font-weight: 600; color: var(--ink); margin-bottom: 0.2rem; }
   .sheet-card-desc { font-size: 0.76rem; color: var(--ink-soft); line-height: 1.5; margin-bottom: 0.3rem; }
   .sheet-card-tags { font-size: 0.68rem; color: var(--brush-teal); }
+  .sheet-stock-row { display: flex; align-items: center; justify-content: space-between; margin-top: 0.3rem; }
+  .sheet-stock-badge { font-size: 0.68rem; font-weight: 600; padding: 0.18rem 0.5rem; border-radius: 8px; }
+  .sheet-stock-badge.available { background: rgba(74,156,140,0.12); color: var(--brush-teal); }
+  .sheet-stock-badge.low { background: rgba(212,132,58,0.12); color: var(--brush-amber); }
+  .sheet-stock-badge.soldout { background: rgba(200,120,120,0.12); color: var(--brush-pink); }
 
   .exp-item { display: flex; gap: 0.8rem; align-items: flex-start; margin-bottom: 0.9rem; }
   .exp-icon-wrap { font-size: 1.4rem; min-width: 32px; text-align: center; }
@@ -262,30 +157,6 @@
   .contact-row { display: flex; gap: 0.8rem; font-size: 0.78rem; color: var(--ink-soft); margin-bottom: 0.4rem; }
   .contact-row:last-child { margin-bottom: 0; }
   .contact-key { min-width: 52px; font-weight: 500; color: var(--brush-teal); }
-
-  /* 예약을 마친 사람에게 보여주는 확인 배너 */
-  .my-booking { display: none; background: rgba(74,156,140,0.1); border: 1px solid rgba(74,156,140,0.35);
-                border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1rem; }
-  .my-booking.on { display: block; }
-  .my-booking .mb-head { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 700; color: var(--brush-teal); }
-  .my-booking .mb-check { width: 16px; height: 16px; border-radius: 50%; background: var(--brush-teal); position: relative; flex-shrink: 0; }
-  .my-booking .mb-check::after { content: ''; position: absolute; left: 5px; top: 3px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
-  .my-booking .mb-slot { font-size: 1.05rem; font-weight: 700; margin: 0.35rem 0 0.15rem; }
-  .my-booking .mb-sub { font-size: 0.74rem; color: var(--ink-soft); line-height: 1.6; }
-
-  /* 예약 서버가 아직 새 일정으로 갱신되지 않았을 때의 안내 */
-  .slot-notice { background: rgba(212,132,58,0.09); border: 1px solid rgba(212,132,58,0.28);
-                 border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 0.8rem;
-                 font-size: 0.76rem; line-height: 1.55; color: var(--ink-soft); }
-  .slot-notice b { color: var(--brush-amber); }
-
-  /* 도안 재고 — about 패널 내 배지 */
-  .sheet-stock-row { display: flex; align-items: center; justify-content: space-between; margin-top: 0.3rem; }
-  .sheet-stock-badge { font-size: 0.68rem; font-weight: 600; padding: 0.18rem 0.5rem; border-radius: 8px; }
-  .sheet-stock-badge.available { background: rgba(74,156,140,0.12); color: var(--brush-teal); }
-  .sheet-stock-badge.low { background: rgba(212,132,58,0.12); color: var(--brush-amber); }
-  .sheet-stock-badge.soldout { background: rgba(200,120,120,0.12); color: var(--brush-pink); }
-
 </style>
 </head>
 <body>
@@ -295,7 +166,7 @@
   <h1 class="brand-wrap">
     <img src="img/logo2.png" class="brand" alt="헬로미추">
   </h1>
-  <p class="tagline">2026 학산마당극 놀래 · 수채화 컬러링 체험</p>
+  <p class="tagline">인천 미추홀 · 수채화 컬러링 체험</p>
 
   <!-- 언어 전환 버튼 -->
   <div class="lang-switch-wrap">
@@ -306,145 +177,29 @@
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('reserve')">예약 · 설문</button>
+    <button class="tab-btn active" onclick="switchTab('reserve')">홈</button>
     <button class="tab-btn" onclick="switchTab('status')">예약 현황</button>
     <button class="tab-btn" onclick="switchTab('about')">헬로미추</button>
   </div>
 
-  <!-- 예약/설문 패널 -->
+  <!-- 홈 패널 : 소개 + 예약 + 설문 -->
   <div class="tab-panel active" id="panel-reserve">
-    <div class="event-info">
-      <div class="event-row">
-        <span class="event-label">일시</span>
-        <span class="event-value">2026. 9. 19(토)</span>
-      </div>
-      <div class="event-row">
-        <span class="event-label">장소</span>
-        <span class="event-value">수봉산 폭포 앞 · 학산마당극 놀래</span>
-      </div>
-      <div class="event-row">
-        <span class="event-label">운영</span>
-        <span class="event-value">13:00 — 18:30 · 30분 11타임</span>
-      </div>
-      <div class="event-row">
-        <span class="event-label">참가</span>
-        <span class="event-value">컬러링 무료 · 바인더 30,000원</span>
-      </div>
-    </div>
-
-    <div class="my-booking" id="myBooking"><!-- JS 렌더 --></div>
-
-    <!-- 진행 단계 안내 -->
-    <div class="journey">
-      <div class="journey-title">진행 순서</div>
-      <ol class="journey-steps">
-        <li><span class="jn">1</span><span class="jt">시간대 예약</span></li>
-        <li><span class="jn">2</span><span class="jt">체험 30분</span></li>
-        <li><span class="jn cur">3</span><span class="jt">체험 설문 <b>필수</b></span></li>
-        <li><span class="jn">4</span><span class="jt">SNS 후기 <span class="opt">선택</span></span></li>
-        <li><span class="jn">5</span><span class="jt">후기 인증 → 액자</span></li>
-      </ol>
-    </div>
-
-    <div style="background:#fff3e0;border:1.5px solid #d4843a;border-radius:10px;padding:0.7rem 1rem;margin-bottom:0.7rem;display:flex;align-items:flex-start;gap:0.5rem;">
-      <span style="font-size:1.1rem;flex-shrink:0;">⚠️</span>
-      <div>
-        <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.82rem;font-weight:700;color:#b85c00;margin-bottom:0.2rem;">설문은 무료 체험의 참여 조건입니다</div>
-        <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.72rem;color:#7a5000;line-height:1.5;">
-          정가 25,000원 상당의 컬러링 체험을 행사 한정 무료로 제공하는 대신,
-          <strong>체험 후 설문 작성</strong>을 부탁드립니다.<br>
-          작품은 <strong>설문 완료 화면을 보여주시면</strong> 엽서 봉투에 담아 전달해 드려요.
-        </div>
-      </div>
-    </div>
-
-    <div class="reserve-slot-section">
-      <div class="reserve-slot-head">
-        <span class="reserve-slot-title" style="color:#3d8a7a;"><span class="step-badge teal">1</span>체험 예약</span>
-        <button class="slot-refresh-btn" type="button" onclick="refreshSlots()">새로고침</button>
-      </div>
-
-      <div class="prog-tabs" id="progTabs"><!-- JS 렌더 --></div>
-
-      <div id="reserveSlots">
-        <div class="status-loading" style="padding:1.2rem 0;">예약 가능한 시간대를 불러오는 중...</div>
-      </div>
-      <p class="reserve-slot-note">
-        원하는 <strong>회차를 먼저 누르고</strong>, 아래 <strong style="color:var(--brush-teal);">예약하기</strong> 버튼을 눌러주세요.<br>
-        회차당 정원(<strong id="slotCapacityLabel">6</strong>명)이 모두 찬 시간대는
-        <strong style="color:var(--brush-pink);">마감</strong>으로 표시되며 선택할 수 없습니다.
-      </p>
-    </div>
-    <div id="reserveFallback" style="display:none;">
-      <a class="cta-btn cta-btn--reserve" href="reserve.html">
-        체험 예약하기
-      </a>
-      <p class="reserve-slot-note" style="text-align:center;margin-bottom:0.7rem;">
-        실시간 잔여 현황을 불러오지 못했습니다. 폼에서 시간대를 직접 선택해 주세요.
-      </p>
-    </div>
-    <div class="survey-box" data-testonly>
-      <div class="sns-head">
-        <span class="sns-title" style="color:#d4657f;"><span class="step-badge pink">2</span>체험 후 설문</span>
-        <span class="gift-pill">유료 참여 시 스티커 증정</span>
-      </div>
-
-      <a class="cta-btn cta-btn--survey" id="surveyBtn" href="survey.html">
-        체험 후 설문 작성하기
-      </a>
-      <p class="sns-note" id="surveyHint" style="display:none;margin:-0.45rem 0 0.7rem;"></p>
-
-      <p class="survey-sub">굿즈를 구매하셨다면 아래 설문도 부탁드립니다. 작성하시면 <b>데코 스티커 1개</b>를 드려요.</p>
-      <div class="survey-buys">
-        <a class="buy-btn" href="survey.html?t=binder_buy">
-          <span class="bt">자개바인더 구매 설문</span>
-          <span class="bg">스티커 증정</span>
-        </a>
-        <a class="buy-btn" href="survey.html?t=sticker">
-          <span class="bt">데코스티커 구매 설문</span>
-          <span class="bg">스티커 증정</span>
-        </a>
-      </div>
-    </div>
-
-    <!-- SNS 후기 인증 -->
-    <div class="sns-box" data-testonly>
-      <div class="sns-head">
-        <span class="sns-title" style="color:var(--brush-blue);"><span class="step-badge blue">3</span>SNS 후기 · 액자 증정</span>
-        <span class="frame-pill" id="framePill">액자 28개</span>
-      </div>
-      <ol class="sns-steps">
-        <li>인스타그램 등에 체험 후기를 올립니다. 해시태그 <b>#헬로미추</b> <b>#수채화컬러링</b> 2개는 필수예요.</li>
-        <li>아래 <b>후기 인증 설문</b>에 게시물 <b>링크(URL)</b>와 <b>캡처 이미지</b>를 함께 올려주세요.</li>
-        <li>운영자가 확인하면 완성 작품을 <b>액자에 넣어 즉석에서</b> 드립니다.</li>
-      </ol>
-      <a class="cta-btn cta-btn--sns" id="snsBtn" href="survey.html?t=sns">
-        후기 인증 설문 작성하기
-      </a>
-      <p class="sns-note">
-        선착순 <strong>28명</strong> 한정 · 소진 시 종료<br>
-사진은 자동으로 줄여서 올라가니 구글 로그인 없이 바로 제출하실 수 있습니다.
+    <div class="about-section home-intro">
+      <span class="about-label">HELLO MICHU</span>
+      <h2 class="about-title">헬로미추와 함께 색을 입혀요</h2>
+      <div class="about-line"></div>
+      <p class="about-body">
+        <strong>헬로미추(Hello Michu)</strong>는 인천 미추홀구를 기반으로 한 관광두레 주민사업체입니다.<br>
+        미추홀구의 역사와 자연 — 소서노 이야기, 문학산, 갯벌, 골목 풍경 — 을 수채화 컬러링으로 담아냅니다.<br>
+        느리게 색을 입히는 시간 속에서 이 도시의 결을 새롭게 발견하는 경험을 제안합니다.
       </p>
     </div>
 
+    <a class="cta-btn cta-btn--reserve" href="reserve.html">체험 예약하기</a>
+    <a class="cta-btn cta-btn--survey" id="classSurveyBtn" href="survey.html">수업 만족도 설문</a>
     <p class="note">
-      예약을 마치면 <strong>예약 완료 화면</strong>이 나옵니다. 따로 문자는 발송되지 않으니<br>
-      그 화면을 캡처해 두시고, 현장에서 <strong>이름</strong>을 말씀해 주세요.
+      수업 현장에서 받은 <strong>QR이나 링크</strong>로 들어오시면 수업 이름이 자동으로 입력됩니다.
     </p>
-
-    <div style="background:#f5f3ee;border:1px solid rgba(90,78,66,0.15);border-radius:10px;padding:0.8rem 1rem;margin-top:0.4rem;">
-      <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.75rem;font-weight:700;color:var(--ink-soft);letter-spacing:0.05em;margin-bottom:0.4rem;">📌 현장 운영 안내</div>
-      <p style="font-family:'Noto Sans KR',sans-serif;font-size:0.72rem;color:var(--ink-soft);line-height:1.85;">
-        현장 상황에 따라 예약 시간이 다소 변동될 수 있습니다.<br>
-        실제 체험 순서는 예약 시간대 내 <strong style="color:var(--ink);">접수 순서</strong>를 기준으로 배정되므로,
-        원하시는 시간대를 <strong style="color:var(--ink);">정확히 선택</strong>하여 접수해 주세요.<br><br>
-        현장에서 개별 문의를 주시더라도 운영 특성상 모든 분을 일일이 기억하기 어렵습니다.<br>
-        체험 순서는 <strong style="color:var(--ink);">시스템 예약 순서</strong>를 기준으로만 운영되오니 반드시 사전 예약 후 방문해 주세요.<br><br>
-        예약 후 <strong style="color:#c0392b;">노쇼(미방문) 시 해당 슬롯은 취소</strong>되며, 현장 대기자에게 우선 배정될 수 있습니다.<br><br>
-        수채화는 <strong style="color:var(--ink);">마르는 시간</strong>이 필요합니다. 채색을 마치고 건조를 기다리는 동안
-        테이블의 QR로 설문을 작성해 주시면 기다림 없이 바로 작품을 받아가실 수 있습니다.
-      </p>
-    </div>
   </div>
 
   <!-- 현황 패널 -->
@@ -503,27 +258,20 @@
 
       <div class="about-section">
         <span class="about-label">EXPERIENCE</span>
-        <h2 class="about-title">학산마당극 놀래 체험</h2>
+        <h2 class="about-title">체험 프로그램</h2>
         <div class="about-line"></div>
         <div class="exp-item">
           <div class="exp-icon-wrap">🎨</div>
           <div>
-            <div class="exp-item-title">현장 컬러링 체험</div>
-            <div class="exp-item-desc">수채물감 44색·세필붓 등 전 재료 제공 · 네 장 중 한 장 선택<br><span style="color:var(--brush-teal);font-weight:500;">30분 · 무료 (정가 25,000원 상당)</span></div>
+            <div class="exp-item-title">수채화 컬러링 체험</div>
+            <div class="exp-item-desc">수채물감 44색·세필붓 등 전 재료 제공 · 네 장 중 한 장 선택</div>
           </div>
         </div>
         <div class="exp-item">
           <div class="exp-icon-wrap">🛍️</div>
           <div>
             <div class="exp-item-title">전통문화 바인더 체험</div>
-            <div class="exp-item-desc">블랙 바인더에 자개·레진 공예 장식<br><span style="color:var(--brush-blue);font-weight:500;">30분 · 30,000원 (현장 결제)</span></div>
-          </div>
-        </div>
-        <div class="exp-item">
-          <div class="exp-icon-wrap">🛍️</div>
-          <div>
-            <div class="exp-item-title">현장 판매</div>
-            <div class="exp-item-desc">전통문화 바인더 완성품 20,000원 · 데코 스티커 2,500원<br><span style="color:var(--ink-soft);">구매 후 설문 참여 시 스티커 1종 증정</span></div>
+            <div class="exp-item-desc">블랙 바인더에 자개·레진 공예 장식</div>
           </div>
         </div>
       </div>
@@ -531,107 +279,40 @@
       <div class="about-contact">
         <div class="contact-row"><span class="contact-key">Instagram</span><span>@arternallyy</span></div>
         <div class="contact-row"><span class="contact-key">문의</span><span>nswer@naver.com</span></div>
-        <div class="contact-row" style="margin-top:0.3rem;"><span class="contact-key">주최</span><span>미추홀구 관광두레 주민사업체</span></div>
+        <div class="contact-row" style="margin-top:0.3rem;"><span class="contact-key">운영</span><span>미추홀구 관광두레 주민사업체</span></div>
       </div>
 
     </div>
   </div>
 
-</div></br></br>
-
+</div>
 
 <a href="https://smartstore.naver.com/funnyshow/category/96fc3451b09743599b090450ae605b83?cp=1"
    target="_blank"
-   style="display:flex;align-items:center;justify-content:center;gap:0.5rem;margin:0 auto 0.6rem;max-width:400px;width:100%;padding:0.75rem 1rem;background:white;border:1.5px solid rgba(74,156,140,0.3);border-radius:12px;text-decoration:none;color:var(--ink);transition:border-color 0.2s;">
+   style="display:flex;align-items:center;justify-content:center;gap:0.5rem;margin:1.6rem auto 0.6rem;max-width:400px;width:100%;padding:0.75rem 1rem;background:white;border:1.5px solid rgba(74,156,140,0.3);border-radius:12px;text-decoration:none;color:var(--ink);transition:border-color 0.2s;position:relative;z-index:1;">
   <span style="font-size:1rem;">🛍️</span>
   <div style="text-align:left;">
     <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.82rem;font-weight:600;color:var(--ink);">아트에이블 수채화 다이어리 구매하기</div>
     <div style="font-family:'Noto Sans KR',sans-serif;font-size:0.7rem;color:var(--brush-teal);">스마트스토어 바로가기 →</div>
   </div>
 </a>
-<p class="footer">주식회사 헬로미추 · Hello Michu 2026</p>
+<p class="footer">주식회사 헬로미추 · Hello Michu</p>
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
 
-// 예전 구글 예약 폼의 문항 ID. 예약은 이제 reserve.html 에서 받으므로 쓰이지 않는다.
-// 구글 폼으로 되돌려야 할 때를 위해 남겨둔다.
-// const ENTRY_PROGRAM = 'entry.1189251627';
-// const ENTRY_TIME    = 'entry.520138299';
+/* 첫 화면(홈)은 소개 + 예약 버튼 + 수업 만족도 설문 버튼만 둔다.
+   예약은 reserve.html, 설문은 survey.html(수업 만족도 — 별도 시트)에서 받는다.
+   아래 코드는 '예약 현황' 탭과 '헬로미추' 탭의 도안 카드를 그린다. */
 
-// ── 설문 ──────────────────────────────────────────────────────
-// 설문은 구글 폼 대신 이 사이트의 survey.html 로 직접 받습니다.
-// 예약해 둔 회차·이름이 자동으로 실려서, 어느 회차 참가자가 설문했는지가 바로 연결됩니다.
-//   컬러링 체험 → ?t=coloring     자개바인더 체험 → ?t=binder
-//   자개바인더 구매 → ?t=binder_buy   데코스티커 구매 → ?t=sticker
-// 유료(체험비·구매) 설문을 마치면 완료 화면에 스티커 증정 코드가 뜹니다.
-const SURVEY_PAGE = 'survey.html';
-
-// SNS 후기 인증도 이 사이트에서 받습니다. 캡처 이미지는 구글 드라이브에 저장됩니다.
-
-/** 예약한 회차를 설문 주소에 실어준다 */
-function surveyLink() {
-  const last = getLastSelection();
-  const p = new URLSearchParams();
-  if (last) {
-    p.set('t', last.program === '바인더' ? 'binder' : 'coloring');
-    p.set('slot', last.program + ' ' + last.time);
-  }
-  const q = p.toString();
-  return SURVEY_PAGE + (q ? '?' + q : '');
-}
-
-function withSlotPrefill(base, entryProgram, entryTime) {
-  const last = getLastSelection();
-  if (!last || !entryProgram || !entryTime) return base;
-  const params = new URLSearchParams();
-  params.set(entryProgram, last.program);
-  params.set(entryTime, last.time);
-  return base + (base.indexOf('?') === -1 ? '?' : '&') + params.toString();
-}
-
-/** 예약 정보가 있으면 설문 링크에 회차를 심어 둔다 */
-function applySurveyPrefill() {
-  const last = getLastSelection();
-  const sBtn = document.getElementById('surveyBtn');
-  const nBtn = document.getElementById('snsBtn');
-  if (sBtn) sBtn.href = surveyLink();
-  if (nBtn) {
-    const q = new URLSearchParams({ t: 'sns' });
-    if (last) q.set('slot', last.program + ' ' + last.time);
-    nBtn.href = 'survey.html?' + q.toString();
-  }
-
-  const hint = document.getElementById('surveyHint');
-  if (hint) {
-    hint.innerHTML = last
-      ? '예약하신 <strong style="color:var(--brush-teal);">' + programOf(last.program).name + ' ' + last.time +
-        '</strong> 회차가 설문에 자동으로 입력됩니다.<br>유료 체험·구매 후 설문을 작성하시면 <strong style="color:var(--brush-teal);">데코스티커</strong>를 드립니다.'
-      : '';
-    hint.style.display = last ? 'block' : 'none';
-  }
-}
-// 예전 구글 예약 폼 주소 (되돌릴 때 참고용)
-// const FORM_BASE = 'https://docs.google.com/forms/d/e/1FAIpQLScvLvrppxjadzctUW2HHTvMI789QlbTPXDV4CxZ7gB2tiAKZw/viewform';
-
-// ── 행사 상수 ──
+// ── 행사 상수 (예약 현황 표시용) ──
 const EVENT_DATE = '9월 19일 (토)';
 
-// ── 예약 프로그램 (같은 타임을 공유하되 정원은 별개) ──
 const PROGRAMS = [
-  /* dayLimit = 하루에 받을 수 있는 최대 인원.
-     컬러링 66 = 11회차 × 6명 (수채화지 100장을 준비해 재료가 아니라 좌석이 상한)
-     바인더 50 = 종이바인더 100개 중 체험분 50개 */
-  { key: '컬러링',      name: '컬러링 체험',  meta: '무료 · 30분 · 6명',      capacity: 6, dayLimit: 66, paid: false },
-  { key: '바인더',      name: '바인더 체험',  meta: '30,000원 · 30분 · 5명',  capacity: 5, dayLimit: 50, paid: true  },
+  { key: '컬러링', name: '컬러링 체험', meta: '무료 · 30분 · 6명',     capacity: 6, dayLimit: 66, paid: false },
+  { key: '바인더', name: '바인더 체험', meta: '30,000원 · 30분 · 5명', capacity: 5, dayLimit: 50, paid: true  },
 ];
-let activeProgram = PROGRAMS[0].key;
 
-/* ── 회차표 (확정) ──
-   운영 13:00~18:30 · 회당 30분 · 11타임, 쉬는 시간 없이 연속 운영.
-   (주최 측 체험시간은 15:00~18:30이지만 목표 인원 60명을 채우려면 13:00 시작이 필요하다)
-   API 응답을 그대로 믿지 않고 이 표를 기준으로 그린다. 배포가 밀린 구버전 스크립트가
-   옛 행사의 20분 격자(12:20·13:20…)를 내려주면 화면이 통째로 어긋나기 때문이다. */
 const SLOT_TIMES = ['13:00','13:30','14:00','14:30','15:00','15:30',
                     '16:00','16:30','17:00','17:30','18:00'];
 const EVENT_YMD  = { y: 2026, m: 9, d: 19 };   // 지난 회차 판정 기준일
@@ -640,20 +321,15 @@ function programOf(key) {
   return PROGRAMS.find(p => p.key === key) || PROGRAMS[0];
 }
 
-// ── 도안 재고 데이터 (개선판 3종 + 수봉폭포) ──
+// ── 도안 데이터 ──
 const SHEETS_META = [
-  { num:'01', key:'01 소서노',     name:'소서노 미추홀 정착', img:'img/sheet_sosuno2.jpg',      desc:'바다를 가리키는 소서노와 물가에 정박한 돛단배. 문학산 능선을 배경으로 남하 여정의 도착을 담았습니다', tags:'# 소서노 # 정착 # 설화' },
-  { num:'02', key:'02 문학산성',   name:'문학산성 옛모습',   img:'img/sheet_munhak2.jpg',      desc:'정상부를 두른 테뫼식 석축 산성과 성 안 건물들. 간척 이전, 바다와 섬이 코앞까지 들어오던 옛 풍경',            tags:'# 문학산성 # 테뫼식 # 고증' },
-  { num:'03', key:'03 갯벌',       name:'미추홀 갯벌',       img:'img/sheet_tidal3.jpg',       desc:'연흔과 게 구멍, 갯골이 살아 있는 갯벌. 칠게와 짱뚱어, 조개 무더기가 함께 담긴 서해 생태 풍경',       tags:'# 갯벌 # 생태 # 서해' },
-  { num:'04', key:'04 수봉폭포',   name:'수봉폭포',         img:'img/sheet_subong_fall.jpg', desc:'암벽 사이로 쏟아지는 폭포와 둥근 연못. 나무 계단과 울창한 숲이 어우러진 여름 풍경',                 tags:'# 수봉산 # 폭포 # 자연' },
+  { num:'01', key:'01 소서노',   name:'소서노 미추홀 정착', img:'img/sheet_sosuno2.jpg',      desc:'바다를 가리키는 소서노와 물가에 정박한 돛단배. 문학산 능선을 배경으로 남하 여정의 도착을 담았습니다', tags:'# 소서노 # 정착 # 설화' },
+  { num:'02', key:'02 문학산성', name:'문학산성 옛모습',   img:'img/sheet_munhak2.jpg',      desc:'정상부를 두른 테뫼식 석축 산성과 성 안 건물들. 간척 이전, 바다와 섬이 코앞까지 들어오던 옛 풍경',            tags:'# 문학산성 # 테뫼식 # 고증' },
+  { num:'03', key:'03 갯벌',     name:'미추홀 갯벌',       img:'img/sheet_tidal3.jpg',       desc:'연흔과 게 구멍, 갯골이 살아 있는 갯벌. 칠게와 짱뚱어, 조개 무더기가 함께 담긴 서해 생태 풍경',       tags:'# 갯벌 # 생태 # 서해' },
+  { num:'04', key:'04 수봉폭포', name:'수봉폭포',         img:'img/sheet_subong_fall.jpg', desc:'암벽 사이로 쏟아지는 폭포와 둥근 연못. 나무 계단과 울창한 숲이 어우러진 여름 풍경',                 tags:'# 수봉산 # 폭포 # 자연' },
 ];
+const STOCK_FALLBACK = { '01 소서노':30, '02 문학산성':30, '03 갯벌':30, '04 수봉폭포':10 };
 
-// 체험용 수채화지 100장 = 소서노 30 · 문학산성 30 · 갯벌 30 · 수봉폭포 10
-const STOCK_FALLBACK = {
-  '01 소서노':30, '02 문학산성':30, '03 갯벌':30, '04 수봉폭포':10
-};
-
-// ── 굿즈 · 액자 (예약 대상 아님, 재고 표시만) ──
 const GOODS_META = [
   { key:'바인더 체험',   name:'바인더 체험',       note:'30,000원' },
   { key:'바인더 완성품', name:'바인더 완성품 판매', note:'20,000원' },
@@ -662,14 +338,11 @@ const GOODS_META = [
 ];
 const GOODS_FALLBACK = { '바인더 체험':50, '바인더 완성품':50, '스티커':100, '액자':28 };
 
-/* total 을 주면 '잔여 적음' 기준을 총량의 30%(최소 3)로 잡는다.
-   도안별 준비 수량이 30장·10장으로 제각각이라, 10장짜리가 손도 안 댄 상태에서
-   '잔여 적음'으로 보이는 것을 막기 위함. total 이 없으면 종전대로 10 고정. */
 function getStockInfo(remain, total) {
   const lowAt = total ? Math.max(3, Math.ceil(total * 0.3)) : 10;
-  if (remain === 0)      return { cls:'soldout',   label:'품절',     countLabel:'0장' };
-  if (remain <= lowAt)   return { cls:'low',       label:'잔여 적음', countLabel:`${remain}장` };
-  return                   { cls:'available', label:'신청 가능', countLabel:`${remain}장` };
+  if (remain === 0)    return { cls:'soldout',   label:'품절',     countLabel:'0장' };
+  if (remain <= lowAt) return { cls:'low',       label:'잔여 적음', countLabel:`${remain}장` };
+  return                 { cls:'available', label:'신청 가능', countLabel:`${remain}장` };
 }
 
 function buildStockMap(arr) {
@@ -722,8 +395,6 @@ function renderAboutSheets(stockMap) {
 }
 
 // ── 예약 화면 주소 ──
-// 예약은 구글 폼 대신 이 사이트의 reserve.html 에서 받는다.
-// 정원 검사를 서버에서 잠금 걸고 하므로 초과 접수가 아예 들어오지 않는다.
 function makeReserveUrl(program, time) {
   const params = new URLSearchParams();
   params.set('program', program);
@@ -764,42 +435,32 @@ function switchTab(tab) {
   if (tab === 'status') loadStatus();
 }
 
-function fetchKST() { return Promise.resolve(); }
-
 function getKST() {
   const now = new Date();
   const utc = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
   return new Date(utc + (9 * 60 * 60 * 1000));
 }
 
-function getActiveDate() {
-  return EVENT_DATE;   // 하루짜리 행사
-}
-
 function isPast(timeStr) {
   const kst   = getKST();
   const today = kst.getFullYear() * 10000 + (kst.getMonth() + 1) * 100 + kst.getDate();
   const event = EVENT_YMD.y * 10000 + EVENT_YMD.m * 100 + EVENT_YMD.d;
-  if (today < event) return false;   // 행사 전에는 지난 회차가 없다
-  if (today > event) return true;    // 행사 다음날부터는 전부 종료
-
+  if (today < event) return false;
+  if (today > event) return true;
   const [h, m] = timeStr.split(':').map(Number);
-  // 슬롯 종료시각(시작+30분) 기준
   const endTotal = h * 60 + m + 30;
   const nowTotal = kst.getHours() * 60 + kst.getMinutes();
   return nowTotal >= endTotal;
 }
 
-// ── 슬롯 데이터 캐시 (TTL) ──
-const SLOT_TTL_MS = 60 * 1000;   // 60초 지나면 재조회
-const DEFAULT_CAPACITY = 10;   // API가 capacity를 안 주면 사용하는 기본 정원
+// ── 슬롯 데이터 캐시 ──
+const SLOT_TTL_MS = 60 * 1000;
+const DEFAULT_CAPACITY = 10;
 let _fetchedAt = 0;
 let _inflight = null;
 
-/* 마지막 응답을 브라우저에 저장해 둔다. 다음 방문 때 화면을 먼저 그려놓고
-   새 데이터를 받아 덮어쓴다 — 부스 네트워크가 느려도 빈 화면을 보지 않게. */
 const SLOT_CACHE_KEY = 'hm_slots_cache';
-const SLOT_CACHE_MAX = 6 * 60 * 60 * 1000;   // 6시간 지난 캐시는 버린다
+const SLOT_CACHE_MAX = 6 * 60 * 60 * 1000;
 
 function saveSlotCache(data) {
   try {
@@ -818,14 +479,12 @@ function readSlotCache() {
   } catch (e) { return null; }
 }
 
-/* 저장해 둔 현황으로 화면을 먼저 채운다. 서버 응답이 오면 곧바로 덮어쓴다. */
 function paintFromCache() {
   const c = readSlotCache();
   if (!c) return false;
   window._cachedSlots = normalizeSlots(c.slots);
   window._cachedStock = buildStockMap(c.sheetStock);
   window._cachedGoods = buildGoodsMap(c.goods);
-  renderReserveSlots(window._cachedSlots);
   renderStockList(window._cachedStock);
   renderGoodsList(window._cachedGoods);
   renderAboutSheets(window._cachedStock);
@@ -837,9 +496,6 @@ function fetchData(force) {
     return Promise.resolve({ slots: window._cachedSlots, sheetStock: window._cachedStockArr });
   }
   if (_inflight) return _inflight;
-  /* 주소에 매번 다른 값을 붙이고 캐시를 끈다.
-     안 그러면 브라우저가 예전 응답을 그대로 내주어, 시트를 고쳐도
-     새로고침을 여러 번 해야 반영되는 것처럼 보인다. */
   _inflight = fetch(API_URL + '?t=' + Date.now(), { cache: 'no-store' })
     .then(r => r.json())
     .then(data => {
@@ -857,23 +513,17 @@ function fetchData(force) {
   return _inflight;
 }
 
-/* API 응답을 계획된 회차표로 정규화한다.
-   프로그램 구분이 있고 시간이 SLOT_TIMES 안에 있는 항목만 실제 잔여로 인정한다.
-   하나도 없으면 구버전 배포본이 응답한 것으로 보고(window._slotsLive=false)
-   옛 예약 수가 9/19 회차의 '마감'으로 둔갑하지 않게 잔여를 비워 둔다. */
 function normalizeSlots(apiSlots) {
   const byKey = {};
   let live = false;
-
   (Array.isArray(apiSlots) ? apiSlots : []).forEach(s => {
-    if (!s || !s.program) return;                                  // 구버전: 프로그램 없음
+    if (!s || !s.program) return;
     const time = String(s.time || '').trim();
-    if (SLOT_TIMES.indexOf(time) === -1) return;                   // 구버전: 옛 시간표
+    if (SLOT_TIMES.indexOf(time) === -1) return;
     if (!PROGRAMS.some(p => p.key === s.program)) return;
     byKey[s.program + '|' + time] = s;
     live = true;
   });
-
   const out = [];
   PROGRAMS.forEach(p => {
     SLOT_TIMES.forEach(time => {
@@ -883,42 +533,34 @@ function normalizeSlots(apiSlots) {
                    capacity: Number(s.capacity || s.total || p.capacity),
                    remain:   Math.max(0, Number(s.remain) || 0) });
       } else {
-        // live 이면 응답에 없는 회차는 아직 예약이 없는 것으로 본다(최종 정원 검사는 서버가 한다).
-        // live 가 아니면 잔여를 알 수 없으므로 remain 을 비워 '확인 중'으로 표시한다.
         out.push({ program: p.key, time: time, capacity: p.capacity,
                    remain: live ? p.capacity : null });
       }
     });
   });
-
   window._slotsLive = live;
   return out;
 }
 
-// ── 슬롯 1건의 예약 가능 여부 판정 ──
 function slotState(s) {
   const capacity = Number(s.capacity || s.total || programOf(s.program).capacity || DEFAULT_CAPACITY);
-  const pending  = (s.remain === null || s.remain === undefined);   // 잔여를 아직 모른다
+  const pending  = (s.remain === null || s.remain === undefined);
   const remain   = pending ? 0 : Math.max(0, Number(s.remain) || 0);
   const past     = isPast(s.time);
   const full     = !past && !pending && remain <= 0;
   const pct      = (pending || capacity <= 0) ? 0
                  : Math.min(100, Math.round((capacity - remain) / capacity * 100));
-
   let label, cls;
   if (past)              { label = '종료 · 0석'; cls = 'full'; }
   else if (pending)      { label = '확인 중';    cls = ''; }
   else if (full)         { label = '마감';       cls = 'full'; }
   else if (remain === 1) { label = '1석 남음';   cls = 'low'; }
   else                   { label = remain + '석 남음'; cls = 'ok'; }
-
   return { capacity, remain, past, full, pending, pct, label, cls,
            bookable: !past && !pending && !full };
 }
 
-function slotProgram(s) {
-  return s.program || PROGRAMS[0].key;   // 구버전 API 호환: 프로그램이 없으면 컬러링으로 간주
-}
+function slotProgram(s) { return s.program || PROGRAMS[0].key; }
 
 function findSlot(slots, program, time) {
   return (slots || []).find(x => slotProgram(x) === program && x.time === time) || null;
@@ -926,8 +568,7 @@ function findSlot(slots, program, time) {
 
 function isSlotBookable(slots, program, time) {
   const s = findSlot(slots, program, time);
-  if (!s) return false;
-  return slotState(s).bookable;
+  return s ? slotState(s).bookable : false;
 }
 
 function slotsOf(slots, program) {
@@ -947,192 +588,35 @@ function showToast(msg) {
   window._toastTimer = setTimeout(() => el.classList.remove('show'), 3800);
 }
 
-/* 슬롯 목록 HTML
-   selectable=true 면 줄 전체가 '이 회차 고르기' 버튼이 된다.
-   줄마다 작은 예약 버튼을 두지 않고, 목록 아래 큰 버튼 하나로 예약을 진행한다. */
-function slotRowsHtml(slots, selectable, hidePast) {
+function slotRowsHtml(slots) {
   let html = '';
   slots.forEach(s => {
-    const st   = slotState(s);
-    const prog = slotProgram(s);
-    if (hidePast && st.past) return;
-
-    const inner =
-      (selectable ? '<span class="slot-check"></span>' : '') +
-      '<span class="slot-time">' + s.time + '</span>' +
-      '<div class="slot-bar-wrap">' +
-        '<div class="slot-bar ' + ((st.full || st.past) ? 'full' : '') +
-        '" style="width:' + (st.past ? 100 : st.pct) + '%"></div>' +
-      '</div>' +
-      '<span class="slot-remain ' + st.cls + '">' + st.label + '</span>';
-
-    if (!selectable) {
-      html += '<div class="slot-row ' + (st.past ? 'past' : '') + '">' + inner + '</div>';
-      return;
-    }
-
-    const picked = (pickedProgram() === prog && pickedTime() === s.time);
-    html += '<button type="button" class="slot-row' + (st.past ? ' past' : '') +
-              (picked ? ' picked' : '') + '"' +
-              (st.bookable ? '' : ' disabled') +
-              ' onclick="pickSlot(\'' + prog + '\',\'' + s.time + '\')">' +
-              inner +
-            '</button>';
+    const st = slotState(s);
+    html += '<div class="slot-row ' + (st.past ? 'past' : '') + '">' +
+              '<span class="slot-time">' + s.time + '</span>' +
+              '<div class="slot-bar-wrap">' +
+                '<div class="slot-bar ' + ((st.full || st.past) ? 'full' : '') +
+                '" style="width:' + (st.past ? 100 : st.pct) + '%"></div>' +
+              '</div>' +
+              '<span class="slot-remain ' + st.cls + '">' + st.label + '</span>' +
+            '</div>';
   });
   return html;
-}
-
-// ── 회차 선택 상태 (프로그램별로 따로 기억한다) ──
-const _picked = {};
-function pickedProgram() { return activeProgram; }
-function pickedTime()    { return _picked[activeProgram] || ''; }
-
-function pickSlot(program, time) {
-  activeProgram = program;
-  _picked[program] = (_picked[program] === time) ? '' : time;   // 다시 누르면 해제
-  renderAllSlotViews();
-}
-
-/* 큰 예약 버튼 — 고른 회차로 예약 화면을 연다 */
-function goReserveCta() {
-  const time = pickedTime();
-  if (!time) { showToast('먼저 예약할 회차를 선택해 주세요.'); return; }
-  bookSlot(activeProgram, time);
-}
-
-// ── 예약 패널: 프로그램 탭 + 시간대 선택 목록 ──
-function renderProgramTabs(slots) {
-  const el = document.getElementById('progTabs');
-  if (!el) return;
-  el.innerHTML = PROGRAMS.map(p => {
-    const list = slotsOf(slots, p.key);
-    const open = list.filter(x => slotState(x).bookable).length;
-    const cls  = ['prog-tab', p.paid ? 'paid' : '', p.key === activeProgram ? 'active' : '',
-                  (list.length && !open) ? 'soldout' : ''].filter(Boolean).join(' ');
-    return '<button type="button" class="' + cls + '" onclick="selectProgram(\'' + p.key + '\')">' +
-             '<span class="pn">' + p.name + '</span>' +
-             '<span class="pm">' + p.meta + '</span>' +
-           '</button>';
-  }).join('');
-}
-
-function selectProgram(key) {
-  activeProgram = key;
-  if (window._cachedSlots) renderReserveSlots(window._cachedSlots);
-}
-
-function renderReserveSlots(slots) {
-  const el = document.getElementById('reserveSlots');
-  if (!el) return;
-  const fb = document.getElementById('reserveFallback');
-
-  if (!Array.isArray(slots)) {
-    el.innerHTML = '<div class="status-loading" style="padding:1.2rem 0;">잔여 현황을 불러오지 못했습니다.</div>';
-    if (fb) fb.style.display = 'block';
-    return;
-  }
-  if (fb) fb.style.display = 'none';
-
-  renderProgramTabs(slots);
-
-  const prog       = programOf(activeProgram);
-  const progSlots  = slotsOf(slots, activeProgram);
-  const openSlots  = progSlots.filter(s => slotState(s).bookable);
-
-  const capLabel = document.getElementById('slotCapacityLabel');
-  if (capLabel) {
-    capLabel.textContent = progSlots.length ? slotState(progSlots[0]).capacity : prog.capacity;
-  }
-
-  if (!progSlots.length) {
-    el.innerHTML = '<div class="slot-empty" style="color:var(--ink-soft);">' + prog.name + ' 예약 정보가 없습니다.</div>';
-    return;
-  }
-
-  const live = window._slotsLive !== false;
-
-  if (live && !openSlots.length) {
-    el.innerHTML = '<div class="slot-empty">' + prog.name + ' 예약 가능한 시간대가<br>모두 마감되었습니다.</div>';
-    return;
-  }
-
-  const head = live
-    ? '<p class="status-date-label">' + EVENT_DATE + ' · ' + prog.name +
-      ' 예약 가능 ' + openSeats(progSlots, prog) + '석</p>'
-    : '<div class="slot-notice"><b>예약 서버 점검 중입니다.</b><br>' +
-      '회차는 예정대로 ' + EVENT_DATE + ' 13:00~18:30 · 30분 11타임으로 운영하지만, ' +
-      '실시간 잔여 인원은 잠시 후 표시됩니다. 예약 문의는 현장 부스로 부탁드립니다.</div>' +
-      '<p class="status-date-label">' + EVENT_DATE + ' · ' + prog.name + ' · 30분 11타임</p>';
-
-  const time = pickedTime();
-  const cta  = '<button type="button" class="cta-btn cta-btn--reserve reserve-cta"' +
-               (time ? '' : ' disabled') + ' onclick="goReserveCta()">' +
-               (time ? prog.name + ' ' + time + ' 예약하기' : '회차를 선택해 주세요') +
-               '</button>';
-
-  el.innerHTML = head +
-                 '<div class="reserve-slot-list">' + slotRowsHtml(progSlots, true, true) + '</div>' +
-                 cta;
-}
-
-/* 예약 가능 좌석 — 회차 잔여의 합이지만, 재료 수량(dayLimit)을 넘을 수 없다 */
-function openSeats(progSlots, prog) {
-  let remain = 0, used = 0;
-  progSlots.forEach(s => {
-    const st = slotState(s);
-    if (st.pending) return;
-    if (st.bookable) remain += st.remain;
-    used += (st.capacity - st.remain);
-  });
-  if (!prog.dayLimit) return remain;
-  return Math.min(remain, Math.max(0, prog.dayLimit - used));
 }
 
 function bookSlot(program, time) {
   const cached = window._cachedSlots;
   const label  = programOf(program).name + ' ' + time;
-
   if (window._slotsLive === false) {
     showToast('예약 서버 점검 중입니다.<br>잠시 후 다시 시도해 주세요.');
     return;
   }
   if (cached && !isSlotBookable(cached, program, time)) {
     showToast('<strong>' + label + '</strong> 회차는 정원이 모두 찼습니다.<br>다른 시간대를 선택해 주세요.');
-    renderAllSlotViews();
     return;
   }
-
-  // 같은 사이트 안의 화면이라 새 창을 열 필요가 없다 (팝업 차단도 안 걸린다).
-  // 최종 정원 검사는 예약 화면에서 서버가 잠금 걸고 하므로, 여기서는 바로 넘긴다.
-  goReserve(program, time);
-}
-
-function goReserve(program, time) {
   saveLastSelection(program, time);
-  applySurveyPrefill();
   location.href = makeReserveUrl(program, time);
-}
-
-function renderAllSlotViews() {
-  if (!window._cachedSlots) return;
-  renderReserveSlots(window._cachedSlots);
-  if (document.getElementById('panel-status').classList.contains('active')) {
-    renderStatus(window._cachedSlots);
-  }
-}
-
-function refreshSlots() {
-  fetchData(true)
-    .then(data => {
-      renderReserveSlots(data.slots);
-      renderStockList(window._cachedStock);
-      renderGoodsList(window._cachedGoods);
-      renderAboutSheets(window._cachedStock);
-      if (document.getElementById('panel-status').classList.contains('active')) {
-        renderStatus(data.slots);
-      }
-    })
-    .catch(() => renderReserveSlots(null));
 }
 
 function renderStatus(slots) {
@@ -1151,7 +635,7 @@ function renderStatus(slots) {
 
   if (window._slotsLive === false) {
     html += '<div class="slot-notice"><b>예약 서버 점검 중입니다.</b><br>' +
-            '아래 회차는 계획표(30분 10타임)이며, 실시간 잔여 인원은 잠시 후 표시됩니다.</div>';
+            '실시간 잔여 인원은 잠시 후 표시됩니다.</div>';
   }
 
   html += '<p class="status-date-label">' + EVENT_DATE + '</p>';
@@ -1173,7 +657,7 @@ function renderStatus(slots) {
     html += '<p class="status-date-label" style="margin-top:0.9rem;color:' +
               (p.paid ? 'var(--brush-blue)' : 'var(--brush-teal)') + ';">' +
               p.name + ' · ' + p.meta + ' · 잔여 ' + open + '석</p>' +
-            '<div class="slot-list">' + slotRowsHtml(list, false, false) + '</div>';
+            '<div class="slot-list">' + slotRowsHtml(list) + '</div>';
   });
 
   document.getElementById('statusContent').innerHTML = html;
@@ -1209,62 +693,11 @@ function renderGoodsList(goodsMap) {
              '<span class="stock-count">' + info.countLabel.replace('장', '개') + '</span>' +
            '</div>';
   }).join('');
-  renderFramePill(goodsMap);
-}
-
-// 액자는 시간대 정원이 아니라 전체 선착순 카운터
-function renderFramePill(goodsMap) {
-  const el = document.getElementById('framePill');
-  if (!el) return;
-  const remain = goodsRemain(goodsMap, '액자');
-  el.classList.remove('low', 'out');
-  if (remain === 0) {
-    el.textContent = '액자 소진';
-    el.classList.add('out');
-  } else {
-    el.textContent = '액자 ' + remain + '개 남음';
-    if (remain <= 5) el.classList.add('low');
-  }
-  const btn = document.getElementById('snsBtn');
-  if (btn) {
-    btn.style.opacity = remain === 0 ? '0.5' : '';
-    btn.textContent = remain === 0 ? '액자 소진 — 후기는 계속 환영해요' : '후기 인증 설문 작성하기';
-  }
-}
-
-/* 예약을 마치고 돌아온 사람에게 "예약 완료"를 다시 보여준다.
-   접수 화면을 닫고 나면 잘 된 건지 알 수 없다는 점을 보완한다. */
-function renderMyBooking() {
-  const el = document.getElementById('myBooking');
-  if (!el) return;
-
-  let b = null;
-  try { b = JSON.parse(localStorage.getItem('hm_booking') || 'null'); } catch (e) {}
-  if (!b || !b.time) { el.classList.remove('on'); return; }
-
-  el.innerHTML =
-    '<div class="mb-head"><span class="mb-check"></span>예약 완료</div>' +
-    '<div class="mb-slot">' + (b.progName || b.program) + ' ' + b.time + '</div>' +
-    '<div class="mb-sub">' + EVENT_DATE + ' · 수봉산 폭포 앞 · ' + (b.name || '') + ' 님<br>' +
-    '시작 5분 전까지 부스로 오셔서 이름을 말씀해 주세요.</div>';
-  el.classList.add('on');
-}
-
-function loadAllData() {
-  paintFromCache();          // 먼저 보여주고
-  fetchData(true)            // 받는 대로 덮어쓴다
-    .then(data => {
-      renderAboutSheets(window._cachedStock);
-      renderStockList(window._cachedStock);
-      renderGoodsList(window._cachedGoods);
-      renderReserveSlots(data.slots);
-    })
-    .catch(() => { renderReserveSlots(null); });
 }
 
 function loadStatus() {
   if (window._cachedSlots) {
-    renderStatus(window._cachedSlots);      // 이미 받아둔 현황을 먼저 보여준다
+    renderStatus(window._cachedSlots);
   } else if (!paintFromCache()) {
     document.getElementById('statusContent').innerHTML =
       '<div class="status-loading">잔여 현황을 불러오는 중...<br><span style="font-size:0.75rem;opacity:0.6;">잠시 기다려주세요</span></div>';
@@ -1277,79 +710,30 @@ function loadStatus() {
       renderStockList(window._cachedStock);
       renderGoodsList(window._cachedGoods);
       renderAboutSheets(window._cachedStock);
-      renderReserveSlots(data.slots);
     })
     .catch(() => {
-      if (window._cachedSlots) return;      // 보여줄 게 있으면 그대로 둔다
+      if (window._cachedSlots) return;
       document.getElementById('statusContent').innerHTML =
         '<div class="status-loading">현황을 불러오지 못했어요.<br>잠시 후 다시 시도해주세요.</div>';
     });
 }
 
 window.addEventListener('load', () => {
-  renderMyBooking();
   renderStockList(null);
   renderGoodsList(null);
   renderAboutSheets(null);
-  loadAllData();
-  const kst = getKST();
-  const g = document.getElementById('globalUpdatedAt');
-  if (g) g.textContent = `${kst.getHours()}:${String(kst.getMinutes()).padStart(2,'0')} 기준 (KST)`;
-  applySurveyPrefill();
-  const last = getLastSelection();
-  if (last) {
+  paintFromCache();
+  fetchData(true)
+    .then(() => {
+      renderAboutSheets(window._cachedStock);
+      renderStockList(window._cachedStock);
+      renderGoodsList(window._cachedGoods);
+    })
+    .catch(() => {});
+  if (getLastSelection()) {
     document.querySelector('.tab-btn:nth-child(2)').textContent = '예약 현황 •';
   }
-  // 마감 상태가 실시간으로 반영되도록 주기적으로 갱신
-  setInterval(() => {
-    if (document.hidden) return;
-    fetchData(true)
-      .then(data => {
-        renderReserveSlots(data.slots);
-        if (document.getElementById('panel-status').classList.contains('active')) {
-          renderStatus(data.slots);
-          renderStockList(window._cachedStock);
-          renderGoodsList(window._cachedGoods);
-        }
-      })
-      .catch(() => {});
-  }, 60000);
 });
-
-/* 설문 영역은 기본으로 감춰두고, 테스트할 때만 연다.
-   주소에 k=0919 또는 test=1 이 있으면 보이고, 설문 링크에도 그 값을 넘겨준다. */
-(function () {
-  var q, on;
-  try {
-    q  = new URLSearchParams(location.search);
-    on = q.get('test') === '1' || q.get('k') === '0919';
-  } catch (e) { return; }
-  if (!on) return;
-
-  function open_() {
-    document.querySelectorAll('[data-testonly]').forEach(function (el) {
-      /* 인라인 스타일로는 스타일시트의 display:none 을 못 이긴다. 속성을 떼어 규칙에서 벗어난다. */
-      el.removeAttribute('data-testonly');
-      if (!el.querySelector('.testonly-note')) {
-        var note = document.createElement('p');
-        note.className = 'testonly-note';
-        note.textContent = '테스트 전용 — 손님 화면에는 보이지 않습니다.';
-        el.insertBefore(note, el.firstChild);
-      }
-    });
-    /* 이 페이지의 본 스크립트가 나중에 설문 버튼의 주소를 다시 쓴다. 그 뒤에 한 번 더 붙인다. */
-    document.querySelectorAll('a[href*="survey.html"]').forEach(function (a) {
-      if (a.href.indexOf('test=1') === -1) {
-        a.href += (a.href.indexOf('?') === -1 ? '?' : '&') + 'test=1';
-      }
-    });
-  }
-
-  open_();
-  window.addEventListener('load', open_);
-  setTimeout(open_, 1500);
-})();
 </script>
-
 </body>
 </html>

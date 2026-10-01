@@ -1,380 +1,468 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>헬로미추 실적 집계</title>
-<meta name="robots" content="noindex">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- 폰트는 렌더링을 막지 않게 나중에 적용한다. 부스 네트워크가 느려도
-     시스템 폰트로 화면이 먼저 뜬다. -->
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap"
-      onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap"></noscript>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>수업 만족도 리포트 · 헬로미추</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --ink: #14100b; --soft: #5a4e42; --paper: #f6f2ea; --surface: #fff;
-    --teal: #14796a; --amber: #b8620f; --red: #b23838; --rule: #ddd4c6;
-  }
-  body {
-    background: var(--paper); color: var(--ink);
-    font-family: 'Noto Sans KR', sans-serif; font-size: 14px;
-    padding: 1rem 0.9rem 3rem; max-width: 720px; margin: 0 auto;
-  }
-  header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.7rem; margin-bottom: 1rem; }
-  h1 { font-size: 1.1rem; font-weight: 800; }
-  .sub { font-size: 0.7rem; color: var(--soft); margin-top: 0.2rem; }
-  .btn {
-    padding: 0.5rem 0.85rem; background: var(--surface); border: 1px solid var(--teal);
-    border-radius: 8px; font-family: inherit; font-size: 0.75rem; font-weight: 700;
-    color: var(--teal); cursor: pointer; white-space: nowrap;
-  }
+:root{
+  --pink:#F4B8C8; --pink-soft:#FCE9EE; --pink-deep:#E8859F;
+  --ink:#141414; --ink-2:#5a5a5a; --ink-3:#8a8a8a; --line:#ECE6E8; --bg:#F6F2F3; --paper:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:Pretendard,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;-webkit-font-smoothing:antialiased}
+body{padding-bottom:60px}
+button{font:inherit;cursor:pointer}
 
-  /* 헤드라인 */
-  .head { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.4rem; }
-  .head .box { background: var(--surface); border: 1px solid var(--rule); border-radius: 11px; padding: 0.75rem 0.6rem; text-align: center; }
-  .head .n { font-size: 1.4rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.15; letter-spacing: -0.02em; }
-  .head .l { font-size: 0.64rem; color: var(--soft); margin-top: 0.25rem; }
-  .head .box.rev .n { color: var(--teal); }
+/* ---------- 툴바 ---------- */
+.bar{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff}
+.bar .in{max-width:900px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bar .brand{font-weight:800;font-size:14px;margin-right:auto;display:flex;align-items:center;gap:6px}
+.bar .brand i{width:9px;height:9px;border-radius:50%;background:var(--pink);display:inline-block}
+.seg{display:flex;background:#2a2a2a;border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;color:#bbb;padding:7px 12px;border-radius:8px;font-size:13px;font-weight:700}
+.seg button.on{background:#fff;color:var(--ink)}
+.tb{border:1px solid #444;background:transparent;color:#fff;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700}
+.tb.pink{background:var(--pink);border-color:var(--pink);color:var(--ink)}
+.tb.on{background:#fff;color:var(--ink);border-color:#fff}
+.tb:disabled{opacity:.4;cursor:default}
+.status{font-size:12px;color:var(--pink);width:100%;text-align:right;min-height:0}
+.status:empty{display:none}
 
-  h2 {
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; color: var(--soft);
-    margin: 1.5rem 0 0.5rem; padding-bottom: 0.35rem; border-bottom: 1px solid var(--rule);
-  }
-  table { width: 100%; border-collapse: collapse; background: var(--surface);
-          border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
-  th, td { padding: 0.55rem 0.7rem; text-align: right; font-size: 0.82rem;
-           border-bottom: 1px solid rgba(90,78,66,0.08); font-variant-numeric: tabular-nums; }
-  th { font-size: 0.66rem; font-weight: 700; color: var(--soft); text-align: right; background: #faf7f2; letter-spacing: 0.04em; }
-  th:first-child, td:first-child { text-align: left; font-variant-numeric: normal; }
-  tr:last-child td { border-bottom: none; }
-  td.v { font-weight: 700; }
-  td.r { font-weight: 700; }
-  .r.ok   { color: var(--teal); }
-  .r.mid  { color: var(--amber); }
-  .r.low  { color: var(--red); }
-  tfoot td { background: #faf7f2; font-weight: 800; border-top: 1px solid var(--rule); }
-  tr.over td { background: #fdecea; }
-  tr.over td:last-child { color: var(--red); font-weight: 800; }
-  .overnote { font-size: 0.72rem; color: var(--red); line-height: 1.6; margin-top: 0.5rem; display: none; }
-  .overnote.on { display: block; }
+/* ---------- 종이 ---------- */
+.paper{max-width:900px;margin:22px auto;background:var(--paper);border-radius:6px;box-shadow:0 2px 18px rgba(0,0,0,.06);padding:44px 48px}
+.demo{max-width:900px;margin:14px auto 0;background:#FFF4D6;border:1px solid #F1D98A;color:#6B5310;border-radius:10px;padding:10px 14px;font-size:13px}
+.loading{text-align:center;padding:80px 20px;color:var(--ink-2)}
+.head{border-bottom:3px solid var(--ink);padding-bottom:20px;margin-bottom:26px;position:relative}
+.head .kicker{font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--pink-deep)}
+.head h1{font-size:30px;letter-spacing:-.03em;line-height:1.3;margin:8px 0 12px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:14px;color:var(--ink-2)}
+.meta b{color:var(--ink);font-weight:700;margin-right:6px}
+.head .dot{position:absolute;right:0;top:0;width:54px;height:54px;border-radius:50%;background:var(--pink)}
+h2.sec{font-size:17px;letter-spacing:-.02em;margin:34px 0 14px;display:flex;align-items:center;gap:8px}
+h2.sec:before{content:"";width:6px;height:18px;background:var(--pink);border-radius:2px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{border:1px solid var(--line);border-radius:14px;padding:16px}
+.kpi.main{background:var(--ink);color:#fff;border-color:var(--ink)}
+.kpi .l{font-size:12px;color:var(--ink-2);font-weight:700}
+.kpi.main .l{color:var(--pink)}
+.kpi .v{font-size:30px;font-weight:800;letter-spacing:-.03em;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:14px;font-weight:600;color:var(--ink-3);margin-left:2px}
+.kpi.main .v small{color:#aaa}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:13px}
+.chip b{margin-left:6px}
+.items{display:grid;gap:10px}
+.it{display:grid;grid-template-columns:110px 1fr 54px 64px;align-items:center;gap:12px;font-size:14px}
+.it .nm{font-weight:700}
+.track{height:14px;background:var(--pink-soft);border-radius:7px;overflow:hidden}
+.track i{display:block;height:100%;background:var(--ink);border-radius:7px}
+.it .avg{font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.it .pc{font-size:12px;color:var(--ink-3);text-align:right}
+.items .hd{font-size:11px;color:var(--ink-3);font-weight:700}
+table.cmp{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+table.cmp th,table.cmp td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:center}
+table.cmp th:first-child,table.cmp td:first-child{text-align:left;font-weight:700}
+table.cmp thead th{font-size:12px;color:var(--ink-2);background:#FBF7F8}
+table.cmp td.hi{background:var(--pink-soft);font-weight:800}
+.opens{display:grid;gap:18px}
+.og h3{font-size:14px;margin-bottom:8px}
+.quote{position:relative;border-left:3px solid var(--pink);background:#FDFAFB;padding:10px 38px 10px 14px;border-radius:0 10px 10px 0;margin-bottom:6px;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:keep-all}
+.quote .who{display:block;font-size:11.5px;color:var(--ink-3);margin-top:3px}
+.quote .x{display:none;position:absolute;right:8px;top:8px;border:0;background:#eee;border-radius:6px;font-size:11px;padding:3px 6px}
+.editing .quote .x{display:block}
+.quote.hid{display:none}
+.editing .quote.hid{display:block;opacity:.35;text-decoration:line-through}
+.empty{color:var(--ink-3);font-size:13px}
+.box{border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-size:14.5px;line-height:1.8;white-space:pre-wrap;min-height:60px}
+.box:empty:before{content:attr(data-ph);color:#bbb}
+[data-edit]{transition:background .15s}
+.editing [data-edit]{outline:2px dashed var(--pink-deep);outline-offset:3px;border-radius:6px;background:#FFFDFE;cursor:text}
+.editing [data-edit]:focus{outline-style:solid;background:#fff}
+.foot{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-3)}
 
-  .bars { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 0.3rem 0.8rem; }
-  .bar { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(90,78,66,0.07); }
-  .bar:last-child { border-bottom: none; }
-  .bar .nm { font-size: 0.8rem; min-width: 92px; }
-  .bar .tr { flex: 1; height: 8px; background: rgba(90,78,66,0.1); border-radius: 4px; overflow: hidden; }
-  .bar .tr i { display: block; height: 100%; background: var(--teal); border-radius: 4px; transition: width .4s; }
-  .bar .n { font-size: 0.78rem; font-weight: 700; min-width: 54px; text-align: right; font-variant-numeric: tabular-nums; }
+/* ---------- 개별 응답 ---------- */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rc{border:1px solid var(--line);border-radius:14px;padding:18px;break-inside:avoid;page-break-inside:avoid}
+.rc .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px}
+.rc .top b{font-size:15px}
+.rc .top .sub{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.rc .one{border:1px solid var(--line);background:#fff;border-radius:8px;font-size:11.5px;padding:5px 8px;font-weight:700}
+.sc{display:grid;grid-template-columns:90px 1fr 22px;gap:8px;align-items:center;font-size:12.5px;margin-bottom:5px}
+.dots{display:flex;gap:4px}
+.dots i{width:14px;height:14px;border-radius:50%;background:var(--pink-soft)}
+.dots i.f{background:var(--ink)}
+.sc .n{font-weight:800;text-align:right}
+.rc .op{margin-top:10px;font-size:13px;line-height:1.6}
+.rc .op dt{font-size:11.5px;color:var(--pink-deep);font-weight:800;margin-top:8px}
+.rc .op dd{white-space:pre-wrap;word-break:keep-all}
+.single .cards{grid-template-columns:1fr}
+.single .rc{padding:26px}
+.single .rc .one{display:none}
 
-  .conv { background: var(--surface); border: 2px solid var(--teal); border-radius: 12px; padding: 0.9rem 1rem; }
-  .conv .big { font-size: 2rem; font-weight: 800; color: var(--teal); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-  .conv .d { font-size: 0.76rem; color: var(--soft); line-height: 1.7; margin-top: 0.3rem; }
+/* ---------- QR 모달 ---------- */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.on{display:flex}
+.modal .mc{background:#fff;border-radius:18px;padding:26px;max-width:380px;width:100%;text-align:center}
+.modal img{width:240px;height:240px;margin:14px auto;display:block}
+.modal input{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:12px}
+.modal .row{display:flex;gap:8px;margin-top:10px}
+.modal .row button{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px;font-weight:700}
+.modal .row button.k{background:var(--ink);color:#fff;border-color:var(--ink)}
 
-  pre#paste {
-    background: var(--surface); border: 1px solid var(--rule); border-radius: 10px;
-    padding: 0.9rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.74rem; line-height: 1.85; white-space: pre-wrap; word-break: break-all;
-    color: var(--ink); max-height: 24rem; overflow: auto;
-  }
-  .stamp { font-size: 0.66rem; color: rgba(90,78,66,0.6); text-align: right; margin-top: 1rem; }
-  .err { background: #fdecea; border: 1px solid var(--red); color: var(--red);
-         border-radius: 9px; padding: 0.8rem; font-size: 0.8rem; line-height: 1.6; margin-bottom: 1rem; display: none; }
-  .err.on { display: block; }
-  @media print { .btn, .err { display: none !important; } body { background: #fff; } }
+@media (max-width:700px){
+  .paper{padding:26px 18px;margin:12px 10px;border-radius:12px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .it{grid-template-columns:78px 1fr 40px;gap:8px}
+  .it .pc{display:none}
+  .cards{grid-template-columns:1fr}
+  .head h1{font-size:24px}
+  .head .dot{width:36px;height:36px}
+  .seg button{padding:7px 9px}
+}
+
+/* ---------- 인쇄 / PDF ---------- */
+@page{size:A4;margin:14mm 13mm}
+@media print{
+  body.qrprint .bar,body.qrprint .demo,body.qrprint main{display:none!important}
+  body.qrprint .modal{display:flex!important;position:static;background:none;padding:0;min-height:90vh}
+  body.qrprint .modal .mc{box-shadow:none;max-width:none}
+  body.qrprint .modal img{width:110mm;height:110mm}
+  body.qrprint .modal input,body.qrprint .modal .row{display:none}
+  body.qrprint #qrTitle{font-size:28px!important}
+}
+@media print{
+  html,body{background:#fff}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .bar,.demo,.modal,.noprint,.quote .x,.rc .one{display:none!important}
+  .paper{box-shadow:none;margin:0;padding:0;max-width:none;border-radius:0}
+  .editing [data-edit]{outline:0;background:none}
+  .quote.hid{display:none!important}
+  h2.sec{break-after:avoid;page-break-after:avoid}
+  .kpis,.items,.it,.quote,.box,table.cmp tr,.rc{break-inside:avoid;page-break-inside:avoid}
+  .cards{grid-template-columns:1fr 1fr}
+  .single .cards{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
+<div class="bar"><div class="in">
+  <div class="brand"><i></i>수업 만족도 리포트</div>
+  <div class="seg" id="viewSeg"><button data-v="sum" class="on">종합</button><button data-v="ind">개별 응답</button></div>
+  <button class="tb" id="editBtn">편집</button>
+  <button class="tb" id="saveBtn" disabled>저장</button>
+  <button class="tb" id="qrBtn">설문 QR</button>
+  <button class="tb pink" id="pdfBtn">PDF 저장</button>
+  <div class="status" id="status"></div>
+</div></div>
+<div class="demo" id="demo" style="display:none"></div>
+<main id="root"><div class="paper loading">리포트를 불러오는 중…</div></main>
 
-<header>
-  <div>
-    <h1>실적 집계</h1>
-    <div class="sub">2026. 9. 19.(토) 수봉산 폭포 앞 · 학산마당극 놀래<br>관광두레 파일럿사업 2차 결과보고서용</div>
-  </div>
-  <button class="btn" type="button" onclick="load(true)">새로고침</button>
-</header>
+<div class="modal" id="qrModal"><div class="mc">
+  <b style="font-size:17px" id="qrTitle">설문 링크 · QR</b>
+  <p style="font-size:13px;color:#777;margin-top:4px">수업 끝에 화면에 띄우거나 인쇄해서 나눠 주세요.</p>
+  <img id="qrImg" alt="설문 QR 코드">
+  <input id="qrUrl" readonly>
+  <div class="row"><button id="copyBtn">링크 복사</button><button id="printQr">QR 인쇄</button><button id="openBtn">설문 열기</button><button class="k" id="closeQr">닫기</button></div>
+</div></div>
 
-<div class="err" id="err"></div>
-
-<div class="head">
-  <div class="box rev"><div class="n" id="hRev">–</div><div class="l">총 매출</div></div>
-  <div class="box"><div class="n" id="hPeople">–</div><div class="l">체험 인원</div></div>
-  <div class="box"><div class="n" id="hVisit">–</div><div class="l">방문 인원</div></div>
-  <div class="box"><div class="n" id="hConv">–</div><div class="l">유료 전환율</div></div>
-</div>
-
-<h2>1. 체험 프로그램 운영 실적</h2>
-<table id="tAttend"></table>
-
-<h2>2. 상품 판매 실적</h2>
-<table id="tSales"></table>
-
-<h2>3. 결제수단별 매출 (정산 대사)</h2>
-<table id="tPay"></table>
-
-<h2>4. 설문 · SNS 후기</h2>
-<table id="tSurvey"></table>
-
-<h2>5. 도안별 선택 비율</h2>
-<div class="bars" id="tDesign"></div>
-
-<h2>6. 운영 관찰 (개선사항 근거)</h2>
-<table id="tTags"></table>
-
-<h2>7. 무료 체험 → 유료 구매 전환</h2>
-<div class="conv">
-  <div class="big" id="convBig">–</div>
-  <div class="d" id="convDesc">불러오는 중...</div>
-</div>
-
-<h2>8. 종료 시점 재고</h2>
-<table id="tStock"></table>
-<p class="overnote" id="stockOver"></p>
-
-<h2>9. 결과보고서 붙여넣기용</h2>
-<button class="btn" type="button" id="copyBtn" style="margin-bottom:0.6rem;">전체 복사</button>
-<pre id="paste">불러오는 중...</pre>
-
-<p class="stamp" id="stamp"></p>
-
+<script src="config.js"></script>
 <script>
-'use strict';
+(function(){
+  var P = new URLSearchParams(location.search);
+  var CLS = P.get('cls') || '', KEY = P.get('k') || '';
+  var DEMO = !apiReady() || P.get('demo') === '1';
+  var $ = function(id){ return document.getElementById(id); };
+  var D = null;            // 서버 데이터 {cls, responses, edit, editedAt}
+  var E = {};              // 편집 상태
+  var view = P.get('r') ? 'one' : 'sum', oneId = P.get('r') || '';
+  var editing = false, dirty = false;
+  document.title = '수업 만족도 리포트 · ' + BRAND.name;
+  var TL = {}; TYPES.forEach(function(t){ TL[t.id] = t.label; });
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbwIl5ahXaZ_hkitvDbqqtK9kwDvxEjFGgzc-sShRJJyhsliAiZq1-bpUfMcEh3KZJaN/exec';
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function status(t){ $('status').textContent = t || ''; }
+  function r1(x){ return (Math.round(x*10)/10).toFixed(1); }
 
-let jsonpSeq = 0;
-function call(params) {
-  return new Promise((resolve, reject) => {
-    const cb = '__hmr' + (++jsonpSeq) + '_' + Date.now();
-    const url = new URL(API_URL);
-    Object.keys(params).forEach(k => url.searchParams.set(k, params[k]));
-    url.searchParams.set('cb', cb);
-    const s = document.createElement('script');
-    let done = false;
-    const cleanup = () => { delete window[cb]; s.remove(); clearTimeout(t); };
-    const t = setTimeout(() => { if (!done) { done = true; cleanup(); reject(new Error('시간 초과')); } }, 15000);
-    window[cb] = d => { done = true; cleanup(); (d && d.ok === false) ? reject(new Error(d.error || '오류')) : resolve(d); };
-    s.onerror = () => { if (!done) { done = true; cleanup(); reject(new Error('네트워크 오류')); } };
-    s.src = url.toString();
-    document.body.appendChild(s);
-  });
-}
-
-const num = n => Number(n || 0).toLocaleString('ko-KR');
-const won = n => num(n) + '원';
-const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const rateCls = p => p >= 100 ? 'ok' : (p >= 70 ? 'mid' : 'low');
-
-/** 실적 / 목표 / 달성률 3열 — 보고서에 그대로 옮겨적을 수 있게 */
-function tbl(el, head, rows, foot) {
-  let h = '<thead><tr>' + head.map(x => '<th>' + esc(x) + '</th>').join('') + '</tr></thead><tbody>';
-  rows.forEach(r => {
-    const cls = r.__cls ? ' class="' + r.__cls + '"' : '';
-    h += '<tr' + cls + '>' + r.map((cell, i) => {
-      if (i === 0) return '<td>' + esc(cell) + '</td>';
-      if (cell && cell.rate !== undefined) {
-        return '<td class="r ' + rateCls(cell.rate) + '">' + cell.rate + '%</td>';
-      }
-      return '<td class="' + (i === 1 ? 'v' : '') + '">' + esc(cell) + '</td>';
-    }).join('') + '</tr>';
-  });
-  h += '</tbody>';
-  if (foot) h += '<tfoot><tr>' + foot.map(x => '<td>' + esc(x) + '</td>').join('') + '</tr></tfoot>';
-  el.innerHTML = h;
-}
-
-function render(d) {
-  const T = d.targets, A = d.attendance, S = d.sales, R = d.rate;
-  const item = k => (S.byItem[k] || { qty: 0, amount: 0 });
-
-  /* 헤드라인 */
-  document.getElementById('hRev').textContent    = won(S.revenue);
-  document.getElementById('hPeople').textContent = num(A.total) + '명';
-  document.getElementById('hVisit').textContent  = num(d.visitors || 0) + '명';
-  document.getElementById('hConv').textContent   = d.conversion.rate + '%';
-
-  /* 1. 체험 실적 */
-  tbl(document.getElementById('tAttend'),
-    ['항목', '실적', '목표', '달성률'],
-    [
-      ['컬러링 체험 (무료)', num(A.coloring) + '명', num(T.coloring) + '명', { rate: R.coloring }],
-      ['바인더 체험 (30,000원)', num(A.binder) + '명', num(T.binder) + '명', { rate: R.binder }],
-      ['노쇼 (컬러링 / 바인더)', num(A.noshowColoring) + ' / ' + num(A.noshowBinder) + '명', '–', '–'],
-      ['방문 인원 (부스 방문자)', num(d.visitors || 0) + '명', '–', '–']
-    ],
-    ['합계 참석', num(A.total) + '명', num(T.coloring + T.binder) + '명',
-     Math.round(A.total / (T.coloring + T.binder) * 1000) / 10 + '%']);
-
-  /* 2. 판매 실적 */
-  tbl(document.getElementById('tSales'),
-    ['상품', '수량', '목표', '달성률', '매출'],
-    [
-      ['바인더 체험 (30,000원)', num(item('바인더 체험').qty) + '개', num(T.binder) + '개',
-        { rate: R.binder !== undefined ? Math.round(item('바인더 체험').qty / T.binder * 1000) / 10 : 0 },
-        won(item('바인더 체험').amount)],
-      ['바인더 완성품 (20,000원)', num(item('바인더 완성품').qty) + '개', num(T.binderProduct) + '개',
-        { rate: R.binderProduct }, won(item('바인더 완성품').amount)],
-      ['데코 스티커 (2,500원)', num(item('스티커').qty) + '개', num(T.sticker) + '개',
-        { rate: R.sticker }, won(item('스티커').amount)],
-      ['SNS 후기 액자 (증정)', num(item('액자').qty) + '개', num(T.sns) + '개',
-        { rate: Math.round(item('액자').qty / T.sns * 1000) / 10 }, '–']
-    ],
-    ['총 매출', '', won(T.revenue), R.revenue + '%', won(S.revenue)]);
-
-  /* 3. 결제수단 */
-  const pays = Object.keys(S.byPay);
-  tbl(document.getElementById('tPay'),
-    ['결제수단', '매출', '비중'],
-    pays.map(k => [k, won(S.byPay[k]),
-      (S.revenue ? Math.round(S.byPay[k] / S.revenue * 1000) / 10 : 0) + '%']),
-    ['합계', won(S.revenue), S.cancelled ? '취소 ' + S.cancelled + '건 제외' : '100%']);
-
-  /* 4. 설문 · SNS */
-  const bt = d.survey.byType || {};
-  const svRows = Object.keys(bt).map(k => {
-    const r = bt[k];
-    return ['　· ' + r.name, num(r.count) + '건', '–',
-            r.gifted ? '스티커 ' + num(r.gifted) + '개 증정' : '–'];
-  });
-  tbl(document.getElementById('tSurvey'),
-    ['항목', '실적', '목표', '달성률'],
-    [
-      ['설문 응답 합계', num(d.survey.count) + '건', num(T.survey) + '건', { rate: R.survey }]
-    ].concat(svRows).concat([
-      ['체험 설문 / 구매 설문',
-        num(d.survey.experience || 0) + ' / ' + num(d.survey.purchase || 0) + '건', '–', '–'],
-      ['설문 작성 스티커 증정', num(d.survey.stickerGift || 0) + '개', '–', '–'],
-      ['SNS 후기 인증 (캡처 이미지 포함)', num(d.survey.sns) + '건', num(T.sns) + '건', { rate: R.sns }],
-      ['액자 증정', num(d.survey.frames) + '개', num(T.sns) + '개',
-        { rate: Math.round(d.survey.frames / T.sns * 1000) / 10 }]
-    ]));
-
-  /* 5. 도안별 */
-  const dz = d.designs, dTotal = Object.keys(dz).reduce((a, k) => a + dz[k], 0);
-  document.getElementById('tDesign').innerHTML = Object.keys(dz).map(k => {
-    const p = dTotal ? Math.round(dz[k] / dTotal * 1000) / 10 : 0;
-    return '<div class="bar"><span class="nm">' + esc(k) + '</span>' +
-           '<span class="tr"><i style="width:' + p + '%"></i></span>' +
-           '<span class="n">' + dz[k] + '건 ' + p + '%</span></div>';
-  }).join('') || '<div class="bar"><span class="nm">기록 없음</span></div>';
-
-  /* 6. 관찰 */
-  tbl(document.getElementById('tTags'),
-    ['관찰 항목', '건수'],
-    Object.keys(d.tags).map(k => [k, num(d.tags[k]) + '건'])
-      .concat([['30분 내 미완성 (체크인 기준)', num(d.unfinished) + '건']]));
-
-  /* 7. 전환 */
-  document.getElementById('convBig').textContent = d.conversion.rate + '%';
-  document.getElementById('convDesc').innerHTML =
-    '무료 컬러링 체험 참석 <b>' + num(d.conversion.freeAttend) + '명</b> 중 ' +
-    '<b>' + num(d.conversion.converted) + '명</b>이 유료 상품을 구매했습니다.<br>' +
-    '판매가 발생한 회차 ' + num(d.conversion.slotsWithSale) + '개 — ' +
-    '이번 파일럿의 핵심 지표입니다.';
-
-  /* 8. 재고 */
-  let over = 0;
-  const stockRows = (d.stock || []).map(s => {
-    const used = (s.used !== undefined) ? s.used : (s.total - s.remain);
-    const row = [s.key, num(s.remain), num(s.total), num(used)];
-    if (used > s.total) { row.__cls = 'over'; over++; }   // 소진이 초기 재고를 넘은 품목
-    return row;
-  });
-  tbl(document.getElementById('tStock'), ['품목', '잔여', '초기', '소진'], stockRows);
-  const on = document.getElementById('stockOver');
-  on.classList.toggle('on', over > 0);
-  on.textContent = over > 0
-    ? '⚠ ' + over + '개 품목의 소진 수량이 초기 재고를 넘었습니다. 실물 수량을 세어 staff.html 재고 탭에서 보정하세요.'
-    : '';
-
-  /* 9. 붙여넣기용 */
-  document.getElementById('paste').textContent = pasteBlock(d);
-
-  const now = new Date();
-  const kst = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + 9 * 3600000);
-  document.getElementById('stamp').textContent =
-    kst.getHours() + ':' + String(kst.getMinutes()).padStart(2, '0') + ' 기준 (KST) · 30초마다 자동 갱신';
-}
-
-function pasteBlock(d) {
-  const T = d.targets, A = d.attendance, S = d.sales;
-  const item = k => (S.byItem[k] || { qty: 0, amount: 0 });
-  const dz = d.designs, dTotal = Object.keys(dz).reduce((a, k) => a + dz[k], 0);
-  const L = [];
-
-  L.push('[체험 프로그램 운영 실적]');
-  L.push('· 컬러링 체험(무료): ' + A.coloring + '명 (목표 ' + T.coloring + '명, 달성률 ' + d.rate.coloring + '%)');
-  L.push('· 바인더 체험(30,000원): ' + A.binder + '명 (목표 ' + T.binder + '명, 달성률 ' + d.rate.binder + '%)');
-  L.push('· 총 체험 인원: ' + A.total + '명 / 노쇼 ' + (A.noshowColoring + A.noshowBinder) + '명');
-  L.push('· 방문 인원(부스 방문자): ' + (d.visitors || 0) + '명');
-  L.push('');
-  L.push('[판매 실적]');
-  L.push('· 바인더 완성품(20,000원): ' + item('바인더 완성품').qty + '개 · ' + won(item('바인더 완성품').amount));
-  L.push('· 데코 스티커(2,500원): ' + item('스티커').qty + '개 · ' + won(item('스티커').amount));
-  L.push('· 바인더 체험료(30,000원): ' + item('바인더 체험').qty + '건 · ' + won(item('바인더 체험').amount));
-  L.push('· 총 매출: ' + won(S.revenue) + ' (목표 ' + won(T.revenue) + ', 달성률 ' + d.rate.revenue + '%)');
-  L.push('· 결제수단별: ' + Object.keys(S.byPay).map(k => k + ' ' + won(S.byPay[k])).join(' / '));
-  L.push('');
-  L.push('[설문 및 SNS 후기]');
-  L.push('· 설문 응답 합계: ' + d.survey.count + '건 (목표 ' + T.survey + '건, 달성률 ' + d.rate.survey + '%)');
-  Object.keys(d.survey.byType || {}).forEach(k => {
-    const r = d.survey.byType[k];
-    L.push('  - ' + r.name + ': ' + r.count + '건');
-  });
-  L.push('· 체험 설문 ' + (d.survey.experience || 0) + '건 / 구매 설문 ' + (d.survey.purchase || 0) + '건');
-  L.push('· 설문 작성 스티커 증정: ' + (d.survey.stickerGift || 0) + '개');
-  L.push('· SNS 후기 인증 및 액자 증정: ' + d.survey.sns + '건 (목표 ' + T.sns + '건, 달성률 ' + d.rate.sns + '%)');
-  L.push('');
-  L.push('[도안별 선택 비율]');
-  Object.keys(dz).forEach(k => {
-    L.push('· ' + k + ': ' + dz[k] + '건 (' + (dTotal ? Math.round(dz[k] / dTotal * 1000) / 10 : 0) + '%)');
-  });
-  L.push('');
-  L.push('[운영 관찰 및 개선사항 근거]');
-  Object.keys(d.tags).forEach(k => L.push('· ' + k + ': ' + d.tags[k] + '건'));
-  L.push('· 30분 내 미완성: ' + d.unfinished + '건');
-  L.push('');
-  L.push('[무료 체험 → 유료 구매 전환]');
-  L.push('· 무료 컬러링 참석 ' + d.conversion.freeAttend + '명 중 ' + d.conversion.converted +
-         '명 구매 → 전환율 ' + d.conversion.rate + '%');
-  L.push('');
-  L.push('[종료 시점 재고]');
-  (d.stock || []).forEach(s => L.push('· ' + s.key + ': ' + s.remain + ' / ' + s.total + ' (소진 ' + (s.used !== undefined ? s.used : s.total - s.remain) + ')'));
-  L.push('');
-  L.push('※ 집계 시각 ' + d.generatedAt + ' (KST)');
-  return L.join('\n');
-}
-
-document.getElementById('copyBtn').addEventListener('click', () => {
-  const text = document.getElementById('paste').textContent;
-  const done = () => { const b = document.getElementById('copyBtn'); b.textContent = '복사됨'; setTimeout(() => b.textContent = '전체 복사', 1600); };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(done).catch(fallback);
-  } else fallback();
-  function fallback() {
-    const ta = document.createElement('textarea');
-    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy'); done(); } catch (e) {}
-    ta.remove();
+  /* ---------- 데이터 불러오기 ---------- */
+  function load(){
+    if (DEMO) {
+      $('demo').style.display = 'block';
+      $('demo').textContent = apiReady()
+        ? '예시 데이터로 보는 미리보기예요 (demo=1). 실제 리포트는 수업목록의 리포트 링크로 열어 주세요.'
+        : '예시 데이터로 보는 미리보기예요. config.js에 Apps Script 주소를 넣으면 실제 응답이 표시돼요.';
+      D = sampleData(); init(); return;
+    }
+    if (!CLS || !KEY) { fail('리포트 링크에 수업코드(cls)와 관리키(k)가 필요해요. 시트 메뉴 “수업 만족도 → 수업별 링크 만들기”로 링크를 받아 주세요.'); return; }
+    jsonp({action:'report', cls:CLS, k:KEY}, 20000).then(function(r){
+      if (!r || !r.ok) { fail((r && r.error) || '데이터를 불러오지 못했어요.'); return; }
+      D = r; init();
+    }).catch(function(e){ fail('서버에 연결하지 못했어요 ('+e.message+'). Apps Script 배포 상태를 확인해 주세요.'); });
   }
-});
+  function fail(msg){ $('root').innerHTML = '<div class="paper loading">'+esc(msg)+'</div>'; }
 
-function load(manual) {
-  const err = document.getElementById('err');
-  call({ action: 'report' })
-    .then(d => { err.classList.remove('on'); render(d); })
-    .catch(e => {
-      err.textContent = '집계를 불러오지 못했습니다: ' + e.message +
-        ' — Apps Script 를 [새 버전]으로 배포했는지 확인하세요.';
-      err.classList.add('on');
+  function init(){
+    var c = D.cls || {};
+    E = Object.assign({ title:c.name||'', org:c.org||'', date:c.date||'', teacher:c.teacher||'', summary:'', plan:'', hidden:{} }, D.edit || {});
+    E.hidden = E.hidden || {};
+    if (D.editedAt) status('마지막 저장 ' + D.editedAt);
+    render();
+  }
+
+  /* ---------- 집계 ---------- */
+  function stats(list){
+    var st = { n:list.length, byType:{}, items:{} };
+    ITEMS.forEach(function(it){
+      var v = list.map(function(r){ return +r[it.key]; }).filter(function(x){ return x>=1 && x<=5; });
+      var sum = v.reduce(function(a,b){ return a+b; }, 0);
+      st.items[it.key] = { avg: v.length ? sum/v.length : 0, pos: v.length ? v.filter(function(x){ return x>=4; }).length / v.length : 0, cnt:v.length };
     });
-}
+    list.forEach(function(r){ st.byType[r.type] = (st.byType[r.type]||0) + 1; });
+    return st;
+  }
 
-load();
-setInterval(() => { if (!document.hidden) load(false); }, 30000);
+  function autoSummary(st){
+    if (!st.n) return '아직 응답이 없습니다.';
+    var types = Object.keys(st.byType).map(function(t){ return (TL[t]||t)+' '+st.byType[t]+'명'; }).join(', ');
+    var arr = ITEMS.map(function(it){ return { name:it.name, avg:st.items[it.key].avg }; }).filter(function(x){ return x.avg>0; });
+    arr.sort(function(a,b){ return b.avg-a.avg; });
+    var q1 = st.items.q1, s = '';
+    s += '총 '+st.n+'명('+types+')이 응답했습니다. ';
+    s += '전반 만족도는 5점 만점에 평균 '+r1(q1.avg)+'점이며, 응답자의 '+Math.round(q1.pos*100)+'%가 “만족” 이상으로 답했습니다.\n';
+    if (arr.length > 1 && arr[0].avg !== arr[arr.length-1].avg) {
+      s += '항목별로는 “'+arr[0].name+'”('+r1(arr[0].avg)+'점)이 가장 높았고, “'+arr[arr.length-1].name+'”('+r1(arr[arr.length-1].avg)+'점)은 상대적으로 낮아 다음 수업에서 보완할 부분으로 보입니다. ';
+    }
+    s += '재참여 의향은 '+r1(st.items.q6.avg)+'점, 추천 의향은 '+r1(st.items.q7.avg)+'점으로 나타났습니다.';
+    return s;
+  }
+
+  /* ---------- 렌더 ---------- */
+  function render(){
+    var list = D.responses || [];
+    document.body.classList.toggle('single', view === 'one');
+    [].forEach.call($('viewSeg').children, function(b){ b.classList.toggle('on', b.dataset.v === (view==='one'?'ind':view)); });
+    var h = '<div class="paper'+(editing?' editing':'')+'" id="paper">';
+    h += header(list);
+    if (view === 'sum') h += summaryView(list);
+    else h += individualView(list);
+    h += '<div class="foot"><span>'+esc(BRAND.name)+' · '+esc(BRAND.company)+(BRAND.contact?' · '+esc(BRAND.contact):'')+'</span><span>작성일 '+new Date().toLocaleDateString('ko-KR')+'</span></div>';
+    h += '</div>';
+    $('root').innerHTML = h;
+    bindEdits();
+  }
+
+  function header(list){
+    var kicker = view === 'sum' ? 'CLASS SATISFACTION REPORT' : 'INDIVIDUAL RESPONSES';
+    return '<div class="head"><div class="dot"></div><div class="kicker">'+kicker+'</div>' +
+      '<h1 data-edit="title">'+esc(E.title)+'</h1>' +
+      '<div class="meta">' +
+        '<span><b>기관</b><span data-edit="org">'+esc(E.org)+'</span></span>' +
+        '<span><b>수업일</b><span data-edit="date">'+esc(E.date)+'</span></span>' +
+        '<span><b>강사</b><span data-edit="teacher">'+esc(E.teacher)+'</span></span>' +
+        '<span><b>응답</b>'+list.length+'명</span>' +
+      '</div></div>';
+  }
+
+  function summaryView(list){
+    var st = stats(list), h = '';
+    if (!st.n) return '<p class="empty">아직 응답이 없어요. “설문 QR”로 설문을 공유해 주세요.</p>';
+    var it = st.items;
+    h += '<h2 class="sec">핵심 지표</h2><div class="kpis">' +
+      kpi('전반 만족도', r1(it.q1.avg), '/5', true) +
+      kpi('만족 비율', Math.round(it.q1.pos*100), '%') +
+      kpi('재참여 의향', r1(it.q6.avg), '/5') +
+      kpi('추천 의향', r1(it.q7.avg), '/5') + '</div>';
+
+    h += '<h2 class="sec">응답자 구성</h2><div class="chips">';
+    TYPES.forEach(function(t){ if (st.byType[t.id]) h += '<span class="chip">'+t.label+'<b>'+st.byType[t.id]+'명</b></span>'; });
+    Object.keys(st.byType).forEach(function(t){ if (!TL[t]) h += '<span class="chip">'+esc(t||'미분류')+'<b>'+st.byType[t]+'명</b></span>'; });
+    h += '</div>';
+
+    h += '<h2 class="sec">항목별 만족도</h2><div class="items"><div class="it hd"><span>항목</span><span>평균 (5점 만점)</span><span style="text-align:right">평균</span><span style="text-align:right">만족 이상</span></div>';
+    ITEMS.forEach(function(x){
+      var s = it[x.key];
+      h += '<div class="it"><span class="nm">'+x.name+'</span><div class="track"><i style="width:'+(s.avg/5*100).toFixed(1)+'%"></i></div><span class="avg">'+r1(s.avg)+'</span><span class="pc">'+Math.round(s.pos*100)+'%</span></div>';
+    });
+    h += '</div>';
+
+    var types = TYPES.filter(function(t){ return st.byType[t.id]; });
+    if (types.length > 1) {
+      var per = {}; types.forEach(function(t){ per[t.id] = stats(list.filter(function(r){ return r.type===t.id; })); });
+      h += '<h2 class="sec">응답자 유형별 비교</h2><table class="cmp"><thead><tr><th>항목</th>';
+      types.forEach(function(t){ h += '<th>'+t.label+' ('+st.byType[t.id]+')</th>'; });
+      h += '</tr></thead><tbody>';
+      ITEMS.forEach(function(x){
+        var vals = types.map(function(t){ return per[t.id].items[x.key].avg; });
+        var mx = Math.max.apply(null, vals);
+        h += '<tr><td>'+x.name+'</td>';
+        vals.forEach(function(v){ h += '<td'+(v===mx && vals.length>1 ? ' class="hi"':'')+'>'+(v?r1(v):'–')+'</td>'; });
+        h += '</tr>';
+      });
+      h += '</tbody></table>';
+    }
+
+    h += '<h2 class="sec">주관식 의견</h2><div class="opens">';
+    OPENS.forEach(function(o){
+      var qs = list.filter(function(r){ return String(r[o.key]||'').trim(); });
+      h += '<div class="og"><h3>'+o.name+' <span style="color:#aaa;font-weight:600">'+qs.length+'</span></h3>';
+      if (!qs.length) h += '<p class="empty">응답 없음</p>';
+      qs.forEach(function(r){
+        var id = r.id+'_'+o.key, hid = E.hidden[id];
+        h += '<div class="quote'+(hid?' hid':'')+'" data-q="'+esc(id)+'">'+esc(String(r[o.key]).trim())+
+             '<span class="who">'+esc(TL[r.type]||r.type||'')+'</span>' +
+             '<button class="x" data-hide="'+esc(id)+'">'+(hid?'보이기':'숨기기')+'</button></div>';
+      });
+      h += '</div>';
+    });
+    h += '</div>';
+
+    h += '<h2 class="sec">종합 의견</h2><div class="box" data-edit="summary" data-ph="">'+esc(E.summary || autoSummary(st))+'</div>';
+    h += '<h2 class="sec">개선 및 향후 계획</h2><div class="box" data-edit="plan" data-ph="편집 버튼을 누르고 다음 수업에 반영할 내용을 적어 주세요.">'+esc(E.plan)+'</div>';
+    return h;
+  }
+  function kpi(l, v, unit, main){ return '<div class="kpi'+(main?' main':'')+'"><div class="l">'+l+'</div><div class="v">'+v+'<small>'+unit+'</small></div></div>'; }
+
+  function individualView(list){
+    var arr = view === 'one' ? list.filter(function(r){ return r.id === oneId; }) : list;
+    var h = '';
+    if (view === 'one') h += '<p class="noprint" style="margin-bottom:14px"><button class="tb" style="color:#141414;border-color:#ddd" id="backAll">← 전체 응답으로</button></p>';
+    if (!arr.length) return h + '<p class="empty">표시할 응답이 없어요.</p>';
+    h += '<div class="cards">';
+    arr.forEach(function(r, i){
+      h += '<div class="rc"><div class="top"><div><b>'+esc(r.name || ('응답 '+(list.indexOf(r)+1)))+'</b><div class="sub">'+esc([TL[r.type]||r.type, r.time].filter(Boolean).join(' · '))+'</div></div>' +
+           '<button class="one" data-one="'+esc(r.id)+'">이 응답만 PDF</button></div>';
+      ITEMS.forEach(function(x){
+        var v = +r[x.key] || 0, d = '';
+        for (var k=1;k<=5;k++) d += '<i'+(k<=v?' class="f"':'')+'></i>';
+        h += '<div class="sc"><span>'+x.name+'</span><span class="dots">'+d+'</span><span class="n">'+(v||'–')+'</span></div>';
+      });
+      var ops = OPENS.filter(function(o){ return String(r[o.key]||'').trim(); });
+      if (ops.length) {
+        h += '<dl class="op">';
+        ops.forEach(function(o){ h += '<dt>'+o.name+'</dt><dd>'+esc(String(r[o.key]).trim())+'</dd>'; });
+        h += '</dl>';
+      }
+      h += '</div>';
+    });
+    return h + '</div>';
+  }
+
+  /* ---------- 편집 ---------- */
+  function bindEdits(){
+    [].forEach.call(document.querySelectorAll('[data-edit]'), function(el){
+      el.contentEditable = editing ? 'true' : 'false';
+      el.oninput = function(){
+        E[el.dataset.edit] = el.innerText.replace(/\n$/, '');
+        markDirty();
+      };
+    });
+    [].forEach.call(document.querySelectorAll('[data-hide]'), function(b){
+      b.onclick = function(){
+        var id = b.dataset.hide;
+        if (E.hidden[id]) delete E.hidden[id]; else E.hidden[id] = true;
+        markDirty(); render();
+      };
+    });
+    [].forEach.call(document.querySelectorAll('[data-one]'), function(b){
+      b.onclick = function(){ oneId = b.dataset.one; view = 'one'; render(); setTimeout(doPrint, 150); };
+    });
+    var back = $('backAll'); if (back) back.onclick = function(){ view = 'ind'; render(); };
+  }
+  function markDirty(){ dirty = true; $('saveBtn').disabled = false; status('저장하지 않은 변경사항이 있어요'); }
+
+  $('editBtn').onclick = function(){
+    editing = !editing;
+    this.classList.toggle('on', editing);
+    this.textContent = editing ? '편집 끝내기' : '편집';
+    if (editing && view === 'sum') {
+      // 자동 요약을 편집 시작 시 실제 값으로 고정
+      if (!E.summary) E.summary = autoSummary(stats(D.responses||[]));
+    }
+    render();
+    if (editing) status('점선 부분을 눌러 바로 고칠 수 있어요. 주관식은 “숨기기”로 리포트에서 뺄 수 있어요.');
+  };
+
+  $('saveBtn').onclick = function(){
+    var btn = this;
+    if (DEMO) { status('미리보기라 저장되지 않아요 (화면에는 반영됨)'); dirty = false; btn.disabled = true; return; }
+    btn.disabled = true; status('저장 중…');
+    var before = D.editedAt || '';
+    postData({ action:'saveEdit', cls:CLS, k:KEY, edit:E }).then(function(){
+      return new Promise(function(r){ setTimeout(r, 1800); });
+    }).then(function(){
+      return jsonp({action:'report', cls:CLS, k:KEY}, 20000);
+    }).then(function(r){
+      if (r && r.ok && r.editedAt && r.editedAt !== before || (r && r.ok && JSON.stringify(r.edit) === JSON.stringify(E))) {
+        D.editedAt = r.editedAt; dirty = false; status('저장됨 · ' + r.editedAt);
+      } else { btn.disabled = false; status('저장 확인이 안 됐어요. 잠시 후 다시 눌러 주세요.'); }
+    }).catch(function(){ btn.disabled = false; status('저장 실패 — 인터넷 연결을 확인해 주세요.'); });
+  };
+
+  /* ---------- 보기 전환 / PDF ---------- */
+  [].forEach.call($('viewSeg').children, function(b){
+    b.onclick = function(){ view = b.dataset.v; render(); };
+  });
+  function doPrint(){
+    var t = document.title;
+    var kind = view === 'sum' ? '종합' : (view === 'one' ? '개별_' + oneId : '개별응답');
+    document.title = ('수업만족도_' + (E.title||'리포트') + '_' + (E.date||'') + '_' + kind).replace(/[\\/:*?"<>|\s]+/g, '_');
+    window.print();
+    setTimeout(function(){ document.title = t; }, 800);
+  }
+  $('pdfBtn').onclick = function(){
+    if (editing) $('editBtn').click();
+    setTimeout(doPrint, 100);
+  };
+
+  /* ---------- QR ---------- */
+  $('qrBtn').onclick = function(){
+    var base = location.href.split('?')[0].replace(/report\.html$/, '');
+    var url = base + (SURVEY_PAGE || '') + (CLS ? '?cls=' + encodeURIComponent(CLS) : '');
+    $('qrUrl').value = url;
+    $('qrImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=480x480&margin=10&data=' + encodeURIComponent(url);
+    $('qrModal').classList.add('on');
+  };
+  $('printQr').onclick = function(){
+    $('qrTitle').textContent = (E.title || '수업') + ' 만족도 설문';
+    document.body.classList.add('qrprint');
+    var img = $('qrImg');
+    var go = function(){ window.print(); setTimeout(function(){ document.body.classList.remove('qrprint'); $('qrTitle').textContent = '설문 링크 · QR'; }, 800); };
+    if (img.complete) go(); else img.onload = go;
+  };
+  $('closeQr').onclick = function(){ $('qrModal').classList.remove('on'); };
+  $('openBtn').onclick = function(){ window.open($('qrUrl').value, '_blank'); };
+  $('copyBtn').onclick = function(){
+    var v = $('qrUrl').value, b = this;
+    (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(function(){ b.textContent = '복사됨'; }, function(){ $('qrUrl').select(); document.execCommand('copy'); b.textContent = '복사됨'; });
+    setTimeout(function(){ b.textContent = '링크 복사'; }, 1500);
+  };
+
+  window.addEventListener('beforeunload', function(e){ if (dirty && !DEMO) { e.preventDefault(); e.returnValue = ''; } });
+
+  /* ---------- 예시 데이터 (미리보기 전용) ---------- */
+  function sampleData(){
+    var seed = 7; function rnd(){ seed = (seed*9301+49297) % 233280; return seed/233280; }
+    function score(base){ var v = Math.round(base + (rnd()-.35)*1.6); return Math.max(2, Math.min(5, v)); }
+    var types = ['kid','kid','kid','kid','kid','kid','kid','kid','teen','teen','adult','adult','adult','org','org'];
+    var good = ['물감 섞어서 새로운 색 만든 게 제일 재밌었어요','번지기 기법이 신기했어요','선생님이 하나하나 봐주셔서 좋았어요','','팔레트가 예뻐서 계속 쓰고 싶어요','','완성작을 가져갈 수 있어서 좋았어요','','설명이 차분해서 따라가기 쉬웠습니다','','아이들이 끝까지 집중하는 모습이 인상적이었습니다','',''];
+    var bad = ['시간이 짧았어요','','','붓이 조금 부족했어요','','','','책상이 좁았어요','','','','','다음엔 2회차로 구성되면 좋겠습니다'];
+    var msg = ['선생님 또 와주세요','','감사합니다!','','','','','','','다음 심화반도 열어주세요','','평소 말이 적던 아이가 작품 설명을 먼저 하더라고요',''];
+    return {
+      ok:true, editedAt:'',
+      cls:{ code:'DEMO', name:'예시 · 수채화 원데이 클래스', org:'예시 기관', date:new Date().toISOString().slice(0,10), teacher:'환타' },
+      edit:null,
+      responses: types.map(function(t, i){
+        var r = { id:'DEMO'+i, type:t, name:'', time:'' };
+        ITEMS.forEach(function(it, j){ r[it.key] = score(j===3 ? 3.8 : 4.4); });
+        r.o1 = good[i % good.length]; r.o2 = bad[i % bad.length]; r.o3 = msg[i % msg.length];
+        return r;
+      })
+    };
+  }
+
+  load();
+})();
 </script>
-
 </body>
 </html>

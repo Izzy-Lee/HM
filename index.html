@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>헬로미추 · 수채화 컬러링 체험</title>
-<meta name="description" content="헬로미추 수채화 컬러링 체험 — 인천 미추홀">
+<meta name="description" content="헬로미추 바다향기 조향 체험 — 2026 인천 원도사제 (10.24 토)">
 
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- 폰트는 렌더링을 막지 않게 나중에 적용한다. 네트워크가 느려도
@@ -157,6 +157,33 @@
   .contact-row { display: flex; gap: 0.8rem; font-size: 0.78rem; color: var(--ink-soft); margin-bottom: 0.4rem; }
   .contact-row:last-child { margin-bottom: 0; }
   .contact-key { min-width: 52px; font-weight: 500; color: var(--brush-teal); }
+
+  /* ── 원도사제 행사 정보 ── */
+  .event-info { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 16px; padding: 1.3rem 1.4rem; margin-bottom: 1.2rem; text-align: left; }
+  .event-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; color: var(--brush-teal); margin-bottom: 0.7rem; }
+  .event-row { display: flex; align-items: baseline; gap: 0.7rem; margin-bottom: 0.5rem; }
+  .event-row:last-child { margin-bottom: 0; }
+  .event-label { font-size: 0.72rem; color: var(--brush-teal); font-weight: 600; min-width: 34px; flex-shrink: 0; }
+  .event-value { font-size: 0.88rem; color: var(--ink); line-height: 1.5; }
+  .sec-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; color: var(--ink-soft); text-align: left; margin: 1.3rem 0 0.6rem; }
+  .exp-card { background: white; border: 1px solid rgba(74,156,140,0.2); border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 0.6rem; text-align: left; }
+  .exp-card .num { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--brush-teal); color: #fff; font-size: 0.68rem; font-weight: 700; margin-right: 0.4rem; }
+  .exp-card.key .num { background: var(--brush-blue); }
+  .exp-card h3 { display: flex; align-items: center; font-size: 0.95rem; font-weight: 700; color: var(--ink); }
+  .exp-card .meta { font-size: 0.72rem; font-weight: 600; color: var(--brush-teal); margin: 0.3rem 0 0.4rem; }
+  .exp-card.key .meta { color: var(--brush-blue); }
+  .exp-card p { font-size: 0.78rem; color: var(--ink-soft); line-height: 1.65; }
+  .steps { list-style: none; background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 12px; padding: 0.85rem 1rem; text-align: left; display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.2rem; }
+  .steps li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.78rem; color: var(--ink-soft); line-height: 1.5; }
+  .steps .jn { flex-shrink: 0; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: rgba(90,78,66,0.1); color: var(--ink-soft); font-size: 0.66rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 0.05rem; }
+  .steps .jn.req { background: var(--brush-amber); color: #fff; }
+  .steps b { color: var(--ink); }
+  .info-box { background: #f5f3ee; border: 1px solid rgba(90,78,66,0.15); border-radius: 12px; padding: 0.85rem 1rem; margin-top: 0.8rem; text-align: left; }
+  .info-box .t { font-size: 0.74rem; font-weight: 700; color: var(--ink-soft); margin-bottom: 0.35rem; }
+  .info-box p, .info-box li { font-size: 0.74rem; color: var(--ink-soft); line-height: 1.7; }
+  .info-box ul { padding-left: 1rem; }
+  .info-box b { color: var(--ink); }
+  .tag { color: var(--brush-blue); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -166,7 +193,7 @@
   <h1 class="brand-wrap">
     <img src="img/logo2.png" class="brand" alt="헬로미추">
   </h1>
-  <p class="tagline">인천 미추홀 · 수채화 컬러링 체험</p>
+  <p class="tagline">2026 인천 원도사제 · 바다향기 조향 체험</p>
 
   <!-- 언어 전환 버튼 -->
   <div class="lang-switch-wrap">
@@ -184,7 +211,54 @@
 
   <!-- 홈 패널 : 소개 + 예약 + 설문 -->
   <div class="tab-panel active" id="panel-reserve">
-    <div class="about-section home-intro">
+    <div class="event-info">
+      <div class="event-title">2026 인천 원도사제 연계 체험</div>
+      <div class="event-row"><span class="event-label">일시</span><span class="event-value">2026. 10. 24(토)</span></div>
+      <div class="event-row"><span class="event-label">장소</span><span class="event-value">인천 원도사제 행사장<br>(미추홀구 용현동 일원)</span></div>
+      <div class="event-row"><span class="event-label">운영</span><span class="event-value">12:00 — 18:00 · 회당 30분 · 12타임<br>8명 동시 진행 (예약제, 현장 접수 가능)</span></div>
+      <div class="event-row"><span class="event-label">참가</span><span class="event-value">체험 무료 (체험 후 설문 참여 조건)</span></div>
+    </div>
+
+    <div class="sec-title">체험 종류</div>
+    <div class="exp-card">
+      <h3><span class="num">1</span>바다향기 센트카드 세트</h3>
+      <div class="meta">30분 · 무료 (정상가 25,000원 상당 · 행사 한정)</div>
+      <p>미추홀의 바다·갯벌·해안 풍경에서 영감을 얻은 향을 직접 조향해 레터프레스 센트카드에 담고, 같은 장면의 향기 컬러링 시트와 함께 가져가요. 집에서 봉투를 열어 향을 맡으며 색칠해 보세요.</p>
+    </div>
+    <div class="exp-card key">
+      <h3><span class="num">2</span>바다향기 키링 세트</h3>
+      <div class="meta">30분 · 무료 (정상가 21,000원 상당 · 행사 한정)</div>
+      <p>향 2~3종을 배합해 미니 석고 조개에 입히고, 바다 디오라마 유리병에 넣어 키링으로 완성해요. 향기 컬러링 시트와 세트로 드려요.</p>
+    </div>
+
+    <div class="sec-title">진행 순서</div>
+    <ol class="steps">
+      <li><span class="jn">1</span><span><b>체험 예약</b> — 원하는 체험과 시간을 골라 예약</span></li>
+      <li><span class="jn">2</span><span><b>조향 체험 30분</b> — 시향 → 향 2~3종 배합 → 향 입히기 → 밀봉·포장</span></li>
+      <li><span class="jn req">3</span><span><b>체험 후 설문</b> (필수 · 무료 체험 조건)</span></li>
+      <li><span class="jn">4</span><span><b>SNS 후기</b> (선택) — 확인 후 향기 컬러링 시트 증정</span></li>
+    </ol>
+
+    <a class="cta-btn cta-btn--reserve" href="reserve.html">체험 예약하기</a>
+    <a class="cta-btn cta-btn--survey" id="classSurveyBtn" href="survey.html">체험 후 설문 작성하기</a>
+
+    <div class="info-box">
+      <div class="t">현장 판매</div>
+      <ul>
+        <li>바다향기 컬러링북 세트 (센트카드형) <b>30,000원</b></li>
+        <li>바다향기 컬러링북 세트 (키링형) <b>35,000원</b></li>
+      </ul>
+    </div>
+    <div class="info-box">
+      <div class="t">SNS 후기 이벤트 (선착순 28명)</div>
+      <p>인스타그램 등에 체험 후기를 올리고 해시태그 <span class="tag">#헬로미추</span> <span class="tag">#미추홀바다향기</span>를 넣어 주세요. 현장에서 확인 후 향기 컬러링 시트를 드려요. (소진 시 종료)</p>
+    </div>
+    <div class="info-box">
+      <div class="t">안내</div>
+      <p>향에 민감하신 분, 임산부, 영유아 동반 고객은 체험 전 운영진에게 말씀해 주세요. <b>무향 선택</b>도 가능합니다.</p>
+    </div>
+
+    <div class="about-section home-intro" style="margin-top:1.6rem;">
       <span class="about-label">HELLO MICHU</span>
       <h2 class="about-title">헬로미추와 함께 색을 입혀요</h2>
       <div class="about-line"></div>
@@ -194,12 +268,6 @@
         느리게 색을 입히는 시간 속에서 이 도시의 결을 새롭게 발견하는 경험을 제안합니다.
       </p>
     </div>
-
-    <a class="cta-btn cta-btn--reserve" href="reserve.html">체험 예약하기</a>
-    <a class="cta-btn cta-btn--survey" id="classSurveyBtn" href="survey.html">수업 만족도 설문</a>
-    <p class="note">
-      수업 현장에서 받은 <strong>QR이나 링크</strong>로 들어오시면 수업 이름이 자동으로 입력됩니다.
-    </p>
   </div>
 
   <!-- 현황 패널 -->
@@ -243,20 +311,27 @@
 
       <div class="about-section">
         <span class="about-label">EXPERIENCE</span>
-        <h2 class="about-title">체험 프로그램</h2>
+        <h2 class="about-title">바다향기 체험 · 판매</h2>
         <div class="about-line"></div>
         <div class="exp-item">
-          <div class="exp-icon-wrap">🎨</div>
+          <div class="exp-icon-wrap">💌</div>
           <div>
-            <div class="exp-item-title">수채화 컬러링 체험</div>
-            <div class="exp-item-desc">수채물감 44색·세필붓 등 전 재료 제공 · 네 장 중 한 장 선택</div>
+            <div class="exp-item-title">바다향기 센트카드 세트 체험</div>
+            <div class="exp-item-desc">직접 조향한 향을 레터프레스 센트카드에 담고 향기 컬러링 시트와 함께<br><span style="color:var(--brush-teal);font-weight:500;">30분 · 무료 (정상가 25,000원 상당)</span></div>
+          </div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-icon-wrap">🐚</div>
+          <div>
+            <div class="exp-item-title">바다향기 키링 세트 체험</div>
+            <div class="exp-item-desc">향을 입힌 미니 석고 조개를 바다 디오라마 유리병 키링에 담아 완성<br><span style="color:var(--brush-blue);font-weight:500;">30분 · 무료 (정상가 21,000원 상당)</span></div>
           </div>
         </div>
         <div class="exp-item">
           <div class="exp-icon-wrap">🛍️</div>
           <div>
-            <div class="exp-item-title">전통문화 바인더 체험</div>
-            <div class="exp-item-desc">블랙 바인더에 자개·레진 공예 장식</div>
+            <div class="exp-item-title">바다향기 컬러링북 세트 판매</div>
+            <div class="exp-item-desc">센트카드형 30,000원 · 키링형 35,000원<br><span style="color:var(--ink-soft);">향 오일 리필 + 향기 컬러링 시트 포함 완제품</span></div>
           </div>
         </div>
       </div>

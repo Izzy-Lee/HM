@@ -184,6 +184,23 @@
   .info-box ul { padding-left: 1rem; }
   .info-box b { color: var(--ink); }
   .tag { color: var(--brush-blue); font-weight: 700; }
+
+  /* ── 헬로미추 탭: 원도사제 사진 칸 · 도안 카드 축소 ── */
+  .wondo-cards { display: flex; flex-direction: column; gap: 0.7rem; }
+  .wondo-card { background: white; border: 1px solid rgba(74,156,140,0.18); border-radius: 12px; overflow: hidden; }
+  .wondo-card .ph { position: relative; aspect-ratio: 4 / 3; background: rgba(74,156,140,0.08); }
+  .wondo-card .ph img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .wondo-card .ph span { display: none; }
+  .wondo-card .ph.empty span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--ink-soft); border: 1.5px dashed rgba(74,156,140,0.35); border-radius: 12px 12px 0 0; }
+  .wondo-card .wc-body { padding: 0.75rem 0.9rem 0.85rem; }
+  .sheet-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .sheet-thumb-img { aspect-ratio: 1 / 1; object-fit: cover; }
+  .sheet-card .sheet-card-info { padding: 0.5rem 0.6rem 0.6rem; }
+  .sheet-card .sheet-num-badge { min-width: 22px; height: 22px; font-size: 0.62rem; }
+  .sheet-card .sheet-card-title { font-size: 0.78rem; }
+  .sheet-card .sheet-card-desc { font-size: 0.68rem; line-height: 1.45; }
+  .sheet-card .sheet-card-tags { font-size: 0.62rem; }
+  .sheet-card .sheet-stock-row { flex-direction: column; align-items: flex-start; gap: 0.2rem; }
 </style>
 </head>
 <body>
@@ -286,6 +303,36 @@
     <div class="about-panel">
 
       <div class="about-section">
+        <span class="about-label">2026 원도사제</span>
+        <h2 class="about-title">바다향기 체험 · 판매</h2>
+        <div class="about-line"></div>
+        <!-- 사진 칸: img 폴더에 아래 파일명으로 사진을 올리면 자동으로 보입니다 (없으면 '사진 준비 중') -->
+        <div class="wondo-cards">
+          <div class="wondo-card">
+            <div class="ph"><img src="img/wondo_scentcard.jpg" alt="바다향기 센트카드 세트 체험" loading="lazy" onerror="this.parentNode.classList.add('empty');this.remove()"><span>사진 준비 중</span></div>
+            <div class="wc-body">
+              <div class="exp-item-title">바다향기 센트카드 세트 체험</div>
+              <div class="exp-item-desc">직접 조향한 향을 레터프레스 센트카드에 담고 향기 컬러링 시트와 함께<br><span style="color:var(--brush-teal);font-weight:500;">30분 · 무료 (정상가 25,000원 상당)</span></div>
+            </div>
+          </div>
+          <div class="wondo-card">
+            <div class="ph"><img src="img/wondo_keyring.jpg" alt="바다향기 키링 세트 체험" loading="lazy" onerror="this.parentNode.classList.add('empty');this.remove()"><span>사진 준비 중</span></div>
+            <div class="wc-body">
+              <div class="exp-item-title">바다향기 키링 세트 체험</div>
+              <div class="exp-item-desc">향을 입힌 미니 석고 조개를 바다 디오라마 유리병 키링에 담아 완성<br><span style="color:var(--brush-blue);font-weight:500;">30분 · 무료 (정상가 21,000원 상당)</span></div>
+            </div>
+          </div>
+          <div class="wondo-card">
+            <div class="ph"><img src="img/wondo_set.jpg" alt="바다향기 컬러링북 세트 판매" loading="lazy" onerror="this.parentNode.classList.add('empty');this.remove()"><span>사진 준비 중</span></div>
+            <div class="wc-body">
+              <div class="exp-item-title">바다향기 컬러링북 세트 판매</div>
+              <div class="exp-item-desc">향 오일 리필 + 향기 컬러링 시트 포함 완제품<br><span style="color:var(--ink-soft);font-weight:500;">센트카드형 30,000원 · 키링형 35,000원</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section">
         <span class="about-label">ABOUT</span>
         <h2 class="about-title">헬로미추란?</h2>
         <div class="about-line"></div>
@@ -306,33 +353,6 @@
         </p>
         <div class="sheet-cards" id="aboutSheetCards">
           <!-- JS로 재고 배지 포함 렌더링 -->
-        </div>
-      </div>
-
-      <div class="about-section">
-        <span class="about-label">EXPERIENCE</span>
-        <h2 class="about-title">바다향기 체험 · 판매</h2>
-        <div class="about-line"></div>
-        <div class="exp-item">
-          <div class="exp-icon-wrap">💌</div>
-          <div>
-            <div class="exp-item-title">바다향기 센트카드 세트 체험</div>
-            <div class="exp-item-desc">직접 조향한 향을 레터프레스 센트카드에 담고 향기 컬러링 시트와 함께<br><span style="color:var(--brush-teal);font-weight:500;">30분 · 무료 (정상가 25,000원 상당)</span></div>
-          </div>
-        </div>
-        <div class="exp-item">
-          <div class="exp-icon-wrap">🐚</div>
-          <div>
-            <div class="exp-item-title">바다향기 키링 세트 체험</div>
-            <div class="exp-item-desc">향을 입힌 미니 석고 조개를 바다 디오라마 유리병 키링에 담아 완성<br><span style="color:var(--brush-blue);font-weight:500;">30분 · 무료 (정상가 21,000원 상당)</span></div>
-          </div>
-        </div>
-        <div class="exp-item">
-          <div class="exp-icon-wrap">🛍️</div>
-          <div>
-            <div class="exp-item-title">바다향기 컬러링북 세트 판매</div>
-            <div class="exp-item-desc">센트카드형 30,000원 · 키링형 35,000원<br><span style="color:var(--ink-soft);">향 오일 리필 + 향기 컬러링 시트 포함 완제품</span></div>
-          </div>
         </div>
       </div>
 
